@@ -1,0 +1,3 @@
+[submodule "vapi/vala-extra-vapis"]
+	path = vapi/vala-extra-vapis
+	url = https://github.com/GNOME/vala-extra-vapis

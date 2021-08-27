@@ -1,0 +1,16 @@
+*.ninja
+compile_commands.json
+meson-info
+meson-logs
+meson-private
+meson-uninstalled
+*.p
+.ninja_deps
+.ninja_log
+*.so*
+*.a*
+*.pc
+*.gmo
+genesis-shell
+build.h
+build.vala

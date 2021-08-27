@@ -1,0 +1,7 @@
+namespace Genesis {
+    public const string VERSION = "@VERSION@";
+    public const string DATADIR = "@DATADIR@";
+}
+
+[CCode(cheader_filename="build.h")]
+extern const string GETTEXT_PACKAGE;

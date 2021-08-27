@@ -1,0 +1,31 @@
+# Japanese translations for genesis-shell package.
+# Copyright (C) 2021 THE genesis-shell'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the genesis-shell package.
+# Automatically generated, 2021.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: genesis-shell\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-08-25 23:26-0700\n"
+"PO-Revision-Date: 2021-08-25 23:26-0700\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/shell/shell.vala:16
+msgid "Display version string"
+msgstr ""
+
+#: src/shell/shell.vala:25
+msgid "- Genesis Shell"
+msgstr "- ほったんかく"
+
+#: src/shell/shell.vala:37
+#, c-format
+msgid "Version: %s\n"
+msgstr "はん: %s\n"
