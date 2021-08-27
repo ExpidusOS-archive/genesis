@@ -13,6 +13,7 @@ namespace Genesis {
             options[0] = { "version", 'v', 0, GLib.OptionArg.NONE, ref this.arg_version, _("Display version string"), null };
             options[1] = { "backend", 0, 0, GLib.OptionArg.STRING, ref this.arg_backend, _("Display backend to use"), "BACKEND" };
             this.add_main_option_entries(options);
+            this.set_option_context_parameter_string(_("- Genesis Shell"));
         }
 
         protected override void activate() {

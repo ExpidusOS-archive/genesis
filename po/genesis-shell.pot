@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: genesis-shell\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-25 23:26-0700\n"
+"POT-Creation-Date: 2021-08-26 22:23-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,15 +17,24 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/shell/shell.vala:16
+#: src/shell/shell.vala:13
 msgid "Display version string"
 msgstr ""
 
-#: src/shell/shell.vala:25
+#: src/shell/shell.vala:14
+msgid "Display backend to use"
+msgstr ""
+
+#: src/shell/shell.vala:16
 msgid "- Genesis Shell"
 msgstr ""
 
-#: src/shell/shell.vala:37
+#: src/shell/shell.vala:21
 #, c-format
 msgid "Version: %s\n"
+msgstr ""
+
+#: src/shell/shell.vala:30
+#, c-format
+msgid "Invalid display backend: %s\n"
 msgstr ""
