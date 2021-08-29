@@ -12,30 +12,48 @@ namespace Genesis.X11 {
 
         public override bool connected {
             get {
+                Xcb.GenericError? error = null;
                 var info_cookie = this._backend.randr.get_output_info(this._output, 0);
-                var info = this._backend.randr.get_output_info_reply(info_cookie);
+                var info = this._backend.randr.get_output_info_reply(info_cookie, out error);
+                if (error != null) {
+                    return false;
+                }
                 return info.connection == Xcb.RandR.ConnectionState.CONNECTED;
             }
         }
         
         public override Genesis.RectangleUint32 physical_rect {
             get {
+                Xcb.GenericError? error = null;
                 var info_cookie = this._backend.randr.get_output_info(this._output, 0);
-                var info = this._backend.randr.get_output_info_reply(info_cookie);
-                Genesis.RectangleUint32 rect = { 0, 0, info.mm_width, info.mm_height };
+                var info = this._backend.randr.get_output_info_reply(info_cookie, out error);
+                Genesis.RectangleUint32 rect = { 0, 0, 0, 0 };
+                if (error == null) {
+                    rect.width = info.mm_width;
+                    rect.height = info.mm_height;
+                }
                 return rect;
             }
         }
 
         public override Genesis.RectangleUint16 resolution {
             get {
+                Xcb.GenericError? error = null;
+                Genesis.RectangleUint16 rect = { 0, 0, 0, 0 };
                 var info_cookie = this._backend.randr.get_output_info(this._output, 0);
-                var info = this._backend.randr.get_output_info_reply(info_cookie);
+                var info = this._backend.randr.get_output_info_reply(info_cookie, out error);
 
-                var crtc_cookie = this._backend.randr.get_crtc_info(info.crtc, 0);
-                var crtc = this._backend.randr.get_crtc_info_reply(crtc_cookie);
+                if (error == null) {
+                    var crtc_cookie = this._backend.randr.get_crtc_info(info.crtc, 0);
+                    var crtc = this._backend.randr.get_crtc_info_reply(crtc_cookie, out error);
 
-                Genesis.RectangleUint16 rect = { crtc.x, crtc.y, crtc.width, crtc.height };
+                    if (error == null) {
+                        rect.x = crtc.x;
+                        rect.y = crtc.y;
+                        rect.width = crtc.width;
+                        rect.height = crtc.height;
+                    }
+                }
                 return rect;
             }
         }

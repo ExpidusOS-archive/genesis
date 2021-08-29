@@ -28,7 +28,7 @@ namespace Genesis.X11 {
             }
         }
 
-        public Backend(Genesis.Shell shell) {
+        public Backend(Genesis.Shell shell) throws Genesis.ShellError {
             Object();
 
             this._shell = shell;
@@ -51,14 +51,12 @@ namespace Genesis.X11 {
                     var monitor = new Monitor(this, output);
                     this._monitors.insert(monitor.name, monitor);
                 }
+            } else {
+                throw new Genesis.ShellError.BACKEND("Failed to retrieve RandR screen resources");
             }
         }
 
-        ~Backend() {
-            this._monitors.remove_all();
-        }
-
-        private Xcb.Screen get_default_screen() {
+        public Xcb.Screen get_default_screen() {
             return this._conn.get_setup().screens[this._def_screen];
         }
 
