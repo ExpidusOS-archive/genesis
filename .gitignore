@@ -14,3 +14,6 @@ meson-uninstalled
 genesis-shell
 build.h
 build.vala
+*.vapi
+!vapi
+*.h
