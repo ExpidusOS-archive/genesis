@@ -34,15 +34,26 @@ namespace Genesis.X11 {
             this._shell = shell;
             this._conn = new Xcb.Connection(null, out this._def_screen);
             assert(this._conn != null);
+            if (this._conn.has_error() > 0) {
+                throw new Genesis.ShellError.BACKEND("Failed to connect");
+            }
 
             this._randr = Xcb.RandR.get_connection(this._conn);
             assert(this._randr != null);
 
+            var def_screen = this.get_default_screen();
+            uint32[] values = { Xcb.EventMask.BUTTON_PRESS | Xcb.EventMask.BUTTON_RELEASE | Xcb.EventMask.KEY_PRESS
+                | Xcb.EventMask.EXPOSURE | Xcb.EventMask.SUBSTRUCTURE_REDIRECT | Xcb.EventMask.SUBSTRUCTURE_NOTIFY };
+            var cwa_cookie = this._conn.change_window_attributes_checked(def_screen.root, Xcb.CW.EVENT_MASK, values);
+            this._conn.flush();
+            var error = this._conn.request_check(cwa_cookie);
+            if (error != null) {
+                throw new Genesis.ShellError.BACKEND("A compositor is already running");
+            }
+
             this._monitors = new GLib.HashTable<string, Monitor>(GLib.str_hash, GLib.str_equal);
             this._atoms = new GLib.HashTable<string, Xcb.Atom?>(GLib.str_hash, GLib.str_equal);
 
-            Xcb.GenericError? error = null;
-            var def_screen = this.get_default_screen();
             var res_cookie = this._randr.get_screen_resources(def_screen.root);
 
             var res = this._randr.get_screen_resources_reply(res_cookie, out error);
@@ -54,6 +65,31 @@ namespace Genesis.X11 {
             } else {
                 throw new Genesis.ShellError.BACKEND("Failed to retrieve RandR screen resources");
             }
+
+            this._randr.select_input(def_screen.root, Xcb.RandR.NotifyMask.SCREEN_CHANGE);
+
+            var main_ctx = GLib.MainContext.@default();
+            var events = new GLib.IOSource(new GLib.IOChannel.unix_new(this._conn.get_file_descriptor()), GLib.IOCondition.IN);
+            events.set_callback(() => {
+                var ev = this._conn.poll_for_event();
+                if (ev == null) return true;
+
+                if ((ev.response_type & Xcb.RandR.NotifyMask.SCREEN_CHANGE) != 0) {
+                    bool[] monitor_states = {};
+                    foreach (var monitor in this._monitors.get_values()) {
+                        if (monitor.previous_state != monitor.connected) {
+                            monitor.update();
+                            monitor.connection_changed();
+                            monitor_states += true;
+                        } else {
+                            monitor_states += false;
+                        }
+                    }
+                    this.monitors_changed(monitor_states);
+                }
+                return true;
+            });
+            events.attach(main_ctx);
         }
 
         public Xcb.Screen get_default_screen() {
@@ -73,5 +109,23 @@ namespace Genesis.X11 {
             this._atoms.insert(name, atom.atom);
             return atom.atom;
         }
+    }
+
+    [Compact]
+    [CCode(cname = "_xcb_randr_screen_change_notify_event_t")]
+    public class xcb_randr_screen_change_notify_event {
+        public uint8 response_type;
+        public uint8 rotation;
+        public uint16 sequence;
+        public Xcb.Timestamp timestamp;
+        public Xcb.Timestamp config_timestamp;
+        public Xcb.Window root;
+        public Xcb.Window request_window;
+        public uint16 size_id;
+        public uint16 subpixel_order;
+        public uint16 width;
+        public uint16 height;
+        public uint16 mwidth;
+        public uint16 mheight;
     }
 }

@@ -3,6 +3,13 @@ namespace Genesis.X11 {
         private Backend _backend;
         private Xcb.RandR.Output _output;
         private string _name;
+        private bool _prev_state;
+
+        public bool previous_state {
+            get {
+                return this._prev_state;
+            }
+        }
 
         public override string name {
             get {
@@ -67,9 +74,11 @@ namespace Genesis.X11 {
             var info_cookie = this._backend.randr.get_output_info(this._output, 0);
             var info = this._backend.randr.get_output_info_reply(info_cookie);
             this._name = info.name;
+
+            this._prev_state = this.connected;
         }
 
-        public new string to_string() {
+        public override string to_string() {
             var str = base.to_string();
             str += "\n";
 
@@ -86,6 +95,10 @@ namespace Genesis.X11 {
                 if ((i + 1) != props.atoms.length) str += "\n";
             }
             return str;
+        }
+
+        public void update() {
+            this._prev_state = this.connected;
         }
     }
 }

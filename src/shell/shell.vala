@@ -3,9 +3,10 @@ namespace Genesis {
     public class Shell : Gtk.Application {
         private ShellBackend* _backend = null;
         private Lua.LuaVM _lvm;
+        private GLib.MainLoop _loop;
         
-        public bool arg_version = false;
-        public string arg_backend = "x11";
+        protected bool arg_version = false;
+        protected string arg_backend = "x11";
 
         public Shell() {
             Object(application_id: "com.expidus.Genesis");
@@ -23,12 +24,17 @@ namespace Genesis {
                 return;
             }
 
+            var main_ctx = GLib.MainContext.@default();
+            assert(main_ctx.acquire());
+
+            this._loop = new GLib.MainLoop(main_ctx, false);
+
             switch (this.arg_backend) {
                 case "x11":
                     try {
                         this._backend = new Genesis.X11.Backend(this);
-                    } catch (ShellError error) {
-                        stderr.printf("%s\n", error.message);
+                    } catch (GLib.Error error) {
+                        stderr.printf("%s (%d): %s\n", error.domain.to_string(), error.code, error.message);
                         GLib.Process.exit(1);
                     }
                     break;
@@ -82,21 +88,41 @@ namespace Genesis {
             });
             this._lvm.raw_set(-3);
 
+            this._lvm.push_string("types");
+            this._lvm.new_table();
+
+            this._lvm.push_string("desktop");
+            this._lvm.push_string(typeof (BaseDesktop).name());
+            this._lvm.raw_set(-3);
+
+            this._lvm.raw_set(-3);
+
             this._lvm.set_global("shell");
 
             assert(this._backend != null);
 
+            foreach (var monitor in this._backend->monitors) {
+                monitor.connection_changed.connect(() => {
+                    // TODO: create a desktop for this monitor
+                });
+
+                if (monitor.connected) monitor.connection_changed();
+            }
+
             if (this._lvm.do_string("""
-print("Running Genesis Shell v" .. shell.VERSION)
-for i, monitor in pairs(shell.get_monitors()) do
-  if monitor:is_connected() then
-    print(i, monitor.name, monitor:get_physical_rect())
-    print("\t", monitor:get_resolution())
-  end
+local status, lgi = pcall(require, "lgi")
+if status then
+  shell.types.desktop = lgi.GObject.Type.from_name(shell.types.desktop)
 end
 """)) {
                 stderr.printf("Failed to run lua: %s\n", this._lvm.to_string(-1));
             }
+
+            this._loop.run();
+        }
+
+        protected override void run_mainloop() {
+            this._loop.run();
         }
 
         protected override void shutdown() {
