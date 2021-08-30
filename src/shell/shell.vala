@@ -95,6 +95,14 @@ namespace Genesis {
             this._lvm.push_string(typeof (BaseDesktop).name());
             this._lvm.raw_set(-3);
 
+            this._lvm.push_string("notification");
+            this._lvm.push_string(typeof (BaseNotification).name());
+            this._lvm.raw_set(-3);
+
+            this._lvm.push_string("window_frame");
+            this._lvm.push_string(typeof (BaseWindowFrame).name());
+            this._lvm.raw_set(-3);
+
             this._lvm.raw_set(-3);
 
             this._lvm.set_global("shell");
@@ -107,15 +115,6 @@ namespace Genesis {
                 });
 
                 if (monitor.connected) monitor.connection_changed();
-            }
-
-            if (this._lvm.do_string("""
-local status, lgi = pcall(require, "lgi")
-if status then
-  shell.types.desktop = lgi.GObject.Type.from_name(shell.types.desktop)
-end
-""")) {
-                stderr.printf("Failed to run lua: %s\n", this._lvm.to_string(-1));
             }
 
             this._loop.run();

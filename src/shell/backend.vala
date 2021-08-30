@@ -29,6 +29,8 @@ namespace Genesis {
     }
 
     public interface BaseDesktop : Gtk.Window {}
+    public interface BaseNotification : Gtk.Window {}
+    public interface BaseWindowFrame : GLib.Object {}
 
     public abstract class MonitorBackend : GLib.Object, GenericObject {
         public abstract string name { get; }
