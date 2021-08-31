@@ -28,7 +28,11 @@ namespace Genesis {
         public signal void monitors_changed(bool[] changed);
     }
 
-    public interface BaseDesktop : Gtk.Window {}
+    public interface BaseDesktop : Gtk.Window {
+        public abstract Shell shell { get; construct; }
+        public abstract string monitor_name { get; construct; }
+    }
+
     public interface BaseNotification : Gtk.Window {}
     public interface BaseWindowFrame : GLib.Object {}
 

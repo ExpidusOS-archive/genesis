@@ -4,6 +4,8 @@ namespace Genesis {
         private ShellBackend* _backend = null;
         private Lua.LuaVM _lvm;
         private GLib.MainLoop _loop;
+        private GLib.HashTable<string, GLib.Type> _types;
+        private GLib.HashTable<string, BaseDesktop?> _desktops;
         
         protected bool arg_version = false;
         protected string arg_backend = "x11";
@@ -28,6 +30,8 @@ namespace Genesis {
             assert(main_ctx.acquire());
 
             this._loop = new GLib.MainLoop(main_ctx, false);
+            this._types = new GLib.HashTable<string, GLib.Type>(GLib.str_hash, GLib.str_equal);
+            this._desktops = new GLib.HashTable<string, BaseDesktop?>(GLib.str_hash, GLib.str_equal);
 
             switch (this.arg_backend) {
                 case "x11":
@@ -88,6 +92,90 @@ namespace Genesis {
             });
             this._lvm.raw_set(-3);
 
+            this._lvm.push_string("override_type");
+            this._lvm.push_cfunction((lvm) => {
+                if (lvm.get_top() != 2) {
+                    lvm.push_literal("Expected 2 arguments");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(1) != Lua.Type.STRING) {
+                    lvm.push_literal("Invalid argument: expected a string");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(2) != Lua.Type.TABLE) {
+                    lvm.push_literal("Invalid argument: expected a table");
+                    lvm.error();
+                    return 0;
+                }
+
+                lvm.get_global("shell");
+                lvm.get_field(3, "_native");
+
+                Shell self = (Shell)lvm.to_userdata(4);
+                var monitor_name = lvm.to_string(1);
+
+                MonitorBackend? found_monitor = null;
+                foreach (var monitor in self._backend->monitors) {
+                    if (monitor.name == monitor_name) {
+                        found_monitor = monitor;
+                        break;
+                    }
+                }
+
+                if (found_monitor == null) {
+                    lvm.push_literal("Invalid monitor name");
+                    lvm.error();
+                    return 0;
+                }
+
+                lvm.push_nil();
+                while (lvm.next(2) != 0) {
+                    var key = lvm.to_string(-1);
+
+                    if (key != "desktop" && key != "window-frame" && key != "notification") {
+                        lvm.push_literal("Invalid value: expected \"desktop\", \"notification\", or \"window-frame\".");
+                        lvm.error();
+                        return 0;
+                    }
+
+                    var full_key = monitor_name + "/" + key;
+
+                    switch (lvm.type(-2)) {
+                        case Lua.Type.NIL:
+                            switch (key) {
+                                case "desktop":
+                                    self._types.set(full_key, typeof (BaseDesktop));
+                                    break;
+                                case "notification":
+                                    self._types.set(full_key, typeof (BaseNotification));
+                                    break;
+                                case "window-frame":
+                                    self._types.set(full_key, typeof (BaseWindowFrame));
+                                    break;
+                            }
+                            break;
+                        case Lua.Type.TABLE:
+                            lvm.get_field(-2, "_native");
+                            self._types.set(full_key, (GLib.Type)lvm.to_userdata(lvm.get_top()));
+                            break;
+                        case Lua.Type.STRING:
+                            self._types.set(full_key, GLib.Type.from_name(lvm.to_string(-2)));
+                            break;
+                        default:
+                            lvm.push_literal("Invalid argument: expected a table, nil, or string");
+                            lvm.error();
+                            return 0;
+                    }
+                    lvm.pop(1);
+                }
+                return 0;
+            });
+            this._lvm.raw_set(-3);
+
             this._lvm.push_string("types");
             this._lvm.new_table();
 
@@ -110,8 +198,16 @@ namespace Genesis {
             assert(this._backend != null);
 
             foreach (var monitor in this._backend->monitors) {
+                this._types.set(monitor.name + "/desktop", typeof (BaseDesktop));
                 monitor.connection_changed.connect(() => {
-                    // TODO: create a desktop for this monitor
+                    if (monitor.connected) {
+                        var desktop_type = this._types.get(monitor.name + "/desktop");
+                        this._desktops.set(monitor.name, (BaseDesktop)GLib.Object.@new(desktop_type, "shell", this, "monitor", this, null));
+                    } else {
+                        if (this._desktops.contains(monitor.name)) {
+                            this._desktops.remove(monitor.name);
+                        }
+                    }
                 });
 
                 if (monitor.connected) monitor.connection_changed();
