@@ -176,7 +176,7 @@ namespace Genesis {
             });
             this._lvm.raw_set(-3);
 
-            this._lvm.push_string("types");
+            this._lvm.push_string("base_types");
             this._lvm.new_table();
 
             this._lvm.push_string("desktop");
@@ -193,16 +193,36 @@ namespace Genesis {
 
             this._lvm.raw_set(-3);
 
+            this._lvm.push_string("default_types");
+            this._lvm.new_table();
+
+            this._lvm.push_string("desktop");
+            this._lvm.push_string(typeof (Desktop).name());
+            this._lvm.raw_set(-3);
+#if 0
+            this._lvm.push_string("notification");
+            this._lvm.push_string(typeof (Notification).name());
+            this._lvm.raw_set(-3);
+
+            this._lvm.push_string("window_frame");
+            this._lvm.push_string(typeof (WindowFrame).name());
+            this._lvm.raw_set(-3);
+#endif
+
+            this._lvm.raw_set(-3);
+
             this._lvm.set_global("shell");
 
             assert(this._backend != null);
 
             foreach (var monitor in this._backend->monitors) {
-                this._types.set(monitor.name + "/desktop", typeof (BaseDesktop));
+                this._types.set(monitor.name + "/desktop", typeof (Desktop));
                 monitor.connection_changed.connect(() => {
                     if (monitor.connected) {
                         var desktop_type = this._types.get(monitor.name + "/desktop");
-                        this._desktops.set(monitor.name, (BaseDesktop)GLib.Object.@new(desktop_type, "shell", this, "monitor", this, null));
+                        BaseDesktop desktop = (BaseDesktop)GLib.Object.@new(desktop_type, "shell", this, "monitor-name", monitor.name, "application", this, null);
+                        desktop.show();
+                        this._desktops.set(monitor.name, desktop);
                     } else {
                         if (this._desktops.contains(monitor.name)) {
                             this._desktops.remove(monitor.name);
@@ -223,6 +243,14 @@ namespace Genesis {
         protected override void shutdown() {
             base.shutdown();
             delete this._backend;
+        }
+
+        [DBus(visible = false)]
+        public unowned MonitorBackend? get_monitor(string name) {
+            foreach (var monitor in this._backend->monitors) {
+                if (monitor.name == name) return monitor;
+            }
+            return null;
         }
     }
 

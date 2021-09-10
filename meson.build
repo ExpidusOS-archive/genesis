@@ -24,12 +24,7 @@ build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
 build_conf = configure_file(input: 'src/build.vala.in', output: 'build.vala',
 	configuration: conf_data)
 
-libgenesis_shell = static_library('genesis-shell-vala', [build_conf, 'src/shell/x11/backend.vala', 'src/shell/x11/monitor.vala',
-    'src/shell/backend.vala', 'src/shell/shell.vala'],
-    dependencies: [gobject, gtk, lua, xcb, meson.get_compiler('vala').find_library('posix')],
-    vala_header: 'genesis-shell.h')
-libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell)
-
-executable('genesis-shell', ['src/shell/x11/backend.c'],
-    dependencies: [gobject, gtk, lua, xcb, libgenesis_shell_dep, meson.get_compiler('c').find_library('m')],
+executable('genesis-shell', [build_conf, 'src/shell/x11/backend.vala', 'src/shell/x11/monitor.vala',
+    'src/shell/backend.vala', 'src/shell/desktop.vala', 'src/shell/shell.vala'],
+    dependencies: [gobject, gtk, lua, xcb, meson.get_compiler('c').find_library('m'), meson.get_compiler('vala').find_library('posix')],
     install: true)

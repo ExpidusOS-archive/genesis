@@ -28,9 +28,50 @@ namespace Genesis {
         public signal void monitors_changed(bool[] changed);
     }
 
-    public interface BaseDesktop : Gtk.Window {
-        public abstract Shell shell { get; construct; }
-        public abstract string monitor_name { get; construct; }
+    public class BaseDesktop : Gtk.ApplicationWindow {
+        private Shell _shell;
+        private string _monitor_name = null; 
+
+        public unowned MonitorBackend? monitor {
+            get {
+                return this.shell.get_monitor(this.monitor_name);
+            }
+        }
+
+        public Shell shell {
+            get {
+                return this._shell;
+            }
+            construct {
+                this._shell = value;
+            }
+        }
+
+        public string monitor_name {
+            get {
+                return this._monitor_name;
+            }
+            construct {
+                this._monitor_name = value;
+            }
+        }
+
+        construct {
+            this.set_resizable(false);
+            this.set_startup_id("genesis-desktop-%s".printf(this.monitor_name));
+            this.set_title("genesis-desktop-%s".printf(this.monitor_name));
+        }
+
+        public override void measure(Gtk.Orientation ort, int for_size, out int min, out int nat, out int min_baseline, out int nat_baseline) {
+            min_baseline = -1;
+            nat_baseline = -1;
+
+            if (ort == Gtk.Orientation.HORIZONTAL) {
+                min = nat = this.monitor.resolution.width;
+            } else {
+                min = nat = this.monitor.resolution.height;
+            }
+        }
     }
 
     public interface BaseNotification : Gtk.Window {}

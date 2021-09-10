@@ -86,6 +86,15 @@ namespace Genesis.X11 {
                         }
                     }
                     this.monitors_changed(monitor_states);
+                } else {
+                    switch (ev.response_type & ~0x80) {
+                        case Xcb.CREATE_NOTIFY:
+                            {
+                                var _ev = (Xcb.CreateNotifyEvent)ev;
+                                stdout.printf("%lu\n", _ev.window);
+                            }
+                            break;
+                    }
                 }
                 return true;
             });
