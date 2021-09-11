@@ -8,6 +8,7 @@ namespace Genesis.X11 {
 
         private GLib.HashTable<string, Monitor> _monitors;
         private GLib.HashTable<string, Xcb.Atom?> _atoms;
+        private GLib.List<Window*> _windows;
 
         public Xcb.Connection conn {
             get {
@@ -28,6 +29,12 @@ namespace Genesis.X11 {
             }
         }
 
+        public GLib.List<Genesis.WindowBackend> windows {
+            get {
+                return this._windows;
+            }
+        }
+
         public Backend(Genesis.Shell shell) throws Genesis.ShellError {
             Object();
 
@@ -42,10 +49,8 @@ namespace Genesis.X11 {
             assert(this._randr != null);
 
             var def_screen = this.get_default_screen();
-            uint32[] values = { Xcb.EventMask.BUTTON_PRESS | Xcb.EventMask.BUTTON_RELEASE | Xcb.EventMask.KEY_PRESS
-                | Xcb.EventMask.EXPOSURE | Xcb.EventMask.SUBSTRUCTURE_REDIRECT | Xcb.EventMask.SUBSTRUCTURE_NOTIFY };
+            uint32[] values = { Xcb.EventMask.SUBSTRUCTURE_REDIRECT | Xcb.EventMask.SUBSTRUCTURE_NOTIFY | Xcb.EventMask.STRUCTURE_NOTIFY };
             var cwa_cookie = this._conn.change_window_attributes_checked(def_screen.root, Xcb.CW.EVENT_MASK, values);
-            this._conn.flush();
             var error = this._conn.request_check(cwa_cookie);
             if (error != null) {
                 throw new Genesis.ShellError.BACKEND("A compositor is already running");
@@ -53,6 +58,7 @@ namespace Genesis.X11 {
 
             this._monitors = new GLib.HashTable<string, Monitor>(GLib.str_hash, GLib.str_equal);
             this._atoms = new GLib.HashTable<string, Xcb.Atom?>(GLib.str_hash, GLib.str_equal);
+            this._windows = new GLib.List<Window*>();
 
             var res_cookie = this._randr.get_screen_resources(def_screen.root);
 
@@ -87,18 +93,80 @@ namespace Genesis.X11 {
                     }
                     this.monitors_changed(monitor_states);
                 } else {
+                    stdout.printf("Event %d\n", ev.response_type);
                     switch (ev.response_type & ~0x80) {
                         case Xcb.CREATE_NOTIFY:
                             {
                                 var _ev = (Xcb.CreateNotifyEvent)ev;
-                                stdout.printf("%lu\n", _ev.window);
+                                this.add_window(_ev.window);
                             }
+                            break;
+                        case Xcb.CONFIGURE_REQUEST:
+                            {
+                                var _ev = (Xcb.ConfigureRequestEvent)ev;
+                                this.add_window(_ev.window);
+                            }
+                            break;
+                        case Xcb.CONFIGURE_NOTIFY:
+                            {
+                                var _ev = (Xcb.ConfigureNotifyEvent)ev;
+                                this.add_window(_ev.window);
+                            }
+                            break;
+                        case Xcb.MAP_REQUEST:
+                            {
+                                var _ev = (Xcb.MapRequestEvent)ev;
+                                var win = this.find_window(_ev.window);
+                                if (win == null) {
+                                    var cookie = this._conn.map_window_checked(_ev.window);
+                                    error = this._conn.request_check(cookie);
+                                    if (error != null) {
+                                        stderr.printf("Failed to map window %lu\n", _ev.window);
+                                    } else {
+                                        stdout.printf("Mapped window\n");
+                                    }
+                                } else {
+                                    win->map_request();
+                                }
+                            }
+                            break;
+                        case Xcb.UNMAP_NOTIFY:
+                            {
+                                var _ev = (Xcb.UnmapNotifyEvent)ev;
+                                var win = this.find_window(_ev.window);
+                                if (win != null) {
+                                    this._windows.remove(win);
+                                    delete win;
+                                }
+                            }
+                            break;
+                        default:
                             break;
                     }
                 }
+
+                this._conn.flush();
                 return true;
             });
             events.attach(main_ctx);
+        }
+
+        public Window* find_window(Xcb.Window wid) {
+            foreach (var win in this._windows) {
+                if (win->wid == wid) {
+                    return win;
+                }
+            }
+
+            return null;
+        }
+
+        public void add_window(Xcb.Window wid) {
+            if (this.find_window(wid) == null) {
+                Window* win = new Window(this, wid);
+                this._windows.append(win);
+                this.window_added(win);
+            }
         }
 
         public Xcb.Screen get_default_screen() {

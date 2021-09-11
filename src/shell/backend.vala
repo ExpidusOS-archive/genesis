@@ -24,8 +24,10 @@ namespace Genesis {
 
     public interface ShellBackend : GLib.Object {
         public abstract GLib.List<weak MonitorBackend> monitors { owned get; }
+        public abstract GLib.List<WindowBackend> windows { get; }
 
         public signal void monitors_changed(bool[] changed);
+        public signal void window_added(WindowBackend win);
     }
 
     public class BaseDesktop : Gtk.ApplicationWindow {
@@ -272,6 +274,47 @@ namespace Genesis {
 
                 lvm.get_field(1, "_native");
                 MonitorBackend self = (MonitorBackend)lvm.to_userdata(2);
+                lvm.push_string(self.to_string());
+                return 1;
+            });
+            lvm.raw_set(-3);
+        }
+    }
+
+    public abstract class WindowBackend : GLib.Object, GenericObject {
+        public abstract bool is_managed { get; }
+
+        public signal void map_request();
+
+        public abstract void map();
+        public abstract void raise();
+        public abstract void focus();
+
+        public abstract string to_string();
+
+        public void to_lua(Lua.LuaVM lvm) {
+            lvm.new_table();
+
+            lvm.push_string("_native");
+            lvm.push_lightuserdata(this);
+            lvm.raw_set(-3);
+
+            lvm.push_string("to_string");
+            lvm.push_cfunction((lvm) => {
+                if (lvm.get_top() != 1) {
+                    lvm.push_literal("Expecting exactly 1 argument");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(1) != Lua.Type.TABLE) {
+                    lvm.push_literal("Argument #1: invalid type, expecting table");
+                    lvm.error();
+                    return 0;
+                }
+
+                lvm.get_field(1, "_native");
+                WindowBackend self = (WindowBackend)lvm.to_userdata(2);
                 lvm.push_string(self.to_string());
                 return 1;
             });

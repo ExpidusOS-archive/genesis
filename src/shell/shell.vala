@@ -3,12 +3,18 @@ namespace Genesis {
     public class Shell : Gtk.Application {
         private ShellBackend* _backend = null;
         private Lua.LuaVM _lvm;
-        private GLib.MainLoop _loop;
         private GLib.HashTable<string, GLib.Type> _types;
         private GLib.HashTable<string, BaseDesktop?> _desktops;
         
         protected bool arg_version = false;
         protected string arg_backend = "x11";
+
+        [DBus(visible = false)]
+        public ShellBackend* backend {
+            get {
+                return this._backend;
+            }
+        }
 
         public Shell() {
             Object(application_id: "com.expidus.Genesis");
@@ -26,10 +32,6 @@ namespace Genesis {
                 return;
             }
 
-            var main_ctx = GLib.MainContext.@default();
-            assert(main_ctx.acquire());
-
-            this._loop = new GLib.MainLoop(main_ctx, false);
             this._types = new GLib.HashTable<string, GLib.Type>(GLib.str_hash, GLib.str_equal);
             this._desktops = new GLib.HashTable<string, BaseDesktop?>(GLib.str_hash, GLib.str_equal);
 
@@ -148,7 +150,7 @@ namespace Genesis {
                         case Lua.Type.NIL:
                             switch (key) {
                                 case "desktop":
-                                    self._types.set(full_key, typeof (BaseDesktop));
+                                    self._types.set(full_key, typeof (Desktop));
                                     break;
                                 case "notification":
                                     self._types.set(full_key, typeof (BaseNotification));
@@ -215,6 +217,15 @@ namespace Genesis {
 
             assert(this._backend != null);
 
+            this._backend->window_added.connect((win) => {
+                win.map_request.connect(() => {
+                    stdout.printf("Mapping window\n");
+                    win.map();
+                    win.raise();
+                    win.focus();
+                });
+            });
+
             foreach (var monitor in this._backend->monitors) {
                 this._types.set(monitor.name + "/desktop", typeof (Desktop));
                 monitor.connection_changed.connect(() => {
@@ -232,12 +243,6 @@ namespace Genesis {
 
                 if (monitor.connected) monitor.connection_changed();
             }
-
-            this._loop.run();
-        }
-
-        protected override void run_mainloop() {
-            this._loop.run();
         }
 
         protected override void shutdown() {
