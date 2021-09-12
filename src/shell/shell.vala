@@ -219,10 +219,14 @@ namespace Genesis {
 
             this._backend->window_added.connect((win) => {
                 win.map_request.connect(() => {
-                    stdout.printf("Mapping window\n");
                     win.map();
-                    win.raise();
                     win.focus();
+                    win.raise();
+                });
+                win.focused.connect((into) => {
+                    if (into) {
+                        win.raise();
+                    }
                 });
             });
 

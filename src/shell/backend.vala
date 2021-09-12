@@ -281,14 +281,33 @@ namespace Genesis {
         }
     }
 
+    public enum WindowConfigureRequestFlags {
+        X = (1 << 0),
+        Y = (1 << 1),
+        WIDTH = (1 << 2),
+        HEIGHT = (1 << 3)
+    }
+
+    public struct WindowConfigureRequest {
+        public WindowConfigureRequestFlags flags;
+        public uint32 x;
+        public uint32 y;
+        public uint32 width;
+        public uint32 height;
+    }
+
     public abstract class WindowBackend : GLib.Object, GenericObject {
         public abstract bool is_managed { get; }
 
+        public signal void focused(bool into);
         public signal void map_request();
+        public signal void configure_request(WindowConfigureRequest req);
+        public signal void destroy();
 
         public abstract void map();
         public abstract void raise();
         public abstract void focus();
+        public abstract void configure(uint32 x, uint32 y, uint32 width, uint32 height);
 
         public abstract string to_string();
 

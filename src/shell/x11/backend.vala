@@ -75,7 +75,7 @@ namespace Genesis.X11 {
             this._randr.select_input(def_screen.root, Xcb.RandR.NotifyMask.SCREEN_CHANGE);
 
             var main_ctx = GLib.MainContext.@default();
-            var events = new GLib.IOSource(new GLib.IOChannel.unix_new(this._conn.get_file_descriptor()), GLib.IOCondition.IN);
+            var events = new GLib.IOSource(new GLib.IOChannel.unix_new(this._conn.get_file_descriptor()), GLib.IOCondition.IN | GLib.IOCondition.PRI | GLib.IOCondition.OUT);
             events.set_callback(() => {
                 var ev = this._conn.poll_for_event();
                 if (ev == null) return true;
@@ -93,39 +93,43 @@ namespace Genesis.X11 {
                     }
                     this.monitors_changed(monitor_states);
                 } else {
-                    stdout.printf("Event %d\n", ev.response_type);
                     switch (ev.response_type & ~0x80) {
-                        case Xcb.CREATE_NOTIFY:
-                            {
-                                var _ev = (Xcb.CreateNotifyEvent)ev;
-                                this.add_window(_ev.window);
-                            }
-                            break;
                         case Xcb.CONFIGURE_REQUEST:
                             {
                                 var _ev = (Xcb.ConfigureRequestEvent)ev;
-                                this.add_window(_ev.window);
-                            }
-                            break;
-                        case Xcb.CONFIGURE_NOTIFY:
-                            {
-                                var _ev = (Xcb.ConfigureNotifyEvent)ev;
-                                this.add_window(_ev.window);
+                                var win = this.find_window(_ev.window);
+                                if (win != null) {
+                                    Genesis.WindowConfigureRequest req = { flags: 0, x: 0, y: 0, width: 0, height: 0 };
+
+                                    if ((_ev.value_mask & Xcb.ConfigWindow.X) != 0) {
+                                        req.x = _ev.x;
+                                        req.flags |= Genesis.WindowConfigureRequestFlags.X;
+                                    }
+
+                                    if ((_ev.value_mask & Xcb.ConfigWindow.Y) != 0) {
+                                        req.y = _ev.y;
+                                        req.flags |= Genesis.WindowConfigureRequestFlags.Y;
+                                    }
+
+                                    if ((_ev.value_mask & Xcb.ConfigWindow.WIDTH) != 0) {
+                                        req.width = _ev.x;
+                                        req.flags |= Genesis.WindowConfigureRequestFlags.WIDTH;
+                                    }
+
+                                    if ((_ev.value_mask & Xcb.ConfigWindow.HEIGHT) != 0) {
+                                        req.height = _ev.height;
+                                        req.flags |= Genesis.WindowConfigureRequestFlags.HEIGHT;
+                                    }
+
+                                    win->configure_request(req);
+                                }
                             }
                             break;
                         case Xcb.MAP_REQUEST:
                             {
                                 var _ev = (Xcb.MapRequestEvent)ev;
-                                var win = this.find_window(_ev.window);
-                                if (win == null) {
-                                    var cookie = this._conn.map_window_checked(_ev.window);
-                                    error = this._conn.request_check(cookie);
-                                    if (error != null) {
-                                        stderr.printf("Failed to map window %lu\n", _ev.window);
-                                    } else {
-                                        stdout.printf("Mapped window\n");
-                                    }
-                                } else {
+                                var win = this.add_window(_ev.window);
+                                if (win != null) {
                                     win->map_request();
                                 }
                             }
@@ -136,7 +140,18 @@ namespace Genesis.X11 {
                                 var win = this.find_window(_ev.window);
                                 if (win != null) {
                                     this._windows.remove(win);
+                                    win->destroy();
                                     delete win;
+                                }
+                            }
+                            break;
+                        case Xcb.FOCUS_IN:
+                        case Xcb.FOCUS_OUT:
+                            {
+                                unowned var _ev = (xcb_focus_in_event_t)ev;
+                                var win = this.find_window(_ev.window);
+                                if (win != null) {
+                                    win->focused((ev.response_type & ~0x80) == Xcb.FOCUS_IN);
                                 }
                             }
                             break;
@@ -144,8 +159,6 @@ namespace Genesis.X11 {
                             break;
                     }
                 }
-
-                this._conn.flush();
                 return true;
             });
             events.attach(main_ctx);
@@ -161,12 +174,17 @@ namespace Genesis.X11 {
             return null;
         }
 
-        public void add_window(Xcb.Window wid) {
+        public Window* add_window(Xcb.Window wid) {
             if (this.find_window(wid) == null) {
                 Window* win = new Window(this, wid);
+                win->destroy.connect(() => {
+                    this._windows.remove(win);
+                });
                 this._windows.append(win);
                 this.window_added(win);
+                return win;
             }
+            return null;
         }
 
         public Xcb.Screen get_default_screen() {
@@ -204,5 +222,16 @@ namespace Genesis.X11 {
         public uint16 height;
         public uint16 mwidth;
         public uint16 mheight;
+    }
+
+    [Compact]
+    [CCode(cname = "_xcb_focus_in_event_t")]
+    public class xcb_focus_in_event_t { 
+        public uint8 response_type;
+        public uint8 detail;
+        public uint8 sequence;
+        public Xcb.Window window;
+        public uint8 mode;
+        public uint8 pad0[3];
     }
 }
