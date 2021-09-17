@@ -40,7 +40,7 @@ namespace Genesis.X11 {
             Object();
 
             this._shell = shell;
-            this._gdisp = Gdk.Display.open(null) as Gdk.X11.Display;
+            this._gdisp = Gdk.Display.get_default() as Gdk.X11.Display;
             assert(this._gdisp != null);
             /*this._conn = new Xcb.Connection(null, out this._def_screen);*/
             this._conn = GetXCBConnection(this._gdisp.get_xdisplay());
@@ -49,13 +49,20 @@ namespace Genesis.X11 {
                 throw new Genesis.ShellError.BACKEND("Failed to connect");
             }
 
+            Xcb.GenericError? error = null;
+            var ext_cookie = this._conn.query_extension("RandR");
+            var randr_ext = this._conn.query_extension_reply(ext_cookie, out error);
+            if (error != null) {
+                throw new Genesis.ShellError.BACKEND("Failed to query extension \"RandR\"\n");
+            }
+
             this._randr = Xcb.RandR.get_connection(this._conn);
             assert(this._randr != null);
 
             var def_screen = this.get_default_screen();
             uint32[] values = { Xcb.EventMask.SUBSTRUCTURE_REDIRECT | Xcb.EventMask.SUBSTRUCTURE_NOTIFY | Xcb.EventMask.STRUCTURE_NOTIFY };
             var cwa_cookie = this._conn.change_window_attributes_checked(def_screen.root, Xcb.CW.EVENT_MASK, values);
-            var error = this._conn.request_check(cwa_cookie);
+            error = this._conn.request_check(cwa_cookie);
             if (error != null) {
                 throw new Genesis.ShellError.BACKEND("A compositor is already running");
             }
@@ -84,7 +91,7 @@ namespace Genesis.X11 {
                 var ev = this._conn.poll_for_event();
                 if (ev == null) return true;
 
-                if ((ev.response_type & Xcb.RandR.NotifyMask.SCREEN_CHANGE) != 0) {
+                if (ev.response_type == (randr_ext.first_event + Xcb.RandR.NotifyMask.SCREEN_CHANGE)) {
                     stdout.printf("Updating monitors\n");
                     bool[] monitor_states = {};
                     foreach (var monitor in this._monitors.get_values()) {
@@ -104,7 +111,7 @@ namespace Genesis.X11 {
                                 var _ev = (Xcb.ConfigureRequestEvent)ev;
                                 var win = this.find_window(_ev.window);
                                 if (win != null) {
-                                    stdout.printf("Configuring window %p\n", win);
+                                    stdout.printf("Configuring window %p (%lu)\n", win, _ev.window);
                                     Genesis.WindowConfigureRequest req = { flags: 0, x: 0, y: 0, width: 0, height: 0 };
 
                                     if ((_ev.value_mask & Xcb.ConfigWindow.X) != 0) {
@@ -138,7 +145,7 @@ namespace Genesis.X11 {
                                 var _ev = (Xcb.CreateNotifyEvent)ev;
                                 var win = this.add_window(_ev.window);
                                 if (win != null) {
-                                    stdout.printf("Received a create notify for window %p\n", win);
+                                    stdout.printf("Received a create notify for window %p (%lu)\n", win, _ev.window);
                                     win->map_request();
 
                                     Genesis.WindowConfigureRequest req = {
@@ -158,7 +165,7 @@ namespace Genesis.X11 {
                                 var _ev = (Xcb.MapRequestEvent)ev;
                                 var win = this.add_window(_ev.window);
                                 if (win != null) {
-                                    stdout.printf("Map request for window %p\n", win);
+                                    stdout.printf("Map request for window %p (%lu)\n", win, _ev.window);
                                     win->map_request();
                                 } else {
                                     stdout.printf("Failed to find window %lu for map request\n", _ev.window);
@@ -170,7 +177,7 @@ namespace Genesis.X11 {
                                 var _ev = (Xcb.DestroyNotifyEvent)ev;
                                 var win = this.find_window(_ev.window);
                                 if (win != null) {
-                                    stdout.printf("Destroy notify for window %p\n", win);
+                                    stdout.printf("Destroy notify for window %p (%lu)\n", win, _ev.window);
                                     this._windows.remove(win);
                                     win->destroy();
                                     delete win;
@@ -184,7 +191,7 @@ namespace Genesis.X11 {
                                 var _ev = (Xcb.UnmapNotifyEvent)ev;
                                 var win = this.find_window(_ev.window);
                                 if (win != null) {
-                                    stdout.printf("Unmap notify for window %p\n", win);
+                                    stdout.printf("Unmap notify for window %p (%lu)\n", win, _ev.window);
                                     this._windows.remove(win);
                                     win->destroy();
                                     delete win;
@@ -199,7 +206,7 @@ namespace Genesis.X11 {
                                 unowned var _ev = (xcb_focus_in_event_t)ev;
                                 var win = this.find_window(_ev.window);
                                 if (win != null) {
-                                    stdout.printf("Focus event for window %p\n", win);
+                                    stdout.printf("Focus event for window %p (%lu)\n", win, _ev.window);
                                     win->focused((ev.response_type & ~0x80) == Xcb.FOCUS_IN);
                                 } else {
                                     stdout.printf("Failed to find window %lu for focus\n", _ev.window);
