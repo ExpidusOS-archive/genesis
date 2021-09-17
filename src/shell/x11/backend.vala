@@ -1,6 +1,7 @@
 namespace Genesis.X11 {
     public class Backend : GLib.Object, Genesis.ShellBackend {
         private Genesis.Shell _shell;
+        private Gdk.X11.Display _gdisp;
 
         private Xcb.Connection _conn;
         private int _def_screen;
@@ -39,7 +40,10 @@ namespace Genesis.X11 {
             Object();
 
             this._shell = shell;
-            this._conn = new Xcb.Connection(null, out this._def_screen);
+            this._gdisp = Gdk.Display.open(null) as Gdk.X11.Display;
+            assert(this._gdisp != null);
+            /*this._conn = new Xcb.Connection(null, out this._def_screen);*/
+            this._conn = GetXCBConnection(this._gdisp.get_xdisplay());
             assert(this._conn != null);
             if (this._conn.has_error() > 0) {
                 throw new Genesis.ShellError.BACKEND("Failed to connect");
@@ -81,6 +85,7 @@ namespace Genesis.X11 {
                 if (ev == null) return true;
 
                 if ((ev.response_type & Xcb.RandR.NotifyMask.SCREEN_CHANGE) != 0) {
+                    stdout.printf("Updating monitors\n");
                     bool[] monitor_states = {};
                     foreach (var monitor in this._monitors.get_values()) {
                         if (monitor.previous_state != monitor.connected) {
@@ -99,6 +104,7 @@ namespace Genesis.X11 {
                                 var _ev = (Xcb.ConfigureRequestEvent)ev;
                                 var win = this.find_window(_ev.window);
                                 if (win != null) {
+                                    stdout.printf("Configuring window %p\n", win);
                                     Genesis.WindowConfigureRequest req = { flags: 0, x: 0, y: 0, width: 0, height: 0 };
 
                                     if ((_ev.value_mask & Xcb.ConfigWindow.X) != 0) {
@@ -122,6 +128,28 @@ namespace Genesis.X11 {
                                     }
 
                                     win->configure_request(req);
+                                } else {
+                                    stdout.printf("Failed to find window %lu for configuring\n", _ev.window);
+                                }
+                            }
+                            break;
+                        case Xcb.CREATE_NOTIFY:
+                            {
+                                var _ev = (Xcb.CreateNotifyEvent)ev;
+                                var win = this.add_window(_ev.window);
+                                if (win != null) {
+                                    stdout.printf("Received a create notify for window %p\n", win);
+                                    win->map_request();
+
+                                    Genesis.WindowConfigureRequest req = {
+                                        flags: Genesis.WindowConfigureRequestFlags.X | Genesis.WindowConfigureRequestFlags.Y
+                                            | Genesis.WindowConfigureRequestFlags.WIDTH | Genesis.WindowConfigureRequestFlags.HEIGHT,
+                                        x: _ev.x, y: _ev.y,
+                                        width: _ev.width, height: _ev.height
+                                    };
+                                    win->configure_request(req);
+                                } else {
+                                    stdout.printf("Failed to find window %lu for create notify\n", _ev.window);
                                 }
                             }
                             break;
@@ -130,7 +158,24 @@ namespace Genesis.X11 {
                                 var _ev = (Xcb.MapRequestEvent)ev;
                                 var win = this.add_window(_ev.window);
                                 if (win != null) {
+                                    stdout.printf("Map request for window %p\n", win);
                                     win->map_request();
+                                } else {
+                                    stdout.printf("Failed to find window %lu for map request\n", _ev.window);
+                                }
+                            }
+                            break;
+                        case Xcb.DESTROY_NOTIFY:
+                            {
+                                var _ev = (Xcb.DestroyNotifyEvent)ev;
+                                var win = this.find_window(_ev.window);
+                                if (win != null) {
+                                    stdout.printf("Destroy notify for window %p\n", win);
+                                    this._windows.remove(win);
+                                    win->destroy();
+                                    delete win;
+                                } else {
+                                    stdout.printf("Failed to find window %lu for destroy\n", _ev.window);
                                 }
                             }
                             break;
@@ -139,9 +184,12 @@ namespace Genesis.X11 {
                                 var _ev = (Xcb.UnmapNotifyEvent)ev;
                                 var win = this.find_window(_ev.window);
                                 if (win != null) {
+                                    stdout.printf("Unmap notify for window %p\n", win);
                                     this._windows.remove(win);
                                     win->destroy();
                                     delete win;
+                                } else {
+                                    stdout.printf("Failed to find window %lu for unmap\n", _ev.window);
                                 }
                             }
                             break;
@@ -151,7 +199,10 @@ namespace Genesis.X11 {
                                 unowned var _ev = (xcb_focus_in_event_t)ev;
                                 var win = this.find_window(_ev.window);
                                 if (win != null) {
+                                    stdout.printf("Focus event for window %p\n", win);
                                     win->focused((ev.response_type & ~0x80) == Xcb.FOCUS_IN);
+                                } else {
+                                    stdout.printf("Failed to find window %lu for focus\n", _ev.window);
                                 }
                             }
                             break;
@@ -162,6 +213,16 @@ namespace Genesis.X11 {
                 return true;
             });
             events.attach(main_ctx);
+
+            var tree_cookie = this._conn.query_tree(def_screen.root);
+            var tree = this._conn.query_tree_reply(tree_cookie, out error);
+            if (error != null) {
+                throw new Genesis.ShellError.BACKEND("Failed to query windows");
+            }
+
+            foreach (var win in tree.children) {
+                this.add_window(win);
+            }
         }
 
         public Window* find_window(Xcb.Window wid) {
@@ -234,4 +295,7 @@ namespace Genesis.X11 {
         public uint8 mode;
         public uint8 pad0[3];
     }
+
+    [CCode(cname = "XGetXCBConnection")]
+    public static extern Xcb.Connection GetXCBConnection(X.Display disp);
 }

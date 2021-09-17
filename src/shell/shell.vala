@@ -230,13 +230,17 @@ namespace Genesis {
                 });
             });
 
+            foreach (var win in this._backend->windows) {
+                win.map_request(); // TODO: if mapped
+            }
+
             foreach (var monitor in this._backend->monitors) {
                 this._types.set(monitor.name + "/desktop", typeof (Desktop));
                 monitor.connection_changed.connect(() => {
                     if (monitor.connected) {
                         var desktop_type = this._types.get(monitor.name + "/desktop");
                         BaseDesktop desktop = (BaseDesktop)GLib.Object.@new(desktop_type, "shell", this, "monitor-name", monitor.name, "application", this, null);
-                        desktop.show();
+                        desktop.show_all();
                         this._desktops.set(monitor.name, desktop);
                     } else {
                         if (this._desktops.contains(monitor.name)) {
@@ -271,6 +275,7 @@ namespace Genesis {
 
         GLib.Environment.set_application_name(GETTEXT_PACKAGE);
         GLib.Environment.set_prgname(GETTEXT_PACKAGE);
+        Gtk.init(ref args);
         return new Shell().run(args);
     }
 }

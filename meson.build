@@ -8,7 +8,7 @@ prefix = get_option('prefix')
 datadir = prefix / get_option('datadir')
 
 gobject = dependency('gobject-2.0')
-gtk = dependency('gtk4')
+gtk = [dependency('gtk+-3.0'), dependency('gdk-x11-3.0'), meson.get_compiler('c').find_library('X11-xcb')]
 lua = dependency('lua')
 xcb = [dependency('xcb'), dependency('xcb-randr')]
 
@@ -28,3 +28,7 @@ executable('genesis-shell', [build_conf, 'src/shell/x11/backend.vala', 'src/shel
     'src/shell/backend.vala', 'src/shell/desktop.vala', 'src/shell/shell.vala'],
     dependencies: [gobject, gtk, lua, xcb, meson.get_compiler('c').find_library('m'), meson.get_compiler('vala').find_library('posix')],
     install: true)
+
+install_subdir('data/wallpaper',
+	install_dir: join_paths(get_option('datadir'), 'backgrounds', 'expidus'),
+	strip_directory: true)

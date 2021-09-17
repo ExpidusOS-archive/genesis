@@ -59,21 +59,36 @@ namespace Genesis {
         }
 
         construct {
-            this.set_resizable(false);
             this.set_startup_id("genesis-desktop-%s".printf(this.monitor_name));
             this.set_title("genesis-desktop-%s".printf(this.monitor_name));
+
+            this.resizable = false;
+			this.type_hint = Gdk.WindowTypeHint.DESKTOP;
+			this.decorated = false;
+			this.skip_pager_hint = true;
+			this.skip_taskbar_hint = true;
         }
 
-        public override void measure(Gtk.Orientation ort, int for_size, out int min, out int nat, out int min_baseline, out int nat_baseline) {
-            min_baseline = -1;
-            nat_baseline = -1;
-
-            if (ort == Gtk.Orientation.HORIZONTAL) {
-                min = nat = this.monitor.resolution.width;
-            } else {
-                min = nat = this.monitor.resolution.height;
-            }
+        public override void show_all() {
+            base.show_all();
+            this.move(this.monitor.resolution.x, this.monitor.resolution.y);
         }
+
+        public override void get_preferred_width(out int min_width, out int nat_width) {
+			min_width = nat_width = this.monitor.resolution.width;
+		}
+
+		public override void get_preferred_width_for_height(int height, out int min_width, out int nat_width) {
+			this.get_preferred_width(out min_width, out nat_width);
+		}
+
+		public override void get_preferred_height(out int min_height, out int nat_height) {
+			min_height = nat_height = this.monitor.resolution.height;
+		}
+
+		public override void get_preferred_height_for_width(int width, out int min_height, out int nat_height) {
+			this.get_preferred_height(out min_height, out nat_height);
+		}
     }
 
     public interface BaseNotification : Gtk.Window {}
