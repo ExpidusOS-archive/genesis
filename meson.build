@@ -38,11 +38,15 @@ endforeach
 
 shared_library('genesis-component', ['src/libcomponent/component.vala'],
 	dependencies: [gobject, gtk],
-	install: true)
+	vala_gir: 'GenesisComponent-1.0.gir',
+	install: true,
+	install_dir: [true, true, true, true])
 
 shared_library('genesis-shell', [build_conf, 'src/libshell/component.vala', 'src/libshell/error.vala', 'src/libshell/misd.vala', 'src/libshell/shell.vala'],
 	dependencies: [gobject, gtk, lua],
-	install: true)
+	vala_gir: 'GenesisShell-1.0.gir',
+	install: true,
+	install_dir: [true, true, true, true])
 
 install_subdir('data/wallpaper',
 	install_dir: join_paths(get_option('datadir'), 'backgrounds', 'expidus'),
