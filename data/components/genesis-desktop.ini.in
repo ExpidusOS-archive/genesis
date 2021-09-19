@@ -1,0 +1,8 @@
+[Component]
+exec=@BINDIR@/genesis-desktop
+respawns=true
+
+[DBus]
+bus=session
+name=com.genesis.desktop
+obj_path=/com/genesis/Desktop

@@ -5,17 +5,18 @@ add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
 add_project_arguments(['--vapidir', vapi_dir / 'vala-extra-vapis'], language: 'vala')
 
 prefix = get_option('prefix')
+bindir = prefix / get_option('bindir')
 datadir = prefix / get_option('datadir')
 
 gobject = dependency('gobject-2.0')
-gtk = [dependency('gtk+-3.0'), dependency('gdk-x11-3.0'), meson.get_compiler('c').find_library('X11-xcb')]
+gtk = dependency('gtk+-3.0')
 lua = dependency('lua')
-xcb = [dependency('xcb'), dependency('xcb-randr')]
 
 subdir('po')
 
 conf_data = configuration_data()
 conf_data.set('PREFIX', prefix)
+conf_data.set('BINDIR', bindir)
 conf_data.set('DATADIR', datadir)
 conf_data.set('VERSION', meson.project_version())
 
@@ -24,10 +25,24 @@ build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
 build_conf = configure_file(input: 'src/build.vala.in', output: 'build.vala',
 	configuration: conf_data)
 
-executable('genesis-shell', [build_conf, 'src/shell/x11/backend.vala', 'src/shell/x11/monitor.vala', 'src/shell/x11/window.vala',
-    'src/shell/backend.vala', 'src/shell/desktop.vala', 'src/shell/shell.vala'],
-    dependencies: [gobject, gtk, lua, xcb, meson.get_compiler('c').find_library('m'), meson.get_compiler('vala').find_library('posix')],
-    install: true)
+components = [
+	'genesis-desktop'
+]
+
+foreach name : components
+	configure_file(input: 'data/components/' + name + '.ini.in', output: name + '.ini',
+		configuration: conf_data,
+		install: true,
+		install_dir: join_paths(datadir, 'genesis', 'components'))
+endforeach
+
+shared_library('genesis-component', ['src/libcomponent/component.vala'],
+	dependencies: [gobject, gtk],
+	install: true)
+
+shared_library('genesis-shell', [build_conf, 'src/libshell/component.vala', 'src/libshell/error.vala', 'src/libshell/misd.vala', 'src/libshell/shell.vala'],
+	dependencies: [gobject, gtk, lua],
+	install: true)
 
 install_subdir('data/wallpaper',
 	install_dir: join_paths(get_option('datadir'), 'backgrounds', 'expidus'),
