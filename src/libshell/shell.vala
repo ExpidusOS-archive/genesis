@@ -40,7 +40,12 @@ namespace Genesis {
             this._monitor_added = this._disp.monitor_added.connect(this.monitor_load);
 
             this._monitor_removed = this._disp.monitor_removed.connect((monitor) => {
+                var misd = this._misd.get(this._monitors.get(monitor.get_model()));
                 this._monitors.remove(monitor.get_model());
+
+                if (misd != null) {
+                    misd.destroy_monitor(this, monitor.get_model());
+                }
 
                 foreach (var comp in this._components) {
                     if (comp.dbus != null) {
@@ -61,6 +66,7 @@ namespace Genesis {
                 foreach (var mon in misd_monitors) {
                     if (mon == monitor.get_model()) {
                         this._monitors.set(monitor.get_model(), misd_name);
+                        misd.setup_monitor(this, monitor.get_model());
                         break;
                     }
                 }
