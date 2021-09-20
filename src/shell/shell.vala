@@ -10,7 +10,7 @@ public int main(string[] argv) {
     }
 
     Meta.Plugin.manager_set_plugin_type(typeof (Genesis.MetaPlugin));
-    Meta.set_wm_name("genesis-wm");
+    Meta.set_wm_name("Genesis Shell");
 
     Meta.init();
     Meta.register_with_session();

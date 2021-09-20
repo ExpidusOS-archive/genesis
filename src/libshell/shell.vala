@@ -81,7 +81,7 @@ namespace Genesis {
                 this.monitor_load(mon);
             }
 
-            if (this._components.length() == 0) this.dead();
+            //if (this._components.length() == 0) this.dead();
         }
 
         public Component? get_component(string id) {
