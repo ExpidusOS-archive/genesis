@@ -42,12 +42,20 @@ shared_library('genesis-component', ['src/libcomponent/component.vala'],
 	install: true,
 	install_dir: [true, true, true, true])
 
-shared_library('genesis-shell', [build_conf, 'src/libshell/component.vala', 'src/libshell/error.vala', 'src/libshell/misd.vala', 'src/libshell/shell.vala'],
+libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/component.vala', 'src/libshell/error.vala', 'src/libshell/misd.vala', 'src/libshell/shell.vala'],
 	dependencies: [gobject, gtk, lua],
 	vala_gir: 'GenesisShell-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
+libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell)
+
+executable('genesis-shell', ['src/shell/shell.vala'],
+	dependencies: [gobject, gtk, lua, libgenesis_shell_dep],
+	install: true)
 
 install_subdir('data/wallpaper',
 	install_dir: join_paths(get_option('datadir'), 'backgrounds', 'expidus'),
+	strip_directory: true)
+install_subdir('src/misd',
+	install_dir: join_paths(get_option('datadir'), 'genesis', 'misd'),
 	strip_directory: true)

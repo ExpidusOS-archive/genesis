@@ -23,6 +23,7 @@ namespace Genesis {
             this._lvm.raw_geti(Lua.PseudoIndex.REGISTRY, this._ref_get_monitors);
             shell.to_lua(this._lvm);
             if (this._lvm.pcall(1, 1, 0) != 0) {
+                stderr.printf("Failed to get monitors: %s\n", this._lvm.to_string(-1));
                 return {};
             }
 

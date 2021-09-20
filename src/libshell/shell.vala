@@ -118,6 +118,34 @@ namespace Genesis {
             lvm.push_lightuserdata(this);
             lvm.raw_set(-3);
 
+            lvm.push_string("get_monitors");
+            lvm.push_cfunction((lvm) => {
+                if (lvm.get_top() != 1) {
+                    lvm.push_literal("Invalid argument count");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(1) != Lua.Type.TABLE) {
+                    lvm.push_literal("Invalid argument #1: expected a table");
+                    lvm.error();
+                    return 0;
+                }
+
+                lvm.get_field(1, "_native");
+                var self = (Shell)lvm.to_userdata(2);
+
+                lvm.new_table();
+                var i = 1;
+                foreach (var monitor in self._monitors.get_keys()) {
+                    lvm.push_number(i++);
+                    lvm.push_string(monitor);
+                    lvm.set_table(3);
+                }
+                return 1;
+            });
+            lvm.raw_set(-3);
+
             lvm.push_string("get_component");
             lvm.push_cfunction((lvm) => {
                 if (lvm.get_top() != 2) {
@@ -231,7 +259,16 @@ namespace Genesis {
                 lvm.get_field(1, "_native");
                 var self = (Shell)lvm.to_userdata(6);
 
-                self.define_misd(lvm.to_string(2), new MISDLua(lvm, lvm.reference(3), lvm.reference(4), lvm.reference(5)));
+                lvm.push_value(3);
+                var get_monitors = lvm.reference(Lua.PseudoIndex.REGISTRY);
+
+                lvm.push_value(4);
+                var setup_monitor = lvm.reference(Lua.PseudoIndex.REGISTRY);
+
+                lvm.push_value(5);
+                var destroy_monitor = lvm.reference(Lua.PseudoIndex.REGISTRY);
+
+                self.define_misd(lvm.to_string(2), new MISDLua(lvm, get_monitors, setup_monitor, destroy_monitor));
                 return 0;
             });
             lvm.raw_set(-3);
