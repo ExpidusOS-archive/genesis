@@ -24,7 +24,7 @@ namespace Genesis {
             this._id = id;
 
             this._kf = new GLib.KeyFile();
-            this._kf.load_from_file(DATADIR + "/genesis/components/%s.ini".printf(id), GLib.KeyFileFlags.NONE);
+            this._kf.load_from_file(this._shell.components_dir + "/%s.ini".printf(id), GLib.KeyFileFlags.NONE);
 
             this._respawns = this._kf.has_key("Component", "respawns") && this._kf.get_boolean("Component", "respawns");
 
@@ -84,8 +84,14 @@ namespace Genesis {
         [DBus(name = "DefaultID")]
         public abstract string default_id { owned get; set; }
 
+        [DBus(name = "ApplyLayout")]
+        public abstract void apply_layout(string monitor, string? misd) throws GLib.Error;
+
+        [DBus(name = "DefineLayout")]
+        public abstract void define_layout(string misd, string layout) throws GLib.Error;
+
         [DBus(name = "LoadLayout")]
-        public abstract void load_layout(string layout) throws GLib.Error;
+        public abstract void load_layout(string monitor) throws GLib.Error;
  
         [DBus(name = "WidgetClick")]
         public signal void widget_simple_event(string path, string name);

@@ -22,10 +22,16 @@ namespace Genesis {
             this._lvm.set_top(0);
             this._lvm.raw_geti(Lua.PseudoIndex.REGISTRY, this._ref_get_monitors);
             shell.to_lua(this._lvm);
-            this._lvm.pcall(1, 1, 0);
+            if (this._lvm.pcall(1, 1, 0) != 0) {
+                return {};
+            }
 
             string[] monitors = {};
-            // TODO: iterate array
+            this._lvm.push_nil();
+            while (this._lvm.next(1) != 0) {
+                monitors += this._lvm.to_string(-1);
+                this._lvm.pop(1);
+            }
             return monitors;
         }
 

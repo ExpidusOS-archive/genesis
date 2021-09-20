@@ -1,11 +1,86 @@
 namespace Genesis {
     public class Shell {
+        private Gdk.Display _disp;
         private GLib.List<Component> _components;
         private GLib.HashTable<string, MISDBase?> _misd;
+        private GLib.HashTable<string, string?> _monitors;
+        private string _comp_dir;
+        private ulong _monitor_added;
+        private ulong _monitor_removed;
+
+        public string components_dir {
+            get {
+                return this._comp_dir;
+            }
+        }
 
         public Shell() {
+            this._comp_dir = DATADIR + "/genesis/components";
+            this.init();
+        }
+
+        public Shell.with_component_dir(string comp_dir) {
+            this._comp_dir = comp_dir;
+            this.init();
+        }
+
+        ~Shell() {
+            this._disp.disconnect(this._monitor_added);
+            this._disp.disconnect(this._monitor_removed);
+        }
+
+        private void init() {
+            this._disp = Gdk.Display.get_default();
+            assert(this._disp != null);
+
             this._components = new GLib.List<Component>();
             this._misd = new GLib.HashTable<string, MISDBase?>(GLib.str_hash, GLib.str_equal);
+            this._monitors = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
+
+            this._monitor_added = this._disp.monitor_added.connect(this.monitor_load);
+
+            this._monitor_removed = this._disp.monitor_removed.connect((monitor) => {
+                this._monitors.remove(monitor.get_model());
+
+                foreach (var comp in this._components) {
+                    if (comp.dbus != null) {
+                        try {
+                            comp.dbus.apply_layout(monitor.get_model(), null);
+                        } catch (GLib.Error e) {}
+                    }
+                }
+            });
+        }
+
+        private void monitor_load(Gdk.Monitor monitor) {
+            this._monitors.set(monitor.get_model(), null);
+
+            foreach (var misd_name in this._misd.get_keys()) {
+                var misd = this._misd.get(misd_name);
+                var misd_monitors = misd.get_monitors(this);
+                foreach (var mon in misd_monitors) {
+                    if (mon == monitor.get_model()) {
+                        this._monitors.set(monitor.get_model(), misd_name);
+                        break;
+                    }
+                }
+
+                if (this._monitors.get(monitor.get_model()) != null) break;
+            }
+
+            foreach (var comp in this._components) {
+                if (comp.dbus != null) {
+                    try {
+                        comp.dbus.apply_layout(monitor.get_model(), this._monitors.get(monitor.get_model()));
+                    } catch (GLib.Error e) {}
+                }
+            }
+        }
+
+        public void load() {
+            for (var i = 0; i < this._disp.get_n_monitors(); i++) {
+                this.monitor_load(this._disp.get_monitor(i));
+            }
         }
 
         public Component? get_component(string id) {
@@ -24,7 +99,7 @@ namespace Genesis {
             return comp;
         }
 
-        public void define_mis(string id, MISDBase misd) {
+        public void define_misd(string id, MISDBase misd) {
             if (!this._misd.contains(id)) {
                 this._misd.set(id, misd);
             }
@@ -106,6 +181,52 @@ namespace Genesis {
                     return 0;
                 }
                 return 1;
+            });
+            lvm.raw_set(-3);
+
+            lvm.push_string("define_misd");
+            lvm.push_cfunction((lvm) => {
+                if (lvm.get_top() != 5) {
+                    lvm.push_literal("Invalid argument count");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(1) != Lua.Type.TABLE) {
+                    lvm.push_literal("Invalid argument #1: expected a table");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(2) != Lua.Type.STRING) {
+                    lvm.push_literal("Invalid argument #2: expected a string");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(3) != Lua.Type.FUNCTION) {
+                    lvm.push_literal("Invalid argument #3: expected a function");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(4) != Lua.Type.FUNCTION) {
+                    lvm.push_literal("Invalid argument #4: expected a function");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(5) != Lua.Type.FUNCTION) {
+                    lvm.push_literal("Invalid argument #5: expected a function");
+                    lvm.error();
+                    return 0;
+                }
+
+                lvm.get_field(1, "_native");
+                var self = (Shell)lvm.to_userdata(6);
+
+                self.define_misd(lvm.to_string(2), new MISDLua(lvm, lvm.reference(3), lvm.reference(4), lvm.reference(5)));
+                return 0;
             });
             lvm.raw_set(-3);
         }

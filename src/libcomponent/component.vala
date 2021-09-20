@@ -6,8 +6,10 @@ namespace Genesis {
 
     [DBus(name = "com.genesis.Component")]
     public class Component : GLib.Object {
-        private Gtk.Builder? _builder;
         private string? _default_id = null;
+        private GLib.HashTable<string, string> _layouts = new GLib.HashTable<string, string>(GLib.str_hash, GLib.str_equal);
+        private GLib.HashTable<string, Gtk.Builder> _builders = new GLib.HashTable<string, Gtk.Builder>(GLib.str_hash, GLib.str_equal);
+        private GLib.HashTable<string, string?> _monitors;
 
         [DBus(name = "DefaultID")]
         public string default_id {
@@ -20,15 +22,17 @@ namespace Genesis {
         }
 
         [DBus(visible = false)]
-        public unowned Gtk.Widget? default_widget {
-            get {
-                if (this._default_id == null) return null;
-                if (this._builder == null) return null;
-                var path = this._default_id.split("/");
-                var root = path[0];
-                path = path[1:path.length];
-                return this.tree(this._builder.get_object(root) as Gtk.Widget, path);
-            }
+        public unowned Gtk.Widget? get_default_widget(string monitor) {
+            if (this._default_id == null) return null;
+
+            var builder = this._builders.get(monitor);
+            if (builder == null) return null;
+
+            var path = this._default_id.split("/");
+            var root = path[0];
+            path = path[1:path.length];
+
+            return this.tree(builder.get_object(root) as Gtk.Widget, path);
         }
 
         private unowned Gtk.Widget? tree(Gtk.Widget parent, string[] path) {
@@ -47,10 +51,30 @@ namespace Genesis {
             return null;
         }
 
+        [DBus(name = "ApplyLayout")]
+        public void apply_layout(string monitor, string? misd) throws GLib.Error {
+            if (misd == null) {
+                this._monitors.remove(monitor);
+            } else {
+                this._monitors.set(monitor, misd);
+            }
+        }
+
+        [DBus(name = "DefineLayout")]
+        public void define_layout(string misd, string layout) throws GLib.Error {
+            this._layouts.set(misd, layout);
+        }
+
         [DBus(name = "LoadLayout")]
-        public void load_layout(string layout) throws GLib.Error {
-            this._builder = new Gtk.Builder();
-            this._builder.connect_signals_full((builder, obj, sig_name, handler_name, conn_obj, flags) => {
+        public void load_layout(string monitor) throws GLib.Error {
+            var misd = this._monitors.get(monitor);
+            if (misd == null) return;
+
+            var layout = this._layouts.get(misd);
+            if (layout == null) return;
+
+            var builder = new Gtk.Builder();
+            builder.connect_signals_full((builder, obj, sig_name, handler_name, conn_obj, flags) => {
                 var widget = obj as Gtk.Widget;
                 if (widget != null) {
                     ComponentEvent ev = {
@@ -65,11 +89,18 @@ namespace Genesis {
                     }
                 }
             });
-            this._builder.add_from_string(layout, layout.length);
+            builder.add_from_string(layout, layout.length);
+
+            this._builders.set(monitor, builder);
+
+            this.layout_changed(monitor);
         }
 
         [DBus(name = "WidgetClick")]
         public signal void widget_simple_event(string path, string name);
+
+        [DBus(visible = false)]
+        public signal void layout_changed(string monitor);
     }
 
     private void handler_widget_simple_event(Gtk.Widget widget, ComponentEvent* ev) {
