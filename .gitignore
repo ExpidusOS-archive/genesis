@@ -15,5 +15,5 @@ genesis-shell
 build.h
 build.vala
 *.vapi
-!vapi
+!vapi/*.vapi
 *.h

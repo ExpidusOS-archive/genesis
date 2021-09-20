@@ -1,0 +1,94 @@
+namespace Genesis {
+    public class MetaPlugin : Meta.Plugin {
+        private Shell _shell;
+        private Lua.LuaVM _lvm;
+        private Meta.PluginInfo _plugin_info;
+        private Meta.MonitorManager _monitor_mngr;
+
+        construct {
+            this._plugin_info = Meta.PluginInfo() {
+                name = "Genesis Shell",
+                version = Genesis.VERSION,
+                author = "Midstall Software",
+                license = "GPL-3.0",
+                description = "The next generation computing environment"
+            };
+
+            try {
+                this._shell = new Shell();
+
+                this._shell.dead.connect(() => {
+                    Meta.exit(Meta.ExitCode.SUCCESS);
+                });
+            } catch (GLib.Error e) {
+                stderr.printf("%s (%d): %s\n", e.domain.to_string(), e.code, e.message);
+                Meta.exit(Meta.ExitCode.ERROR);
+            }
+
+            this._lvm = new Lua.LuaVM.with_alloc_func((ptr, osize, nsize) => {
+                if (nsize == 0) {
+                    GLib.free(ptr);
+                    return null;
+                }
+
+                return GLib.realloc(ptr, nsize);
+            });
+
+            this._lvm.open_libs();
+
+            this._shell.to_lua(this._lvm);
+            this._lvm.set_global("genesis");
+        }
+
+        public override unowned Meta.PluginInfo? plugin_info() {
+            return this._plugin_info;
+        }
+
+        public override void start() {
+            try {
+                var dir = GLib.Dir.open(Genesis.DATADIR + "/genesis/misd");
+                string? name;
+
+                while ((name = dir.read_name()) != null) {
+                    var path = Genesis.DATADIR + "/genesis/misd/%s".printf(name);
+                    if (!GLib.FileUtils.test(path, GLib.FileTest.IS_REGULAR)) continue;
+
+                    if (this._lvm.do_file(path)) {
+                        stderr.printf("genesis-shell: failed to load \"%s\": %s\n", path, this._lvm.to_string(-1));
+                    }
+                }
+            } catch (GLib.Error e) {
+                stderr.printf("%s (%d): %s\n", e.domain.to_string(), e.code, e.message);
+                Meta.exit(Meta.ExitCode.ERROR);
+            }
+
+            this._monitor_mngr = Meta.MonitorManager.@get();
+
+            this._monitor_mngr.monitors_changed.connect(() => {
+                var n_monitors = this.get_display().get_n_monitors();
+
+                string[] monitors = {};
+                for (var i = 0; i < n_monitors; i++) monitors += i.to_string();
+
+                foreach (var m in this._shell.monitors) {
+                    if (!(m in monitors)) {
+                        this._shell.monitor_load(m);
+                    }
+                }
+                
+                foreach (var m in monitors) {
+                    if (!(m in this._shell.monitors)) {
+                        this._shell.monitor_unload(m);
+                    }
+                }
+            });
+
+            var n_monitors = this.get_display().get_n_monitors();
+
+            string[] monitors = {};
+            for (var i = 0; i < n_monitors; i++) monitors += i.to_string();
+
+            this._shell.load(monitors);
+        }
+    }
+}

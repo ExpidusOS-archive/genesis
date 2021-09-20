@@ -1,12 +1,9 @@
 namespace Genesis {
     public class Shell {
-        private Gdk.Display _disp;
         private GLib.List<Component> _components;
         private GLib.HashTable<string, MISDBase?> _misd;
         private GLib.HashTable<string, string?> _monitors;
         private string _comp_dir;
-        private ulong _monitor_added;
-        private ulong _monitor_removed;
 
         public string components_dir {
             get {
@@ -14,78 +11,74 @@ namespace Genesis {
             }
         }
 
-        public Shell() {
+        public string[] monitors {
+            owned get {
+                return this._monitors.get_keys_as_array();
+            }
+        }
+
+        public Shell() throws GLib.Error {
             this._comp_dir = DATADIR + "/genesis/components";
             this.init();
         }
 
-        public Shell.with_component_dir(string comp_dir) {
+        public Shell.with_component_dir(string comp_dir) throws GLib.Error {
             this._comp_dir = comp_dir;
             this.init();
         }
 
-        ~Shell() {
-            this._disp.disconnect(this._monitor_added);
-            this._disp.disconnect(this._monitor_removed);
-        }
-
-        private void init() {
-            this._disp = Gdk.Display.get_default();
-            assert(this._disp != null);
-
+        private void init() throws GLib.Error {
             this._components = new GLib.List<Component>();
             this._misd = new GLib.HashTable<string, MISDBase?>(GLib.str_hash, GLib.str_equal);
             this._monitors = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
-
-            this._monitor_added = this._disp.monitor_added.connect(this.monitor_load);
-
-            this._monitor_removed = this._disp.monitor_removed.connect((monitor) => {
-                var misd = this._misd.get(this._monitors.get(monitor.get_model()));
-                this._monitors.remove(monitor.get_model());
-
-                if (misd != null) {
-                    misd.destroy_monitor(this, monitor.get_model());
-                }
-
-                foreach (var comp in this._components) {
-                    if (comp.dbus != null) {
-                        try {
-                            comp.dbus.apply_layout(monitor.get_model(), null);
-                        } catch (GLib.Error e) {}
-                    }
-                }
-            });
         }
 
-        private void monitor_load(Gdk.Monitor monitor) {
-            this._monitors.set(monitor.get_model(), null);
+        public void monitor_load(string monitor) {
+            this._monitors.set(monitor, null);
 
             foreach (var misd_name in this._misd.get_keys()) {
                 var misd = this._misd.get(misd_name);
                 var misd_monitors = misd.get_monitors(this);
                 foreach (var mon in misd_monitors) {
-                    if (mon == monitor.get_model()) {
-                        this._monitors.set(monitor.get_model(), misd_name);
-                        misd.setup_monitor(this, monitor.get_model());
+                    if (mon == monitor) {
+                        this._monitors.set(monitor, misd_name);
+                        misd.setup_monitor(this, monitor);
                         break;
                     }
                 }
 
-                if (this._monitors.get(monitor.get_model()) != null) break;
+                if (this._monitors.get(monitor) != null) break;
             }
 
             foreach (var comp in this._components) {
                 if (comp.dbus != null) {
                     try {
-                        comp.dbus.apply_layout(monitor.get_model(), this._monitors.get(monitor.get_model()));
+                        comp.dbus.apply_layout(monitor, this._monitors.get(monitor));
                     } catch (GLib.Error e) {}
                 }
             }
         }
 
-        public void load() {
-            for (var i = 0; i < this._disp.get_n_monitors(); i++) {
-                this.monitor_load(this._disp.get_monitor(i));
+        public void monitor_unload(string monitor) {
+            var misd = this._misd.get(this._monitors.get(monitor));
+            this._monitors.remove(monitor);
+
+            if (misd != null) {
+                misd.destroy_monitor(this, monitor);
+            }
+
+            foreach (var comp in this._components) {
+                if (comp.dbus != null) {
+                    try {
+                        comp.dbus.apply_layout(monitor, null);
+                    } catch (GLib.Error e) {}
+                }
+            }
+        }
+
+        public void load(string[] monitors) {
+            foreach (var mon in monitors) {
+                this.monitor_load(mon);
             }
 
             if (this._components.length() == 0) this.dead();

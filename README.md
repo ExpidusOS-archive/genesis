@@ -5,7 +5,7 @@ Gensis, formerly known as ExpidusOS Shell, is a next-gen desktop environment for
 ## Dependencies
 * `valac` (build)
 * meson (build)
-* xcb
-* xcb-randr
-* gtk4
+* Mutter 8
+* gtk3
+* lua
 * lgi (*optional*)
