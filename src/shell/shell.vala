@@ -13,6 +13,11 @@ public int main(string[] argv) {
     var shell = new Genesis.Shell();
     var main_loop = new GLib.MainLoop();
 
+    shell.dead.connect(() => {
+        main_loop.quit();
+        GLib.Process.exit(0);
+    });
+
     lvm.open_libs();
     shell.to_lua(lvm);
     lvm.set_global("genesis");

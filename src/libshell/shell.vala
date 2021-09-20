@@ -87,6 +87,8 @@ namespace Genesis {
             for (var i = 0; i < this._disp.get_n_monitors(); i++) {
                 this.monitor_load(this._disp.get_monitor(i));
             }
+
+            if (this._components.length() == 0) this.dead();
         }
 
         public Component? get_component(string id) {
@@ -100,6 +102,10 @@ namespace Genesis {
             var comp = this.get_component(id);
             if (comp == null) {
                 comp = new Component(this, id);
+                comp.killed.connect(() => {
+                    this._components.remove(comp);
+                    if (this._components.length() == 0) this.dead();
+                });
                 this._components.append(comp);
             }
             return comp;
@@ -273,5 +279,7 @@ namespace Genesis {
             });
             lvm.raw_set(-3);
         }
+        
+        public signal void dead();
     }
 }
