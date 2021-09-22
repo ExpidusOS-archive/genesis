@@ -4,5 +4,5 @@ respawns=true
 
 [DBus]
 bus=session
-name=com.genesis.desktop
+name=com.expidus.GenesisDesktop
 obj_path=/com/genesis/Desktop

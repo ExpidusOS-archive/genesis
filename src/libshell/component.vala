@@ -35,6 +35,22 @@ namespace Genesis {
             GLib.Process.spawn_async(null, this._kf.get_string_list("Component", "exec"), null,
                 GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL,
                 null, out this._pid);
+
+            GLib.ChildWatch.add(this._pid, (pid, stat) => {
+                GLib.Process.close_pid(pid);
+                stdout.printf("AAA\n");
+
+                if (this._respawns) {
+                    try {
+                        this.spawn();
+                    } catch (GLib.Error e) {
+                        stderr.printf("Component failure (%s): %s (%d): %s\n", this.id, e.domain.to_string(), e.code, e.message);
+                        this.killed();
+                    }
+                } else {
+                    this.killed();
+                }
+            });
             
             if (this._kf.has_group("DBus")) {
                 var bus_str = this._kf.get_string("DBus", "bus");
@@ -52,20 +68,6 @@ namespace Genesis {
 
                 this._dbus = GLib.Bus.get_proxy_sync(bus_type, this._kf.get_string("DBus", "name"), this._kf.get_string("DBus", "obj_path"));
             }
-
-            GLib.ChildWatch.add(this._pid, (pid, stat) => {
-                GLib.Process.close_pid(pid);
-
-                if (this._respawns) {
-                    try {
-                        this.spawn();
-                    } catch (GLib.Error e) {
-                        this.killed();
-                    }
-                } else {
-                    this.killed();
-                }
-            });
         }
 
         public void to_lua(Lua.LuaVM lvm) {
@@ -120,7 +122,7 @@ namespace Genesis {
         public signal void killed();
     }
 
-    [DBus(name = "com.genesis.Component")]
+    [DBus(name = "com.expidus.GenesisComponent")]
     public interface ComponentDBus : GLib.Object {
         [DBus(name = "DefaultID")]
         public abstract string default_id { owned get; set; }
@@ -134,7 +136,7 @@ namespace Genesis {
         [DBus(name = "LoadLayout")]
         public abstract void load_layout(string monitor) throws GLib.Error;
  
-        [DBus(name = "WidgetClick")]
+        [DBus(name = "WidgetSimpleEvent")]
         public signal void widget_simple_event(string path, string name);
     }
 }

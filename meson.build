@@ -27,7 +27,7 @@ build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
 build_conf = configure_file(input: 'src/build.vala.in', output: 'build.vala',
 	configuration: conf_data)
 
-libgenesis_component = shared_library('genesis-component', ['src/libcomponent/component.vala'],
+libgenesis_component = shared_library('genesis-component', ['src/libcomponent/component.vala', build_conf],
 	dependencies: [gobject, gtk],
 	vala_gir: 'GenesisComponent-1.0.gir',
 	install: true,
@@ -42,6 +42,7 @@ libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/co
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell)
 
 components = {
+	'genesis-desktop': [['src/components/desktop/desktop.vala', 'src/components/desktop/window.vala'], [libgenesis_component_dep, gtk]]
 }
 
 executable('genesis-shell', ['src/shell/shell.vala', 'src/shell/wm.vala'],

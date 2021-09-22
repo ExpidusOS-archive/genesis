@@ -81,7 +81,7 @@ namespace Genesis {
                 this.monitor_load(mon);
             }
 
-            //if (this._components.length() == 0) this.dead();
+            if (this._components.length() == 0) this.dead();
         }
 
         public Component? get_component(string id) {
@@ -96,6 +96,7 @@ namespace Genesis {
             if (comp == null) {
                 comp = new Component(this, id);
                 comp.killed.connect(() => {
+                    stdout.printf("Component is killed\n");
                     this._components.remove(comp);
                     if (this._components.length() == 0) this.dead();
                 });

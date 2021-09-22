@@ -4,9 +4,9 @@ namespace Genesis {
         public string name;
     }
 
-    [DBus(name = "com.genesis.Component")]
+    [DBus(name = "com.expidus.GenesisComponent")]
     public class Component : GLib.Object {
-        private string? _default_id = null;
+        private string _default_id = "";
         private GLib.HashTable<string, string> _layouts = new GLib.HashTable<string, string>(GLib.str_hash, GLib.str_equal);
         private GLib.HashTable<string, Gtk.Builder> _builders = new GLib.HashTable<string, Gtk.Builder>(GLib.str_hash, GLib.str_equal);
         private GLib.HashTable<string, string?> _monitors;
@@ -55,8 +55,10 @@ namespace Genesis {
         public void apply_layout(string monitor, string? misd) throws GLib.Error {
             if (misd == null) {
                 this._monitors.remove(monitor);
+                this.monitor_changed(monitor, false);
             } else {
                 this._monitors.set(monitor, misd);
+                this.monitor_changed(monitor, true);
             }
         }
 
@@ -96,11 +98,14 @@ namespace Genesis {
             this.layout_changed(monitor);
         }
 
-        [DBus(name = "WidgetClick")]
+        [DBus(name = "WidgetSimpleEvent")]
         public signal void widget_simple_event(string path, string name);
 
         [DBus(visible = false)]
         public signal void layout_changed(string monitor);
+
+        [DBus(visible = false)]
+        public signal void monitor_changed(string monitor, bool added);
     }
 
     private void handler_widget_simple_event(Gtk.Widget widget, ComponentEvent* ev) {
