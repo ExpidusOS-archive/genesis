@@ -1,3 +1,3 @@
-[D-DBUS Service]
+[D-BUS Service]
 Name=com.expidus.GenesisDesktop
 Exec=@BINDIR@/genesis-desktop

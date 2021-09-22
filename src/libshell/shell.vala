@@ -70,7 +70,7 @@ namespace Genesis {
             foreach (var comp in this._components) {
                 if (comp.dbus != null) {
                     try {
-                        comp.dbus.apply_layout(monitor, null);
+                        comp.dbus.apply_layout(monitor, "");
                     } catch (GLib.Error e) {}
                 }
             }
@@ -100,7 +100,10 @@ namespace Genesis {
                     if (this._components.length() == 0) this.dead();
                 });
                 foreach (var key in this._monitors.get_keys()) {
-                    if (comp.dbus != null) comp.dbus.apply_layout(key, this._monitors.get(key));
+                    if (comp.dbus != null) {
+                        var val = this._monitors.get(key);
+                        comp.dbus.apply_layout(key, val == null ? "" : val);
+                    }
                 }
                 this._components.append(comp);
             }

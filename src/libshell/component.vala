@@ -46,7 +46,7 @@ namespace Genesis {
                         throw new ComponentError.CONFIGURATION_ERROR("Invalid DBus bus type \"%s\"", bus_str);
                 }
 
-                this._dbus = GLib.Bus.get_proxy_sync(bus_type, this._kf.get_string("DBus", "name"), this._kf.get_string("DBus", "obj_path"));
+                this._dbus = GLib.Bus.get_proxy_sync<ComponentDBus>(bus_type, this._kf.get_string("DBus", "name"), this._kf.get_string("DBus", "obj_path"));
             } else {
                 GLib.Process.spawn_async(null, this._kf.get_string_list("Component", "exec"), null,
                     GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL,
@@ -127,7 +127,7 @@ namespace Genesis {
         public abstract string default_id { owned get; set; }
 
         [DBus(name = "ApplyLayout")]
-        public abstract void apply_layout(string monitor, string? misd) throws GLib.Error;
+        public abstract void apply_layout(string monitor, string misd) throws GLib.Error;
 
         [DBus(name = "DefineLayout")]
         public abstract void define_layout(string misd, string layout) throws GLib.Error;

@@ -9,7 +9,7 @@ namespace Genesis {
         private string _default_id = "";
         private GLib.HashTable<string, string> _layouts = new GLib.HashTable<string, string>(GLib.str_hash, GLib.str_equal);
         private GLib.HashTable<string, Gtk.Builder> _builders = new GLib.HashTable<string, Gtk.Builder>(GLib.str_hash, GLib.str_equal);
-        private GLib.HashTable<string, string?> _monitors;
+        private GLib.HashTable<string, string?> _monitors = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
 
         [DBus(name = "DefaultID")]
         public string default_id {
@@ -52,8 +52,8 @@ namespace Genesis {
         }
 
         [DBus(name = "ApplyLayout")]
-        public void apply_layout(string monitor, string? misd) throws GLib.Error {
-            if (misd == null) {
+        public void apply_layout(string monitor, string misd) throws GLib.Error {
+            if (misd.length == 0) {
                 this._monitors.remove(monitor);
                 this.monitor_changed(monitor, false);
             } else {

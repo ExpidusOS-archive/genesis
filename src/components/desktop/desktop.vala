@@ -18,6 +18,13 @@ namespace Genesis {
             this._windows = new GLib.List<DesktopWindow*>();
         }
 
+        private DesktopWindow* find(string name) {
+            foreach (var win in this._windows) {
+                if (win->monitor_name == name) return win;
+            }
+            return null;
+        }
+
         public override bool dbus_register(DBusConnection conn, string obj_path) throws GLib.Error {
             if (!base.dbus_register(conn, obj_path)) return false;
 
@@ -38,19 +45,17 @@ namespace Genesis {
 
             this._comp.monitor_changed.connect((monitor, added) => {
                 if (added) {
-                    this._windows.append(new DesktopWindow(this, monitor));
+                    if (this.find(monitor) == null) this._windows.append(new DesktopWindow(this, monitor));
                 } else {
-                    foreach (var win in this._windows) {
-                        if (win->monitor_name == monitor) {
-                            this._windows.remove(win);
-                            delete win;
-                            break;
-                        }
+                    var win = this.find(monitor);
+                    if (win != null) {
+                        this._windows.remove(win);
+                        delete win;
                     }
                 }
             });
 
-            while (true);
+            new GLib.MainLoop().run();
         }
     }
 

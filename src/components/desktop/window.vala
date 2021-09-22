@@ -19,6 +19,11 @@ namespace Genesis {
                     unowned var mon = disp.get_monitor(i);
                     if (mon.get_model() == this.monitor_name) return mon;
                 }
+
+                int index = 0;
+                if (int.try_parse(this.monitor_name, out index)) {
+                    return disp.get_monitor(index);
+                }
                 return null;
             }
         }
