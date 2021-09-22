@@ -96,10 +96,12 @@ namespace Genesis {
             if (comp == null) {
                 comp = new Component(this, id);
                 comp.killed.connect(() => {
-                    stdout.printf("Component is killed\n");
                     this._components.remove(comp);
                     if (this._components.length() == 0) this.dead();
                 });
+                foreach (var key in this._monitors.get_keys()) {
+                    if (comp.dbus != null) comp.dbus.apply_layout(key, this._monitors.get(key));
+                }
                 this._components.append(comp);
             }
             return comp;

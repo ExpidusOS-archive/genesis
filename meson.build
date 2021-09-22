@@ -42,7 +42,7 @@ libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/co
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell)
 
 components = {
-	'genesis-desktop': [['src/components/desktop/desktop.vala', 'src/components/desktop/window.vala'], [libgenesis_component_dep, gtk]]
+	'genesis-desktop': [['src/components/desktop/desktop.vala', 'src/components/desktop/window.vala'], [libgenesis_component_dep, gtk], true, 'com.expidus.GenesisDesktop']
 }
 
 executable('genesis-shell', ['src/shell/shell.vala', 'src/shell/wm.vala'],
@@ -54,6 +54,8 @@ executable('genesis-shell', ['src/shell/shell.vala', 'src/shell/wm.vala'],
 foreach name, c : components
 	sources = c[0]
 	deps = c[1]
+	has_dbus = c[2]
+
 	configure_file(input: 'data/components/' + name + '.ini.in', output: name + '.ini',
 		configuration: conf_data,
 		install: true,
@@ -61,7 +63,14 @@ foreach name, c : components
 
 	executable(name, sources,
 		dependencies: deps,
-		install: true)	
+		install: true)
+	
+	if (has_dbus)
+		configure_file(input: 'data/dbus/' + c[3] + '.service.in', output: c[3] + '.service',
+			configuration: conf_data,
+			install: true,
+			install_dir: join_paths(datadir, 'dbus-1', 'services'))
+	endif
 endforeach
 
 install_subdir('data/wallpaper',

@@ -31,27 +31,7 @@ namespace Genesis {
             this.spawn();
         }
 
-        private void spawn() throws GLib.KeyFileError, GLib.SpawnError, GLib.IOError, ComponentError {
-            GLib.Process.spawn_async(null, this._kf.get_string_list("Component", "exec"), null,
-                GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL,
-                null, out this._pid);
-
-            GLib.ChildWatch.add(this._pid, (pid, stat) => {
-                GLib.Process.close_pid(pid);
-                stdout.printf("AAA\n");
-
-                if (this._respawns) {
-                    try {
-                        this.spawn();
-                    } catch (GLib.Error e) {
-                        stderr.printf("Component failure (%s): %s (%d): %s\n", this.id, e.domain.to_string(), e.code, e.message);
-                        this.killed();
-                    }
-                } else {
-                    this.killed();
-                }
-            });
-            
+        private void spawn() throws GLib.KeyFileError, GLib.SpawnError, GLib.IOError, ComponentError { 
             if (this._kf.has_group("DBus")) {
                 var bus_str = this._kf.get_string("DBus", "bus");
                 GLib.BusType bus_type;
@@ -67,6 +47,25 @@ namespace Genesis {
                 }
 
                 this._dbus = GLib.Bus.get_proxy_sync(bus_type, this._kf.get_string("DBus", "name"), this._kf.get_string("DBus", "obj_path"));
+            } else {
+                GLib.Process.spawn_async(null, this._kf.get_string_list("Component", "exec"), null,
+                    GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL,
+                    null, out this._pid);
+
+                GLib.ChildWatch.add(this._pid, (pid, stat) => {
+                    GLib.Process.close_pid(pid);
+
+                    if (this._respawns) {
+                        try {
+                            this.spawn();
+                        } catch (GLib.Error e) {
+                            stderr.printf("Component failure (%s): %s (%d): %s\n", this.id, e.domain.to_string(), e.code, e.message);
+                            this.killed();
+                        }
+                    } else {
+                        this.killed();
+                    }
+                });
             }
         }
 

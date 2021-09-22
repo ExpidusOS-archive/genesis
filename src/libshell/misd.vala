@@ -41,7 +41,9 @@ namespace Genesis {
             this._lvm.raw_geti(Lua.PseudoIndex.REGISTRY, this._ref_setup_monitor);
             shell.to_lua(this._lvm);
             this._lvm.push_string(monitor_name);
-            this._lvm.pcall(2, 0, 0);
+            if (this._lvm.pcall(2, 0, 0) != 0) {
+                stderr.printf("Failed to set up monitor %s: %s", monitor_name, this._lvm.to_string(-1));
+            }
         }
 
         public void destroy_monitor(Shell shell, string monitor_name) {
