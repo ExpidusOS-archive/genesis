@@ -54,7 +54,10 @@ namespace Genesis {
                 if (comp.dbus != null) {
                     try {
                         comp.dbus.apply_layout(monitor, this._monitors.get(monitor));
-                    } catch (GLib.Error e) {}
+                        comp.dbus.load_layout(monitor);
+                    } catch (GLib.Error e) {
+                        stderr.printf("Failed to apply and load: %s (%d) %s\n", e.domain.to_string(), e.code, e.message);
+                    }
                 }
             }
         }

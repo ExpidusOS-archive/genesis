@@ -72,6 +72,8 @@ namespace Genesis {
             var misd = this._monitors.get(monitor);
             if (misd == null) return;
 
+            stdout.printf("Loaded for monitor %s\n", monitor);
+
             var layout = this._layouts.get(misd);
             if (layout == null) return;
 
