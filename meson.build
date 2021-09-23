@@ -42,7 +42,10 @@ libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/co
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell)
 
 components = {
-	'genesis-desktop': [['src/components/desktop/desktop.vala', 'src/components/desktop/window.vala'], [libgenesis_component_dep, gtk], true, 'com.expidus.GenesisDesktop']
+	'genesis-desktop': [[
+		'src/components/desktop/desktop.vala', 'src/components/desktop/window.vala',
+		'src/components/desktop/widgets/wallpaper.vala'
+	], [libgenesis_component_dep, gtk], true, 'com.expidus.GenesisDesktop']
 }
 
 executable('genesis-shell', ['src/shell/shell.vala', 'src/shell/wm.vala'],
@@ -76,6 +79,12 @@ endforeach
 install_subdir('data/wallpaper',
 	install_dir: join_paths(get_option('datadir'), 'backgrounds', 'expidus'),
 	strip_directory: true)
+install_subdir('data/ui',
+	install_dir: join_paths(get_option('datadir'), 'genesis', 'ui'),
+	strip_directory: true)
 install_subdir('src/misd',
 	install_dir: join_paths(get_option('datadir'), 'genesis', 'misd'),
+	strip_directory: true)
+install_subdir('data/schemas/settings',
+	install_dir: gio.get_pkgconfig_variable('schemasdir'),
 	strip_directory: true)

@@ -77,6 +77,47 @@ namespace Genesis {
             lvm.raw_set(-3);
 
             if (this._dbus != null) {
+                lvm.push_string("define_layout_from_file");
+                lvm.push_cfunction((lvm) => {
+                    if (lvm.get_top() != 3) {
+                        lvm.push_literal("Invalid argument count");
+                        lvm.error();
+                        return 0;
+                    }
+
+                    if (lvm.type(1) != Lua.Type.TABLE) {
+                        lvm.push_literal("Invalid argument #1: expected a table");
+                        lvm.error();
+                        return 0;
+                    }
+
+                    if (lvm.type(2) != Lua.Type.STRING) {
+                        lvm.push_literal("Invalid argument #2: expected a string");
+                        lvm.error();
+                        return 0;
+                    }
+
+                    if (lvm.type(3) != Lua.Type.STRING) {
+                        lvm.push_literal("Invalid argument #3: expected a string");
+                        lvm.error();
+                        return 0;
+                    }
+
+                    lvm.get_field(1, "_native");
+                    var self = (Component)lvm.to_userdata(4);
+
+                    try {
+                        string contents;
+                        GLib.FileUtils.get_contents(DATADIR + "/genesis/ui/%s/%s".printf(lvm.to_string(2), lvm.to_string(3)), out contents);
+                        self.dbus.define_layout(lvm.to_string(2), contents);
+                    } catch (GLib.Error e) {
+                        lvm.push_string("%s (%d): %s".printf(e.domain.to_string(), e.code, e.message));
+                        lvm.error();
+                    }
+                    return 0;
+                });
+                lvm.raw_set(-3);
+
                 lvm.push_string("define_layout");
                 lvm.push_cfunction((lvm) => {
                     if (lvm.get_top() != 3) {
