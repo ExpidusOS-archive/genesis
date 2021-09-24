@@ -148,6 +148,72 @@ namespace Genesis {
 
             this._list = new GLib.ListStore(typeof (AppIconLauncher));
             this._app_grid.list_model = this._list;
+
+            this.add(this._app_grid);
+        }
+    }
+
+    public class SettingsAppGrid : Gtk.Bin {
+        private string _schema_id;
+        private string _schema_key;
+        private ListAppGrid _app_grid;
+        private int _init_max_columns = 0;
+        private int _init_max_rows = 0;
+        private GLib.Settings _settings;
+
+        public int max_columns {
+            get {
+                return this._app_grid.max_columns;
+            }
+            set construct {
+                if (this._app_grid == null) {
+                    this._init_max_columns = value;
+                } else {
+                    this._app_grid.max_columns = value;
+                }
+            }
+        }
+
+        public int max_rows {
+            get {
+                return this._app_grid.max_rows;
+            }
+            set construct {
+                if (this._app_grid == null) {
+                    this._init_max_rows = value;
+                } else {
+                    this._app_grid.max_rows = value;
+                }
+            }
+        }
+
+        public string schema_id {
+            get {
+                return this._schema_id;
+            }
+            construct {
+                this._schema_id = value;
+            }
+        }
+
+        public string schema_key {
+            get {
+                return this._schema_key;
+            }
+            construct {
+                this._schema_key = value;
+            }
+        }
+
+        public SettingsAppGrid(string schema_id, string schema_key) {
+            Object(schema_id: schema_id, schema_key: schema_key);
+
+            this._app_grid = new ListAppGrid();
+            this._app_grid.max_columns = this._init_max_columns;
+            this._app_grid.max_rows = this._init_max_rows;
+
+            this._settings = new GLib.Settings(this.schema_id);
+            this._settings.bind(this.schema_key, this._app_grid, "applications", GLib.SettingsBindFlags.GET | GLib.SettingsBindFlags.SET);
         }
     }
 }
