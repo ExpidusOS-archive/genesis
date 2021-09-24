@@ -4,15 +4,28 @@ vapi_dir = meson.current_source_dir() / 'vapi'
 add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
 add_project_arguments(['--vapidir', vapi_dir / 'vala-extra-vapis'], language: 'vala')
 
+x11 = get_option('x11')
+wayland = get_option('wayland')
+
 prefix = get_option('prefix')
 bindir = prefix / get_option('bindir')
 datadir = prefix / get_option('datadir')
 
 gobject = dependency('gobject-2.0')
-gtk = dependency('gtk+-3.0')
+gtk = [dependency('gtk+-3.0')]
 lua = dependency('lua')
 gio = dependency('gio-2.0')
 mutter = [dependency('libmutter-8'), dependency('mutter-cogl-8'), dependency('mutter-clutter-8'), dependency('gsettings-desktop-schemas')]
+
+if x11
+	gtk += dependency('gdk-x11-3.0')
+	add_project_arguments('-D', 'BUILD_X11', language: 'vala')
+endif
+
+if wayland
+	gtk += dependency('gtk-layer-shell-0')
+	add_project_arguments('-D', 'BUILD_WAYLAND', language: 'vala')
+endif
 
 subdir('po')
 
@@ -21,6 +34,8 @@ conf_data.set('PREFIX', prefix)
 conf_data.set('BINDIR', bindir)
 conf_data.set('DATADIR', datadir)
 conf_data.set('VERSION', meson.project_version())
+conf_data.set('BUILD_X11', x11)
+conf_data.set('BUILD_WAYLAND', wayland)
 
 build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
 	configuration: conf_data)
@@ -45,7 +60,12 @@ components = {
 	'genesis-desktop': [[
 		'src/components/desktop/desktop.vala', 'src/components/desktop/window.vala',
 		'src/components/desktop/widgets/wallpaper.vala'
-	], [libgenesis_component_dep, gtk], true, 'com.expidus.GenesisDesktop']
+	], [libgenesis_component_dep, gtk], true, 'com.expidus.GenesisDesktop'],
+
+	'genesis-panel': [[
+		'src/components/panel/panel.vala', 'src/components/panel/utils.vala',
+		'src/components/panel/window.vala'
+	], [libgenesis_component_dep, gtk, meson.get_compiler('c').find_library('m')], true, 'com.expidus.GenesisPanel']
 }
 
 executable('genesis-shell', ['src/shell/shell.vala', 'src/shell/wm.vala'],
