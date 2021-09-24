@@ -4,6 +4,7 @@ namespace Genesis {
         private GLib.HashTable<string, MISDBase?> _misd;
         private GLib.HashTable<string, string?> _monitors;
         private string _comp_dir;
+        private devident.BaseDaemon _devident;
 
         public string components_dir {
             get {
@@ -31,6 +32,8 @@ namespace Genesis {
             this._components = new GLib.List<Component>();
             this._misd = new GLib.HashTable<string, MISDBase?>(GLib.str_hash, GLib.str_equal);
             this._monitors = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
+
+            this._devident = GLib.Bus.get_proxy_sync(GLib.BusType.SYSTEM, "com.devident", "/com/devident");
         }
 
         public void monitor_load(string monitor) {
@@ -124,6 +127,107 @@ namespace Genesis {
 
             lvm.push_string("_native");
             lvm.push_lightuserdata(this);
+            lvm.raw_set(-3);
+
+            lvm.push_string("get_device");
+            lvm.push_cfunction((lvm) => {
+                if (lvm.get_top() != 1) {
+                    lvm.push_literal("Invalid argument count");
+                    lvm.error();
+                    return 0;
+                }
+
+                if (lvm.type(1) != Lua.Type.TABLE) {
+                    lvm.push_literal("Invalid argument #1: expected a table");
+                    lvm.error();
+                    return 0;
+                }
+
+                lvm.get_field(1, "_native");
+                var self = (Shell)lvm.to_userdata(2);
+
+                try {
+                    var dev = self._devident.get_device();
+
+                    lvm.new_table();
+
+                    lvm.push_string("_native");
+                    lvm.push_lightuserdata(dev);
+                    lvm.raw_set(-3);
+
+                    lvm.push_string("id");
+                    lvm.push_string(dev.get_id());
+                    lvm.raw_set(-3);
+
+                    lvm.push_string("name");
+                    lvm.push_string(dev.get_name());
+                    lvm.raw_set(-3);
+
+                    lvm.push_string("manufacturer");
+                    lvm.push_string(dev.get_manufacturer());
+                    lvm.raw_set(-3);
+
+                    lvm.push_string("device_type");
+
+                    switch (dev.get_device_type()) {
+                        case devident.DeviceType.PHONE:
+                            lvm.push_string("phone");
+                            break;
+                        case devident.DeviceType.LAPTOP:
+                            lvm.push_string("laptop");
+                            break;
+                        case devident.DeviceType.DESKTOP:
+                            lvm.push_string("desktop");
+                            break;
+                        case devident.DeviceType.SERVER:
+                            lvm.push_string("server");
+                            break;
+                        case devident.DeviceType.UNKNOWN:
+                        default:
+                            lvm.push_string("unknown");
+                            break;
+                    }
+
+                    lvm.raw_set(-3);
+
+                    lvm.push_string("components");
+                    lvm.new_table();
+
+                    var comps = dev.get_components();
+                    var i = 1;
+                    foreach (var comp in comps) {
+                        lvm.push_number(i++);
+                        lvm.new_table();
+
+                        switch (comp.get_category()) {
+                            case devident.ComponentCategory.TOUCH_DISPLAY:
+                                {
+                                    var touch_disp = GLib.Bus.get_proxy_sync<devident.TouchDisplay>(GLib.BusType.SYSTEM, "com.devident", "/com/devident/device/%s/component/%s".printf(dev.get_id(), comp.get_id()));
+                                    lvm.push_string("input_path");
+                                    lvm.push_string(touch_disp.get_input());
+                                    lvm.raw_set(-3);
+
+                                    var disp = touch_disp.get_display();
+                                    lvm.push_string("display_name");
+                                    lvm.push_string(disp.get_name());
+                                    lvm.raw_set(-3);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+
+                        lvm.set_table(4);
+                    }
+
+                    lvm.raw_set(-3);
+                } catch (GLib.Error e) {
+                    lvm.push_string("%s (%d): %s".printf(e.domain.to_string(), e.code, e.message));
+                    lvm.error();
+                    return 0;
+                }
+                return 1;
+            });
             lvm.raw_set(-3);
 
             lvm.push_string("get_monitors");

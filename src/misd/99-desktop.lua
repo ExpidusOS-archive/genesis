@@ -1,7 +1,7 @@
 -- Genesis "desktop" layout
 -- Loads after everything else
 
-genesis:define_misd("desktop",
+genesis:define_misd("90-desktop",
     function()
         return genesis:get_monitors()
     end,

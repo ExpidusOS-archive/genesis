@@ -16,6 +16,7 @@ gtk = [dependency('gtk+-3.0')]
 lua = dependency('lua')
 gio = dependency('gio-2.0')
 mutter = [dependency('libmutter-8'), dependency('mutter-cogl-8'), dependency('mutter-clutter-8'), dependency('gsettings-desktop-schemas')]
+devident = dependency('devident-1.0')
 
 if x11
 	gtk += dependency('gdk-x11-3.0')
@@ -50,7 +51,7 @@ libgenesis_component = shared_library('genesis-component', ['src/libcomponent/co
 libgenesis_component_dep = declare_dependency(link_with: libgenesis_component)
 
 libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/component.vala', 'src/libshell/error.vala', 'src/libshell/misd.vala', 'src/libshell/shell.vala'],
-	dependencies: [gobject, gio, lua],
+	dependencies: [gobject, gio, lua, devident],
 	vala_gir: 'GenesisShell-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
