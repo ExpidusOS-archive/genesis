@@ -25,9 +25,14 @@ namespace Genesis {
             }
         }
 
-        public BaseAppGrid() {
+        construct {
             this._grid = new Gtk.Grid();
             base.add(this._grid);
+
+            this._grid.show();
+        }
+
+        public BaseAppGrid() {
         }
 
         private void use_list() {
@@ -74,14 +79,6 @@ namespace Genesis {
         public override void remove(Gtk.Widget widget) {
             this._grid.remove(widget);
         }
-
-        public override void forall_internal(bool include_internals, Gtk.Callback cb) {
-            if (include_internals) {
-                base.forall_internal(false, cb);
-            } else {
-                this._grid.forall_internal(include_internals, cb);
-            }
-        }
     }
 
     public class ListAppGrid : Gtk.Bin {
@@ -93,6 +90,7 @@ namespace Genesis {
 
         public int max_columns {
             get {
+                if (this._app_grid == null) return this._init_max_columns;
                 return this._app_grid.max_columns;
             }
             set construct {
@@ -106,6 +104,7 @@ namespace Genesis {
 
         public int max_rows {
             get {
+                if (this._app_grid == null) return this._init_max_rows;
                 return this._app_grid.max_rows;
             }
             set construct {
@@ -135,13 +134,14 @@ namespace Genesis {
                         try {
                             var item = new AppIconLauncher.from_id(app_id);
                             this._list.append(item);
+                            item.show_all();
                         } catch (GLib.Error e) {}
                     }
                 }
             }
         }
 
-        public ListAppGrid() {
+        construct {
             this._app_grid = new BaseAppGrid();
             this._app_grid.max_columns = this._init_max_columns;
             this._app_grid.max_rows = this._init_max_rows;
@@ -150,6 +150,10 @@ namespace Genesis {
             this._app_grid.list_model = this._list;
 
             this.add(this._app_grid);
+            this._app_grid.show();
+        }
+
+        public ListAppGrid() {
         }
     }
 
@@ -163,6 +167,7 @@ namespace Genesis {
 
         public int max_columns {
             get {
+                if (this._app_grid == null) return this._init_max_columns;
                 return this._app_grid.max_columns;
             }
             set construct {
@@ -176,6 +181,7 @@ namespace Genesis {
 
         public int max_rows {
             get {
+                if (this._app_grid == null) return this._init_max_rows;
                 return this._app_grid.max_rows;
             }
             set construct {
@@ -205,15 +211,20 @@ namespace Genesis {
             }
         }
 
-        public SettingsAppGrid(string schema_id, string schema_key) {
-            Object(schema_id: schema_id, schema_key: schema_key);
-
+        construct {
             this._app_grid = new ListAppGrid();
             this._app_grid.max_columns = this._init_max_columns;
             this._app_grid.max_rows = this._init_max_rows;
 
             this._settings = new GLib.Settings(this.schema_id);
             this._settings.bind(this.schema_key, this._app_grid, "applications", GLib.SettingsBindFlags.GET | GLib.SettingsBindFlags.SET);
+
+            this.add(this._app_grid);
+            this._app_grid.show();
+        }
+
+        public SettingsAppGrid(string schema_id, string schema_key) {
+            Object(schema_id: schema_id, schema_key: schema_key);
         }
     }
 }

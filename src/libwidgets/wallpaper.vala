@@ -97,6 +97,10 @@ namespace Genesis {
                 cr.paint();
             }
 
+            if (this.get_child() != null) {
+                this.get_child().draw(cr);
+            }
+
             this._is_drawing = true;
             return ret;
         }

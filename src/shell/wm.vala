@@ -5,6 +5,7 @@ namespace Genesis {
         private Meta.PluginInfo _plugin_info;
         private Meta.MonitorManager _monitor_mngr;
         private Meta.BackgroundGroup _bg_group;
+        private SystemRT.SystemRT _systemrt;
 
         construct {
             this._plugin_info = Meta.PluginInfo() {
@@ -14,8 +15,9 @@ namespace Genesis {
                 license = "GPL-3.0",
                 description = "The next generation computing environment"
             };
-
+            
             try {
+                this._systemrt = GLib.Bus.get_proxy_sync(GLib.BusType.SYSTEM, "com.expidus.SystemRT", "/com/expidus/SystemRT");
                 this._shell = new Shell();
 
                 this._shell.dead.connect(() => {
@@ -52,6 +54,8 @@ namespace Genesis {
 
         public override void start() {
             try {
+                this._systemrt.own_session(GLib.Environment.get_variable("DISPLAY"), GLib.Environment.get_variable("XAUTHORITY"));
+
                 var dir = GLib.Dir.open(Genesis.DATADIR + "/genesis/misd");
                 string? name;
 

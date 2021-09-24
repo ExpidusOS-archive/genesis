@@ -1,4 +1,5 @@
 namespace Genesis {
+    [DBus(name = "com.expidus.GenesisDesktopWindow")]
     public class DesktopWindow : Gtk.ApplicationWindow {
         private Gtk.Widget? _widget = null;
         private string _monitor_name;
@@ -12,6 +13,18 @@ namespace Genesis {
             }
         }
 
+        public int monitor_index {
+            get {
+                var disp = this.get_display();
+                for (var i = 0; i < disp.get_n_monitors(); i++) {
+                    var mon = disp.get_monitor(i);
+                    if (mon.geometry.equal(this.monitor.geometry)) return i;
+                }
+                return -1;
+            }
+        }
+
+        [DBus(visible = false)]
         public unowned Gdk.Monitor? monitor {
             get {
                 var disp = this.get_display();
@@ -44,7 +57,14 @@ namespace Genesis {
             this.show_all();
             this.move(rect.x, rect.y);
 
-            this.update();
+            try {
+                application.conn.register_object("/com/expidus/GenesisDesktop/window/%lu".printf(this.get_id()), this);
+            } catch (GLib.Error e) {}
+
+            GLib.Timeout.add(200, () => {
+                this.update();
+                return false;
+            });
         }
 
         public override void get_preferred_width(out int min_width, out int nat_width) {
@@ -63,6 +83,7 @@ namespace Genesis {
 			this.get_preferred_height(out min_height, out nat_height);
 		}
 
+        [DBus(visible = false)]
         public void update() {
             if (this._widget != null) this.remove(this._widget);
 
@@ -70,7 +91,10 @@ namespace Genesis {
             assert(app != null);
 
             this._widget = app.component.get_default_widget(this.monitor_name);
-            if (this._widget != null) this.add(this._widget);
+            if (this._widget != null) {
+                this._widget.margin_top = this.monitor.workarea.y;
+                this.add(this._widget);
+            }
         }
     }
 }

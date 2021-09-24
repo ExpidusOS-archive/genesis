@@ -77,7 +77,7 @@ components = {
 }
 
 executable('genesis-shell', ['src/shell/shell.vala', 'src/shell/wm.vala'],
-	dependencies: [gobject, mutter, gio, lua, libgenesis_shell_dep],
+	dependencies: [gobject, mutter, gio, lua, systemrt, libgenesis_shell_dep],
 	install_rpath: mutter[0].get_pkgconfig_variable('libdir') / 'mutter-' + mutter[0].get_pkgconfig_variable('apiversion'),
 	build_rpath: mutter[0].get_pkgconfig_variable('libdir') / 'mutter-' + mutter[0].get_pkgconfig_variable('apiversion'),
 	install: true)

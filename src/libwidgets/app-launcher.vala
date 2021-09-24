@@ -5,6 +5,7 @@ namespace Genesis {
         private Gtk.IconSize _icon_size = 0;
         private string _label = "Untitled Application";
 
+        private Gtk.Button _btn;
         private Gtk.Box _box;
         private Gtk.Image _icon_widget;
         private Gtk.Label _label_widget;
@@ -64,9 +65,18 @@ namespace Genesis {
                 try {
                     string[] args;
                     if (GLib.Shell.parse_argv(app_info.get_executable(), out args)) {
+                        var path = GLib.Environment.get_variable("PATH").split(":");
+                        foreach (var p in path) {
+                            if (GLib.FileUtils.test(p + "/" + args[0], GLib.FileTest.EXISTS)) {
+                                args[0] = p + "/" + args[0];
+                                break;
+                            }
+                        }
                         sysrt.spawn(args);
                     }
-                } catch (GLib.Error e) {}
+                } catch (GLib.Error e) {
+                    stderr.printf("%s (%d): %s\n", e.domain.to_string(), e.code, e.message);
+                }
             });
 
             this.init();
@@ -75,6 +85,7 @@ namespace Genesis {
         }
 
         private void init() {
+            this._btn = new Gtk.Button();
             this._box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
             this._label_widget = new Gtk.Label(this._label);
             this._icon_widget = new Gtk.Image.from_icon_name(this._icon_name, this._icon_size);
@@ -82,7 +93,12 @@ namespace Genesis {
             this._box.pack_start(this._icon_widget, true, true, 0);
             this._box.pack_end(this._label_widget, true, false, 0);
 
-            this.add(this._box);
+            this._btn.add(this._box);
+            this.add(this._btn);
+
+            this._btn.clicked.connect(() => {
+                this.launch();
+            });
         }
 
         public signal void launch();

@@ -109,6 +109,7 @@ namespace Genesis {
                     if (comp.dbus != null) {
                         var val = this._monitors.get(key);
                         comp.dbus.apply_layout(key, val == null ? "" : val);
+                        comp.dbus.load_layout(key);
                     }
                 }
                 this._components.append(comp);

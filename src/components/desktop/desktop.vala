@@ -2,11 +2,19 @@ namespace Genesis {
     public class DesktopApplication : Gtk.Application {
         private Component _comp;
         private GLib.List<DesktopWindow*> _windows;
+        private GLib.DBusConnection? _conn = null;
 
         [DBus(visible = false)]
         public Component component {
             get {
                 return this._comp;
+            }
+        }
+
+        [DBus(visible = false)]
+        public GLib.DBusConnection? conn {
+            get {
+                return this._conn;
             }
         }
 
@@ -27,10 +35,11 @@ namespace Genesis {
             return null;
         }
 
-        public override bool dbus_register(DBusConnection conn, string obj_path) throws GLib.Error {
+        public override bool dbus_register(GLib.DBusConnection conn, string obj_path) throws GLib.Error {
             if (!base.dbus_register(conn, obj_path)) return false;
 
             conn.register_object(obj_path, this._comp);
+            this._conn = conn;
             return true;
         }
 
