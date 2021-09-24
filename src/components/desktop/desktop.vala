@@ -17,7 +17,7 @@ namespace Genesis {
             this._comp = new Component();
             this._windows = new GLib.List<DesktopWindow*>();
 
-            typeof (DesktopWallpaper).name();
+            init_widgets();
         }
 
         private DesktopWindow* find(string name) {

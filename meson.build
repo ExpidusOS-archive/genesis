@@ -14,9 +14,10 @@ datadir = prefix / get_option('datadir')
 gobject = dependency('gobject-2.0')
 gtk = [dependency('gtk+-3.0')]
 lua = dependency('lua')
-gio = dependency('gio-2.0')
+gio = [dependency('gio-2.0'), dependency('gio-unix-2.0')]
 mutter = [dependency('libmutter-8'), dependency('mutter-cogl-8'), dependency('mutter-clutter-8'), dependency('gsettings-desktop-schemas')]
 devident = dependency('devident-1.0')
+systemrt = dependency('systemrt')
 
 if x11
 	gtk += dependency('gdk-x11-3.0')
@@ -57,11 +58,17 @@ libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/co
 	install_dir: [true, true, true, true])
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell)
 
+libgenesis_widgets = shared_library('genesis-widgets', ['src/libwidgets/app-grid.vala', 'src/libwidgets/app-launcher.vala', 'src/libwidgets/misc.vala', 'src/libwidgets/wallpaper.vala'],
+	dependencies: [gobject, gio, gtk, systemrt],
+	vala_gir: 'GenesisWidgets-1.0.gir',
+	install: true,
+	install_dir: [true, true, true, true])
+libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets)
+
 components = {
 	'genesis-desktop': [[
-		'src/components/desktop/desktop.vala', 'src/components/desktop/window.vala',
-		'src/components/desktop/widgets/wallpaper.vala'
-	], [libgenesis_component_dep, gtk], true, 'com.expidus.GenesisDesktop'],
+		'src/components/desktop/desktop.vala', 'src/components/desktop/window.vala'
+	], [libgenesis_component_dep, gtk, libgenesis_widgets_dep], true, 'com.expidus.GenesisDesktop'],
 
 	'genesis-panel': [[
 		'src/components/panel/panel.vala', 'src/components/panel/utils.vala',
@@ -107,5 +114,5 @@ install_subdir('src/misd',
 	install_dir: join_paths(get_option('datadir'), 'genesis', 'misd'),
 	strip_directory: true)
 install_subdir('data/schemas/settings',
-	install_dir: gio.get_pkgconfig_variable('schemasdir'),
+	install_dir: gio[0].get_pkgconfig_variable('schemasdir'),
 	strip_directory: true)

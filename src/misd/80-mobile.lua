@@ -9,6 +9,10 @@ genesis:define_misd("80-mobile",
         return {}
     end,
     function(genesis, monitor)
+        local desktop = genesis:request_component("genesis-desktop")
+        desktop:define_layout_from_file("mobile", "desktop.glade")
+
+        local panel = genesis:request_component("genesis-panel")
     end,
     function(genesis, monitor)
     end)

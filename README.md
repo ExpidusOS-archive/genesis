@@ -9,4 +9,6 @@ Gensis, formerly known as ExpidusOS Shell, is a next-gen desktop environment for
 * gtk3
 * gtk-layer-shell (if `wayland`)
 * lua
+* SystemRT
+* devident
 * lgi (*optional*)
