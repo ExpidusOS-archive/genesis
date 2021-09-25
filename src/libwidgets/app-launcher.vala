@@ -2,7 +2,7 @@ namespace Genesis {
     public class AppIconLauncher : Gtk.Bin {
         private string _app_id = "";
         private string _icon_name = "application-x-executable";
-        private Gtk.IconSize _icon_size = 0;
+        private Gtk.IconSize _icon_size = Gtk.IconSize.BUTTON;
         private string _label = "Untitled Application";
 
         private Gtk.Button _btn;
