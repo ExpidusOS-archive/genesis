@@ -117,18 +117,24 @@ namespace Genesis {
             return comp;
         }
 
-        public void define_misd(string id, MISDBase misd) {
-            if (!this._misd.contains(id)) {
-                this._misd.set(id, misd);
+        public void define_misd(MISDBase misd) {
+            if (!this._misd.contains(misd.name)) {
+                this._misd.set(misd.name, misd);
             }
         }
 
-        public void to_lua(Lua.LuaVM lvm) {
+        public void to_lua(Lua.LuaVM lvm, string? misd_name) {
             lvm.new_table();
 
             lvm.push_string("_native");
             lvm.push_lightuserdata(this);
             lvm.raw_set(-3);
+
+            if (misd_name != null) {
+                lvm.push_string("_misd_name");
+                lvm.push_string(misd_name);
+                lvm.raw_set(-3);
+            }
 
             lvm.push_string("get_device");
             lvm.push_cfunction((lvm) => {
@@ -282,11 +288,17 @@ namespace Genesis {
                 lvm.get_field(1, "_native");
                 var self = (Shell)lvm.to_userdata(3);
 
+                string? _misd_name = null;
+                lvm.get_field(1, "_misd_name");
+                if (lvm.type(4) == Lua.Type.STRING) {
+                    _misd_name = lvm.to_string(4);
+                }
+
                 var comp = self.get_component(lvm.to_string(2));
                 if (comp == null) {
                     lvm.push_nil();
                 } else {
-                    comp.to_lua(lvm);
+                    comp.to_lua(lvm, _misd_name);
                 }
                 return 1;
             });
@@ -315,12 +327,18 @@ namespace Genesis {
                 lvm.get_field(1, "_native");
                 var self = (Shell)lvm.to_userdata(3);
 
+                string? _misd_name = null;
+                lvm.get_field(1, "_misd_name");
+                if (lvm.type(4) == Lua.Type.STRING) {
+                    _misd_name = lvm.to_string(4);
+                }
+
                 try {
                     var comp = self.request_component(lvm.to_string(2));
                     if (comp == null) {
                         lvm.push_nil();
                     } else {
-                        comp.to_lua(lvm);
+                        comp.to_lua(lvm, _misd_name);
                     }
                 } catch (GLib.Error e) {
                     lvm.push_string("%s (%d): %s".printf(e.domain.to_string(), e.code, e.message));
@@ -381,7 +399,7 @@ namespace Genesis {
                 lvm.push_value(5);
                 var destroy_monitor = lvm.reference(Lua.PseudoIndex.REGISTRY);
 
-                self.define_misd(lvm.to_string(2), new MISDLua(lvm, get_monitors, setup_monitor, destroy_monitor));
+                self.define_misd(new MISDLua(lvm.to_string(2), lvm, get_monitors, setup_monitor, destroy_monitor));
                 return 0;
             });
             lvm.raw_set(-3);

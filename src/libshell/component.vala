@@ -69,17 +69,23 @@ namespace Genesis {
             }
         }
 
-        public void to_lua(Lua.LuaVM lvm) {
+        public void to_lua(Lua.LuaVM lvm, string? misd_name) {
             lvm.new_table();
 
             lvm.push_string("_native");
             lvm.push_lightuserdata(this);
             lvm.raw_set(-3);
 
+            if (misd_name != null) {
+                lvm.push_string("_misd_name");
+                lvm.push_string(misd_name);
+                lvm.raw_set(-3);
+            }
+
             if (this._dbus != null) {
                 lvm.push_string("define_layout_from_file");
                 lvm.push_cfunction((lvm) => {
-                    if (lvm.get_top() != 3) {
+                    if (lvm.get_top() != 2) {
                         lvm.push_literal("Invalid argument count");
                         lvm.error();
                         return 0;
@@ -97,19 +103,21 @@ namespace Genesis {
                         return 0;
                     }
 
+                    lvm.get_field(1, "_misd_name");
                     if (lvm.type(3) != Lua.Type.STRING) {
-                        lvm.push_literal("Invalid argument #3: expected a string");
+                        lvm.push_literal("Missing the MISD name, cannot access component feature.");
                         lvm.error();
                         return 0;
                     }
 
                     lvm.get_field(1, "_native");
                     var self = (Component)lvm.to_userdata(4);
+                    var _misd_name = lvm.to_string(3);
 
                     try {
                         string contents;
-                        GLib.FileUtils.get_contents(DATADIR + "/genesis/ui/%s/%s".printf(lvm.to_string(2), lvm.to_string(3)), out contents);
-                        self.dbus.define_layout(lvm.to_string(2), contents);
+                        GLib.FileUtils.get_contents(DATADIR + "/genesis/ui/%s/%s".printf(_misd_name, lvm.to_string(2)), out contents);
+                        self.dbus.define_layout(_misd_name, contents);
                     } catch (GLib.Error e) {
                         lvm.push_string("%s (%d): %s".printf(e.domain.to_string(), e.code, e.message));
                         lvm.error();
@@ -120,7 +128,7 @@ namespace Genesis {
 
                 lvm.push_string("define_layout");
                 lvm.push_cfunction((lvm) => {
-                    if (lvm.get_top() != 3) {
+                    if (lvm.get_top() != 2) {
                         lvm.push_literal("Invalid argument count");
                         lvm.error();
                         return 0;
@@ -138,8 +146,10 @@ namespace Genesis {
                         return 0;
                     }
 
+                    string? _misd_name = null;
+                    lvm.get_field(1, "_misd_name");
                     if (lvm.type(3) != Lua.Type.STRING) {
-                        lvm.push_literal("Invalid argument #3: expected a string");
+                        lvm.push_literal("Missing the MISD name, cannot access component feature.");
                         lvm.error();
                         return 0;
                     }
@@ -148,7 +158,7 @@ namespace Genesis {
                     var self = (Component)lvm.to_userdata(4);
 
                     try {
-                        self.dbus.define_layout(lvm.to_string(2), lvm.to_string(3));
+                        self.dbus.define_layout(_misd_name, lvm.to_string(2));
                     } catch (GLib.Error e) {
                         lvm.push_string("%s (%d): %s".printf(e.domain.to_string(), e.code, e.message));
                         lvm.error();

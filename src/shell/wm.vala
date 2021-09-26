@@ -39,7 +39,7 @@ namespace Genesis {
 
             this._lvm.open_libs();
 
-            this._shell.to_lua(this._lvm);
+            this._shell.to_lua(this._lvm, null);
 
             this._lvm.push_string("wm");
             this._lvm.push_lightuserdata(this);

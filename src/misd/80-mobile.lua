@@ -2,7 +2,7 @@
 -- Overridable but high priority
 
 genesis:define_misd("80-mobile",
-    function()
+    function(genesis)
         if genesis:get_device().device_type == "phone" then
             return { genesis:get_monitors()[1] }
         end
@@ -10,7 +10,7 @@ genesis:define_misd("80-mobile",
     end,
     function(genesis, monitor)
         local desktop = genesis:request_component("genesis-desktop")
-        desktop:define_layout_from_file("80-mobile", "desktop.glade")
+        desktop:define_layout_from_file("desktop.glade")
 
         local panel = genesis:request_component("genesis-panel")
     end,
