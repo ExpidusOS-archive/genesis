@@ -63,7 +63,7 @@ namespace Genesis {
                 application.conn.register_object("/com/expidus/GenesisDesktop/window/%lu".printf(this.get_id()), this);
             } catch (GLib.Error e) {}
 
-            GLib.Timeout.add(200, () => {
+            GLib.Timeout.add(600, () => {
                 this.update();
                 return false;
             });
@@ -85,6 +85,7 @@ namespace Genesis {
 			this.get_preferred_height(out min_height, out nat_height);
 		}
 
+        [DBus(visible = false)]
         public void update() {
             if (this._widget != null) this.remove(this._widget);
 
@@ -113,6 +114,11 @@ namespace Genesis {
 
                 this.add(this._widget);
             }
+        }
+
+        [DBus(name = "Update")]
+        public void dbus_update() throws GLib.Error {
+            this.update();
         }
     }
 }

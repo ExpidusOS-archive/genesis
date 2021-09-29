@@ -24,6 +24,8 @@ namespace Genesis {
 
             this._comp = new Component();
             this._windows = new GLib.List<PanelWindow*>();
+
+            init_widgets();
         }
 
         private PanelWindow* find(string name) {

@@ -11,4 +11,6 @@ Gensis, formerly known as ExpidusOS Shell, is a next-gen desktop environment for
 * lua
 * SystemRT
 * devident
+* accountsservice
+* Handy 1.0
 * lgi (*optional*)

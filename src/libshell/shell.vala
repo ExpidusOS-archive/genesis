@@ -3,6 +3,7 @@ namespace Genesis {
         private GLib.List<Component> _components;
         private GLib.HashTable<string, MISDBase?> _misd;
         private GLib.HashTable<string, string?> _monitors;
+        private GLib.HashTable<string, string?> _monitor_overrides;
         private string _comp_dir;
         private devident.BaseDaemon _devident;
 
@@ -15,6 +16,19 @@ namespace Genesis {
         public string[] monitors {
             owned get {
                 return this._monitors.get_keys_as_array();
+            }
+        }
+
+        public GLib.HashTable<string, string?> monitor_overrides {
+            get {
+                return this._monitor_overrides;
+            }
+            set {
+                this._monitor_overrides.remove_all();
+                foreach (var v in value.get_keys()) {
+                    var k = value.get(v);
+                    this._monitor_overrides.set(v, k);
+                }
             }
         }
 
@@ -32,25 +46,31 @@ namespace Genesis {
             this._components = new GLib.List<Component>();
             this._misd = new GLib.HashTable<string, MISDBase?>(GLib.str_hash, GLib.str_equal);
             this._monitors = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
+            this._monitor_overrides = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
 
             this._devident = GLib.Bus.get_proxy_sync(GLib.BusType.SYSTEM, "com.devident", "/com/devident");
         }
 
         public void monitor_load(string monitor) {
             this._monitors.set(monitor, null);
+            var has_override = this._monitor_overrides.contains(monitor) && this._monitor_overrides.get(monitor) != null;
 
-            foreach (var misd_name in this._misd.get_keys()) {
-                var misd = this._misd.get(misd_name);
-                var misd_monitors = misd.get_monitors(this);
-                foreach (var mon in misd_monitors) {
-                    if (mon == monitor) {
-                        this._monitors.set(monitor, misd_name);
-                        misd.setup_monitor(this, monitor);
-                        break;
+            if (has_override) {
+                this._monitors.set(monitor, this._monitor_overrides.get(monitor));
+            } else {
+                foreach (var misd_name in this._misd.get_keys()) {
+                    var misd = this._misd.get(misd_name);
+                    var misd_monitors = misd.get_monitors(this);
+                    foreach (var mon in misd_monitors) {
+                        if (mon == monitor) {
+                            this._monitors.set(monitor, misd_name);
+                            misd.setup_monitor(this, monitor);
+                            break;
+                        }
                     }
-                }
 
-                if (this._monitors.get(monitor) != null) break;
+                    if (this._monitors.get(monitor) != null) break;
+                }
             }
 
             foreach (var comp in this._components) {

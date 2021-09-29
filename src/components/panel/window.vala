@@ -204,5 +204,10 @@ namespace Genesis {
             this._widget = app.component.get_default_widget(this.monitor_name);
             if (this._widget != null) this.add(this._widget);
         }
+
+        [DBus(name = "Update")]
+        public void dbus_update() throws GLib.Error {
+            this.update();
+        }
     }
 }

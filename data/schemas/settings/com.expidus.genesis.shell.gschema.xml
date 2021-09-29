@@ -1,0 +1,11 @@
+<schemalist>
+    <schema path="/com/expidus/genesis/shell/" id="com.expidus.genesis.shell">
+        <key name="override-layouts" type="a{ss}">
+            <default>{}</default>
+            <summary>Override Layouts</summary>
+            <description>
+                A table of monitor to layout names. This will override what monitors should have for the layout.
+            </description>
+        </key>
+    </schema>
+</schemalist>

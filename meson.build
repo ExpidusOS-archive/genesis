@@ -11,13 +11,17 @@ prefix = get_option('prefix')
 bindir = prefix / get_option('bindir')
 datadir = prefix / get_option('datadir')
 
+accountsservice = dependency('accountsservice')
 gobject = dependency('gobject-2.0')
 gtk = [dependency('gtk+-3.0')]
 lua = dependency('lua')
 gio = [dependency('gio-2.0'), dependency('gio-unix-2.0')]
-mutter = [dependency('libmutter-8'), dependency('mutter-cogl-8'), dependency('mutter-clutter-8'), dependency('gsettings-desktop-schemas')]
+mutter = [dependency('libmutter-8'), dependency('mutter-cogl-8'), dependency('mutter-clutter-8'),
+	dependency('gsettings-desktop-schemas')]
 devident = dependency('devident-1.0')
 systemrt = dependency('systemrt')
+hdy = dependency('libhandy-1')
+posix = meson.get_compiler('vala').find_library('posix')
 
 if x11
 	gtk += dependency('gdk-x11-3.0')
@@ -49,35 +53,38 @@ libgenesis_component = shared_library('genesis-component', ['src/libcomponent/co
 	vala_gir: 'GenesisComponent-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
-libgenesis_component_dep = declare_dependency(link_with: libgenesis_component)
+libgenesis_component_dep = declare_dependency(link_with: libgenesis_component, dependencies: [gobject, gtk])
 
-libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/component.vala', 'src/libshell/error.vala', 'src/libshell/misd.vala', 'src/libshell/shell.vala'],
+libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/component.vala', 'src/libshell/error.vala',
+		'src/libshell/misd.vala', 'src/libshell/shell.vala'],
 	dependencies: [gobject, gio, lua, devident],
 	vala_gir: 'GenesisShell-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
-libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell)
+libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependencies: [gobject, gio, lua, devident])
 
-libgenesis_widgets = shared_library('genesis-widgets', ['src/libwidgets/app-grid.vala', 'src/libwidgets/app-launcher.vala', 'src/libwidgets/misc.vala', 'src/libwidgets/wallpaper.vala'],
-	dependencies: [gobject, gio, gtk, systemrt],
+libgenesis_widgets = shared_library('genesis-widgets', ['src/libwidgets/app-grid.vala', 'src/libwidgets/app-launcher.vala',
+		'src/libwidgets/clock.vala', 'src/libwidgets/lua.vala', 'src/libwidgets/misc.vala', 'src/libwidgets/user.vala',
+		'src/libwidgets/wallpaper.vala'],
+	dependencies: [gobject, gio, gtk, lua, systemrt, hdy, accountsservice, posix],
 	vala_gir: 'GenesisWidgets-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
-libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets)
+libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gio, gtk, lua, systemrt, hdy])
 
 components = {
 	'genesis-desktop': [[
 		'src/components/desktop/desktop.vala', 'src/components/desktop/window.vala'
-	], [libgenesis_component_dep, gtk, libgenesis_widgets_dep], true, 'com.expidus.GenesisDesktop'],
+	], [libgenesis_component_dep, libgenesis_widgets_dep], true, 'com.expidus.GenesisDesktop'],
 
 	'genesis-panel': [[
 		'src/components/panel/panel.vala', 'src/components/panel/utils.vala',
 		'src/components/panel/window.vala'
-	], [libgenesis_component_dep, gtk, meson.get_compiler('c').find_library('m')], true, 'com.expidus.GenesisPanel']
+	], [libgenesis_component_dep, libgenesis_widgets_dep, meson.get_compiler('c').find_library('m')], true, 'com.expidus.GenesisPanel']
 }
 
 executable('genesis-shell', ['src/shell/shell.vala', 'src/shell/wm.vala'],
-	dependencies: [gobject, mutter, gio, lua, systemrt, libgenesis_shell_dep],
+	dependencies: [mutter, systemrt, libgenesis_shell_dep],
 	install_rpath: mutter[0].get_pkgconfig_variable('libdir') / 'mutter-' + mutter[0].get_pkgconfig_variable('apiversion'),
 	build_rpath: mutter[0].get_pkgconfig_variable('libdir') / 'mutter-' + mutter[0].get_pkgconfig_variable('apiversion'),
 	install: true)

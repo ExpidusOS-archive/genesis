@@ -6,6 +6,7 @@ namespace Genesis {
         private Meta.MonitorManager _monitor_mngr;
         private Meta.BackgroundGroup _bg_group;
         private SystemRT.SystemRT _systemrt;
+        private GLib.Settings _settings;
 
         construct {
             this._plugin_info = Meta.PluginInfo() {
@@ -15,6 +16,8 @@ namespace Genesis {
                 license = "GPL-3.0",
                 description = "The next generation computing environment"
             };
+
+            this._settings = new GLib.Settings("com.expidus.genesis.shell");
             
             try {
                 this._systemrt = GLib.Bus.get_proxy_sync(GLib.BusType.SYSTEM, "com.expidus.SystemRT", "/com/expidus/SystemRT");
