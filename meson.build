@@ -64,7 +64,7 @@ libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/co
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependencies: [gobject, gio, lua, devident])
 
 libgenesis_widgets = shared_library('genesis-widgets', ['src/libwidgets/app-grid.vala', 'src/libwidgets/app-launcher.vala',
-		'src/libwidgets/clock.vala', 'src/libwidgets/lua.vala', 'src/libwidgets/misc.vala', 'src/libwidgets/user.vala',
+		'src/libwidgets/clock.vala', 'src/libwidgets/lua.vala', 'src/libwidgets/misc.vala', 'src/libwidgets/tray.vala', 'src/libwidgets/user.vala',
 		'src/libwidgets/wallpaper.vala'],
 	dependencies: [gobject, gio, gtk, lua, systemrt, hdy, accountsservice, posix],
 	vala_gir: 'GenesisWidgets-1.0.gir',

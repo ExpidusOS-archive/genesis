@@ -26,6 +26,14 @@
                 <property name="receives-default">True</property>
                 <property name="orientation">horizontal</property>
                 <child>
+                    <object class="GenesisX11Tray">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="orientation">horizontal</property>
+                    </object>
+                </child>
+                <child>
                     <object class="GenesisSimpleClock">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
