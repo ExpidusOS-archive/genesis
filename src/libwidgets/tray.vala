@@ -119,6 +119,8 @@ namespace Genesis.X11 {
             var timestamp = Gdk.X11.get_server_time(win);
             return_if_fail(Gdk.Selection.owner_set_for_display(disp, win, atom, timestamp, true));
 
+            this.set_xprops();
+
             X.ClientMessageEvent ev = {
                 type: X.EventType.ClientMessage,
                 window: root_win.get_xid()
@@ -221,9 +223,37 @@ namespace Genesis.X11 {
             this.remove(ti);
             this._icons.remove(ti);
         }
+
+        private void set_xprops() {
+            var disp = this.get_display() as Gdk.X11.Display;
+            if (disp == null) return;
+
+            var screen = disp.get_default_screen() as Gdk.X11.Screen;
+            if (screen == null) return;
+
+            var vis = screen.get_rgba_visual() as Gdk.X11.Visual;
+            if (vis == null) vis = screen.get_system_visual() as Gdk.X11.Visual;
+            if (vis == null) return;
+
+            var xvis = vis.get_xvisual();
+
+            var atom = Gdk.Atom.intern("_NET_SYSTEM_TRAY_VISUAL", false);
+            ulong[] data = { xvis.get_visual_id() };
+            Gdk.property_change(this.get_window(), atom, Gdk.Atom.intern("VISUALID", false), 32, Gdk.PropMode.REPLACE, (uint8[])data, 1);
+
+            atom = Gdk.Atom.intern("_NET_SYSTEM_TRAY_ICON_SIZE", false);
+            data[0] = this.icon_size;
+            Gdk.property_change(this.get_window(), atom, Gdk.Atom.intern("CARDINAL", false), 32, Gdk.PropMode.REPLACE, (uint8[])data, 1);
+
+            atom = Gdk.Atom.intern("_NET_SYSTEM_TRAY_ORIENTATION", false);
+            var orient = this.get_orientation() == Gtk.Orientation.HORIZONTAL ? 1 : 0;
+            data[0] = orient;
+            Gdk.property_change(this.get_window(), atom, Gdk.Atom.intern("CARDINAL", false), 32, Gdk.PropMode.REPLACE, (uint8[])data, 1);
+        }
     }
 #else
     public class Tray : Gtk.Box {
+        public int icon_size = 24;
     }
 #endif
 }

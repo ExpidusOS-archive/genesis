@@ -24,7 +24,7 @@ hdy = dependency('libhandy-1')
 posix = meson.get_compiler('vala').find_library('posix')
 
 if x11
-	gtk += dependency('gdk-x11-3.0')
+	gtk += [dependency('gdk-x11-3.0'), dependency('x11')]
 	add_project_arguments('-D', 'BUILD_X11', language: 'vala')
 endif
 
