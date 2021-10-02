@@ -3,6 +3,7 @@ project('genesis-shell', 'vala', 'c', license: 'GPL-3.0-only', version: '0.1.0-p
 vapi_dir = meson.current_source_dir() / 'vapi'
 add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
 add_project_arguments(['--vapidir', vapi_dir / 'vala-extra-vapis'], language: 'vala')
+add_project_arguments(['--vapidir', '/usr/share/vala/vapi'], language: 'vala')
 
 x11 = get_option('x11')
 wayland = get_option('wayland')
@@ -21,6 +22,7 @@ mutter = [dependency('libmutter-8'), dependency('mutter-cogl-8'), dependency('mu
 devident = dependency('devident-1.0')
 systemrt = dependency('systemrt')
 hdy = dependency('libhandy-1')
+dbusmenugtk = [dependency('dbusmenu-gtk3-0.4'), dependency('dbusmenu-glib-0.4')]
 posix = meson.get_compiler('vala').find_library('posix')
 
 if x11
@@ -64,13 +66,13 @@ libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/co
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependencies: [gobject, gio, lua, devident])
 
 libgenesis_widgets = shared_library('genesis-widgets', ['src/libwidgets/app-grid.vala', 'src/libwidgets/app-launcher.vala',
-		'src/libwidgets/clock.vala', 'src/libwidgets/lua.vala', 'src/libwidgets/misc.vala', 'src/libwidgets/tray.vala', 'src/libwidgets/user.vala',
-		'src/libwidgets/wallpaper.vala'],
-	dependencies: [gobject, gio, gtk, lua, systemrt, hdy, accountsservice, posix],
+		'src/libwidgets/clock.vala', 'src/libwidgets/global-menu.vala', 'src/libwidgets/lua.vala', 'src/libwidgets/misc.vala',
+		'src/libwidgets/tray.vala', 'src/libwidgets/user.vala', 'src/libwidgets/wallpaper.vala'],
+	dependencies: [gobject, gio, gtk, lua, systemrt, hdy, dbusmenugtk, accountsservice, posix],
 	vala_gir: 'GenesisWidgets-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
-libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gio, gtk, lua, systemrt, hdy])
+libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gio, gtk, lua, systemrt, hdy, dbusmenugtk])
 
 components = {
 	'genesis-desktop': [[

@@ -13,4 +13,5 @@ Gensis, formerly known as ExpidusOS Shell, is a next-gen desktop environment for
 * devident
 * accountsservice
 * Handy 1.0
+* dbusmenu-gtk3
 * lgi (*optional*)

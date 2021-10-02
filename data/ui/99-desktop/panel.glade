@@ -11,6 +11,13 @@
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="orientation">horizontal</property>
+                <child>
+                    <object class="GenesisGlobalMenu">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                    </object>
+                </child>
             </object>
             <packing>
                 <property name="pack_type">start</property>

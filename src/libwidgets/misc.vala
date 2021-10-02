@@ -5,6 +5,7 @@ namespace Genesis {
         typeof (BaseAppGrid).name();
         typeof (BaseClock).name();
         typeof (DesktopWallpaper).name();
+        typeof (GlobalMenu).name();
         typeof (ListAppGrid).name();
         typeof (LuaBin).name();
         typeof (SettingsAppGrid).name();
