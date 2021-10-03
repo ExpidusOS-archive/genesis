@@ -35,6 +35,20 @@ namespace Genesis {
             return null;
         }
 
+        public override void startup() {
+            base.startup();
+
+            var app_menu = new GLib.Menu();
+            {
+                var menu = new GLib.Menu();
+                var item = new GLib.MenuItem("Genesis", null);
+
+                item.set_submenu(menu);
+                app_menu.append_item(item);
+            }
+            this.set_menubar(app_menu);
+        }
+
         public override bool dbus_register(GLib.DBusConnection conn, string obj_path) throws GLib.Error {
             if (!base.dbus_register(conn, obj_path)) return false;
 
