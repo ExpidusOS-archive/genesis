@@ -85,25 +85,31 @@ namespace Genesis {
                     string? menu_obj_path = null;
                     string? app_obj_path = null;
 
-                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_MENUBAR_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
-                        menu_obj_path = @"$((string) data)";
+                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_MENUBAR_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 128, 0, out real_type, out real_fmt, out data)) {
+                        var sb = new GLib.StringBuilder.sized(data.length);
+                        foreach (var c in data) sb.append_c((char)c);
+                        menu_obj_path = sb.str;
                     }
-                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_APPLICATION_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
-                        app_obj_path = @"$((string) data)";
+                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_APPLICATION_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 128, 0, out real_type, out real_fmt, out data)) {
+                        var sb = new GLib.StringBuilder.sized(data.length);
+                        foreach (var c in data) sb.append_c((char)c);
+                        app_obj_path = sb.str;
                     }
 
-                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_APPLICATION_ID", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
-                        this._app_id = @"$((string) data)";
-                    } else if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_UNIQUE_BUS_NAME", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
-                        this._app_id = @"$((string) data)";
+                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_APPLICATION_ID", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 128, 0, out real_type, out real_fmt, out data)) {
+                        var sb = new GLib.StringBuilder.sized(data.length);
+                        foreach (var c in data) sb.append_c((char)c);
+                        this._app_id = sb.str;
+                    } else if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_UNIQUE_BUS_NAME", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 128, 0, out real_type, out real_fmt, out data)) {
+                        var sb = new GLib.StringBuilder.sized(data.length);
+                        foreach (var c in data) sb.append_c((char)c);
+                        this._app_id = sb.str;
                     }
 
                     if (this._app_id != null && menu_obj_path != null && this._conn != null) {
                         this._app_menu = GLib.DBusMenuModel.@get(this._conn, this._app_id, menu_obj_path);
-                        stdout.printf("%s\n", menu_obj_path);
 
                         if (app_obj_path != null) {
-                            stdout.printf("%s\n", app_obj_path);
                             this._app_group = GLib.DBusActionGroup.@get(this._conn, this._app_id, app_obj_path);
                             this.insert_action_group("app", this._app_group);
                         }
