@@ -1,13 +1,19 @@
 namespace Genesis {
     public class GlobalMenu : Gtk.MenuBar {
         private Gdk.Window? _active_win;
-        private Gtk.Menu _default_menu;
-        private DbusmenuGtk.Menu? _app_menu;
+        private GLib.DBusMenuModel? _app_menu;
+        private GLib.DBusActionGroup? _app_group;
+        private string? _app_id;
+        private GLib.DBusConnection _conn;
         private uint _timeout = 0;
 
         construct {
-            this._default_menu = new Gtk.Menu();
             this._timeout = 0;
+            try {
+                this._conn = GLib.Bus.get_sync(GLib.BusType.SESSION, null);
+            } catch (GLib.Error e) {
+                stderr.printf("Failed to connect to DBus %s (%d): %s\n", e.domain.to_string(), e.code, e.message);
+            }
         }
 
         public GlobalMenu() {
@@ -47,7 +53,17 @@ namespace Genesis {
                 uint8[] data;
                 if (Gdk.property_get(xdisp.get_default_screen().get_root_window(), Gdk.Atom.intern("_NET_ACTIVE_WINDOW", false), Gdk.Atom.intern("WINDOW", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
                     X.Window[] xwin = (X.Window[])data;
-                    if (data[0] > 0) this._active_win = new Gdk.X11.Window.foreign_for_display(xdisp, xwin[0]);
+                    if (xwin[0] > 0) {
+                        this._active_win = new Gdk.X11.Window.foreign_for_display(xdisp, xwin[0]);
+
+                        // TODO: figure out why this doesn't show the menu
+                        /*if (Gdk.property_get(this._active_win, Gdk.Atom.intern("WM_TRANSIENT_FOR", false), Gdk.Atom.intern("WINDOW", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
+                            xwin = (X.Window[])data;
+                            if (xwin[0] > 0) {
+                                this._active_win = new Gdk.X11.Window.foreign_for_display(xdisp, xwin[0]);
+                            }
+                        }*/
+                    }
                 }
             }
 #endif
@@ -57,6 +73,8 @@ namespace Genesis {
 
         private void update_menu() {
             this._app_menu = null;
+            this._app_id = null;
+
             if (this._active_win != null) {
 #if BUILD_X11
                 var is_x11 = this.get_display() is Gdk.X11.Display;
@@ -64,29 +82,40 @@ namespace Genesis {
                     Gdk.Atom real_type;
                     int real_fmt;
                     uint8[] data;
-                    string? obj_path = null;
-                    string? app_id = null;
+                    string? menu_obj_path = null;
+                    string? app_obj_path = null;
+
                     if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_MENUBAR_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
-                        obj_path = @"$((string) data)";
+                        menu_obj_path = @"$((string) data)";
+                    }
+                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_APPLICATION_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
+                        app_obj_path = @"$((string) data)";
                     }
 
                     if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_APPLICATION_ID", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
-                        app_id = @"$((string) data)";
+                        this._app_id = @"$((string) data)";
                     } else if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_UNIQUE_BUS_NAME", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
-                        app_id = @"$((string) data)";
+                        this._app_id = @"$((string) data)";
                     }
 
-                    if (app_id != null && obj_path != null) this._app_menu = new DbusmenuGtk.Menu(app_id, obj_path);
+                    if (this._app_id != null && menu_obj_path != null && this._conn != null) {
+                        this._app_menu = GLib.DBusMenuModel.@get(this._conn, this._app_id, menu_obj_path);
+                        stdout.printf("%s\n", menu_obj_path);
+
+                        if (app_obj_path != null) {
+                            stdout.printf("%s\n", app_obj_path);
+                            this._app_group = GLib.DBusActionGroup.@get(this._conn, this._app_id, app_obj_path);
+                            this.insert_action_group("app", this._app_group);
+                        }
+                    }
                 }
 #endif
             }
 
             this.@foreach((w) => this.remove(w));
             
-            if (this._active_win == null || this._app_menu == null) {
-                this._default_menu.@foreach((w) => this.add(w));
-            } else if (this._app_menu != null) {
-                this._app_menu.@foreach((w) => this.add(w));
+            if (this._app_menu != null) {
+                this.bind_model(this._app_menu, null, true);
             }
         }
     }
