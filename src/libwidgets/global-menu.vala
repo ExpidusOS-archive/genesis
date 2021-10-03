@@ -1,5 +1,5 @@
 namespace Genesis {
-    public class GlobalMenu : Gtk.Bin {
+    public class GlobalMenu : Gtk.MenuBar {
         private Gdk.Window? _active_win;
         private Gtk.Menu _default_menu;
         private DbusmenuGtk.Menu? _app_menu;
@@ -56,39 +56,37 @@ namespace Genesis {
         }
 
         private void update_menu() {
-            if (this._app_menu != null) {
-                this._app_menu.detach();
-            }
-
             this._app_menu = null;
             if (this._active_win != null) {
 #if BUILD_X11
                 var is_x11 = this.get_display() is Gdk.X11.Display;
                 if (is_x11) {
-                    var xdisp = this.get_display() as Gdk.X11.Display;
                     Gdk.Atom real_type;
                     int real_fmt;
                     uint8[] data;
                     string? obj_path = null;
                     string? app_id = null;
-                    if (Gdk.property_get(xdisp.get_default_screen().get_root_window(), Gdk.Atom.intern("_GTK_WINDOW_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
-                        obj_path = (string)data;
+                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_MENUBAR_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
+                        obj_path = @"$((string) data)";
                     }
 
-                    if (Gdk.property_get(xdisp.get_default_screen().get_root_window(), Gdk.Atom.intern("_GTK_APPLICATION_ID", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
-                        app_id = (string)data;
+                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_APPLICATION_ID", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
+                        app_id = @"$((string) data)";
+                    } else if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_UNIQUE_BUS_NAME", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 32, 0, out real_type, out real_fmt, out data)) {
+                        app_id = @"$((string) data)";
                     }
 
                     if (app_id != null && obj_path != null) this._app_menu = new DbusmenuGtk.Menu(app_id, obj_path);
                 }
 #endif
             }
+
+            this.@foreach((w) => this.remove(w));
             
             if (this._active_win == null || this._app_menu == null) {
-                this._default_menu.attach_to_widget(this, (w, m) => {});
+                this._default_menu.@foreach((w) => this.add(w));
             } else if (this._app_menu != null) {
-                this._default_menu.detach();
-                this._app_menu.attach_to_widget(this, (w, m) => {});
+                this._app_menu.@foreach((w) => this.add(w));
             }
         }
     }
