@@ -25,6 +25,16 @@ namespace Genesis {
             }
         }
 
+        public Component[] components {
+            owned get {
+                Component[] value = {};
+                foreach (var comp in this._components) {
+                    value += comp;
+                }
+                return value;
+            }
+        }
+
         public GLib.HashTable<string, string?> monitor_overrides {
             get {
                 return this._monitor_overrides;
@@ -468,6 +478,7 @@ namespace Genesis {
     [DBus(name = "com.expidus.GenesisShell")]
     public interface ShellClient : GLib.Object {
         public abstract string[] monitors { owned get; }
+        public abstract string[] components { owned get; }
         public abstract GLib.HashTable<string, string> monitor_overrides { owned get; }
 
         public abstract void shutdown() throws GLib.DBusError, GLib.IOError;
@@ -494,6 +505,16 @@ namespace Genesis {
             }
         }
 
+        public string[] components {
+            owned get {
+                string[] value = {};
+                foreach (var comp in this.shell.components) {
+                    value += comp.id;
+                }
+                return value;
+            }
+        }
+
         public GLib.HashTable<string, string> monitor_overrides {
             get {
                 return this.shell.monitor_overrides;
@@ -514,6 +535,8 @@ namespace Genesis {
         }
 
         public void override_monitor(string monitor, string layout) throws GLib.DBusError, GLib.IOError {
+            this.shell.monitor_unload(monitor);
+
             if (layout.length == 0) {
                 this.shell.monitor_overrides.remove(monitor);
             } else {
@@ -528,6 +551,8 @@ namespace Genesis {
                     break;
                 }
             }
+
+            this.shell.monitor_load(monitor);
         }
     }
 }

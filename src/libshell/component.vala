@@ -1,5 +1,5 @@
 namespace Genesis {
-    public class Component {
+    public class Component : GLib.Object {
         private Shell _shell;
         private string _id;
         private GLib.KeyFile _kf;
