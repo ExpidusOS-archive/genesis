@@ -25,6 +25,10 @@ namespace Genesis {
             this._comp = new Component();
             this._windows = new GLib.List<PanelWindow*>();
 
+            this._comp.killed.connect(() => {
+                GLib.Process.exit(0);
+            });
+
             init_widgets();
         }
 

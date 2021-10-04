@@ -59,6 +59,12 @@ namespace Genesis {
             }
         }
 
+        public Act.User? user {
+            get {
+                return this.username != null ? this._act_mngr.get_user(this.username) : this._act_mngr.get_user_by_id(this.uid);
+            }
+        }
+
         construct {
             if (this.size == 0) {
                 this.size = 32;
@@ -113,7 +119,7 @@ namespace Genesis {
             var tries = 0;
             GLib.Timeout.add(200, () => {
                 tries++;
-                var user = this.username != null ? this._act_mngr.get_user(this.username) : this._act_mngr.get_user_by_id(this.uid);
+                var user = this.user;
                 if (user == null) {
                     stderr.printf("Failed to load user %s\n", this.username != null ? this.username : this.uid.to_string());
                 } else {
@@ -134,6 +140,62 @@ namespace Genesis {
                 }
                 return false;
             });
+        }
+    }
+
+    public class UserIconMenu : Gtk.Bin {
+        private UserIcon _user_icon;
+        private Gtk.Button _btn;
+        private Gtk.Menu _menu;
+
+        construct {
+            this._menu = new Gtk.Menu();
+            this._user_icon = new UserIcon.me();
+
+            this._btn = new Gtk.Button();
+            this._btn.add(this._user_icon);
+            this._user_icon.show();
+
+            var style_ctx = this._btn.get_style_context();
+            style_ctx.remove_class("button");
+
+            this._btn.clicked.connect(() => {
+                this._menu.popup_at_widget(this, Gdk.Gravity.CENTER, Gdk.Gravity.CENTER, null);
+            });
+
+            this.add(this._btn);
+            this._btn.show();
+
+            this._user_icon.notify["user"].connect(() => this.update_menu());
+            if (this._user_icon.user != null) this.update_menu();
+        }
+
+        public UserIconMenu() {
+            Object();
+        }
+
+        public override void map() {
+            base.map();
+            if (this._user_icon.user != null) this.update_menu();
+        }
+
+        private void update_menu() {
+            this._menu.@foreach((w) => this._menu.remove(w));
+
+            {
+                var item = new Gtk.MenuItem.with_label("Log Out");
+                item.activate.connect(() => {
+                    try {
+                        ShellClient shell = GLib.Bus.get_proxy_sync(GLib.BusType.SESSION, "com.expidus.GenesisShell", "/com/expidus/GenesisShell");
+                        shell.shutdown();
+                    } catch (GLib.Error e) {
+                        stderr.printf("Failed to shutdown %s (%d): %s\n", e.domain.to_string(), e.code, e.message);
+                    }
+                });
+
+                this._menu.append(item);
+                item.show();
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 namespace Genesis {
     public const string VERSION = "@VERSION@";
+    public const string BINDIR = "@BINDIR@";
     public const string DATADIR = "@DATADIR@";
 }
 

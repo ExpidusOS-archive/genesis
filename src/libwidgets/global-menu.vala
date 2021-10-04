@@ -3,6 +3,7 @@ namespace Genesis {
         private Gdk.Window? _active_win;
         private GLib.DBusMenuModel? _app_menu;
         private GLib.DBusActionGroup? _app_group;
+        private GLib.DBusActionGroup? _win_group;
         private string? _app_id;
         private GLib.DBusConnection _conn;
         private uint _timeout = 0;
@@ -84,16 +85,24 @@ namespace Genesis {
                     uint8[] data;
                     string? menu_obj_path = null;
                     string? app_obj_path = null;
+                    string? win_obj_path = null;
 
                     if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_MENUBAR_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 128, 0, out real_type, out real_fmt, out data)) {
                         var sb = new GLib.StringBuilder.sized(data.length);
                         foreach (var c in data) sb.append_c((char)c);
                         menu_obj_path = sb.str;
                     }
+
                     if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_APPLICATION_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 128, 0, out real_type, out real_fmt, out data)) {
                         var sb = new GLib.StringBuilder.sized(data.length);
                         foreach (var c in data) sb.append_c((char)c);
                         app_obj_path = sb.str;
+                    }
+
+                    if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_WINDOW_OBJECT_PATH", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 128, 0, out real_type, out real_fmt, out data)) {
+                        var sb = new GLib.StringBuilder.sized(data.length);
+                        foreach (var c in data) sb.append_c((char)c);
+                        win_obj_path = sb.str;
                     }
 
                     if (Gdk.property_get(this._active_win, Gdk.Atom.intern("_GTK_APPLICATION_ID", false), Gdk.Atom.intern("UTF8_STRING", false), 0, 128, 0, out real_type, out real_fmt, out data)) {
@@ -112,6 +121,10 @@ namespace Genesis {
                         if (app_obj_path != null) {
                             this._app_group = GLib.DBusActionGroup.@get(this._conn, this._app_id, app_obj_path);
                             this.insert_action_group("app", this._app_group);
+                        }
+                        if (win_obj_path != null) {
+                            this._win_group = GLib.DBusActionGroup.@get(this._conn, this._app_id, win_obj_path);
+                            this.insert_action_group("win", this._win_group);
                         }
                     }
                 }

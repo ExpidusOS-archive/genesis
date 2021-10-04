@@ -54,12 +54,10 @@
                     </object>
                 </child>
                 <child>
-                    <object class="GenesisUserIcon">
+                    <object class="GenesisUserIconMenu">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
-                        <property name="uid">-1</property>
-                        <property name="size">24</property>
                         <property name="margin-start">3</property>
                         <property name="margin-end">3</property>
                     </object>

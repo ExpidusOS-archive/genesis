@@ -1,15 +1,21 @@
 namespace Genesis {
-    public class Shell {
+    public class Shell : GLib.Object {
         private GLib.List<Component> _components;
         private GLib.HashTable<string, MISDBase?> _misd;
         private GLib.HashTable<string, string?> _monitors;
         private GLib.HashTable<string, string?> _monitor_overrides;
         private string _comp_dir;
         private devident.BaseDaemon _devident;
+        private uint _server_obj;
+        private uint _watch;
+        private GLib.DBusConnection _conn;
 
         public string components_dir {
             get {
                 return this._comp_dir;
+            }
+            construct {
+                this._comp_dir = value;
             }
         }
 
@@ -32,23 +38,43 @@ namespace Genesis {
             }
         }
 
-        public Shell() throws GLib.Error {
-            this._comp_dir = DATADIR + "/genesis/components";
-            this.init();
-        }
-
-        public Shell.with_component_dir(string comp_dir) throws GLib.Error {
-            this._comp_dir = comp_dir;
-            this.init();
-        }
-
-        private void init() throws GLib.Error {
+        construct {
             this._components = new GLib.List<Component>();
             this._misd = new GLib.HashTable<string, MISDBase?>(GLib.str_hash, GLib.str_equal);
             this._monitors = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
             this._monitor_overrides = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
 
-            this._devident = GLib.Bus.get_proxy_sync(GLib.BusType.SYSTEM, "com.devident", "/com/devident");
+            try {
+                this._devident = GLib.Bus.get_proxy_sync(GLib.BusType.SYSTEM, "com.devident", "/com/devident");
+            } catch (GLib.Error e) {
+                stderr.printf("Failed to connect to devident %s (%d): %s\n", e.domain.to_string(), e.code, e.message);
+                GLib.Process.exit(1);
+            }
+
+            this._watch = GLib.Bus.own_name(GLib.BusType.SESSION, "com.expidus.GenesisShell", GLib.BusNameOwnerFlags.NONE, (conn, name) => {
+                this._conn = conn;
+                try {
+                    this._server_obj = conn.register_object("/com/expidus/GenesisShell", new ShellServer(this));
+                } catch (GLib.Error e) {
+                    stderr.printf("Failed to register object %s (%d): %s\n", e.domain.to_string(), e.code, e.message);
+                }
+            }, null, () => {});
+        }
+
+        public Shell() {
+            Object(components_dir: DATADIR + "/genesis/components");
+        }
+
+        public Shell.with_component_dir(string comp_dir) {
+            Object(components_dir: comp_dir);
+        }
+
+        ~Shell() {
+            if (this._conn != null) {
+                this._conn.unregister_object(this._server_obj);
+            }
+
+            GLib.Bus.unown_name(this._watch);
         }
 
         public void monitor_load(string monitor) {
@@ -56,8 +82,15 @@ namespace Genesis {
             var has_override = this._monitor_overrides.contains(monitor) && this._monitor_overrides.get(monitor) != null;
 
             if (has_override) {
-                this._monitors.set(monitor, this._monitor_overrides.get(monitor));
-            } else {
+                var misd_name = this._monitor_overrides.get(monitor);
+                var misd = this._misd.get(misd_name);
+                if (misd != null) {
+                    this._monitors.set(monitor, misd_name);
+                    misd.setup_monitor(this, monitor);
+                }
+            }
+
+            if (this._monitors.get(monitor) == null) {
                 foreach (var misd_name in this._misd.get_keys()) {
                     var misd = this._misd.get(misd_name);
                     var misd_monitors = misd.get_monitors(this);
@@ -135,6 +168,10 @@ namespace Genesis {
                 this._components.append(comp);
             }
             return comp;
+        }
+
+        public void shutdown() {
+            foreach (var comp in this._components) comp.shutdown();
         }
 
         public void define_misd(MISDBase misd) {
@@ -426,5 +463,71 @@ namespace Genesis {
         }
         
         public signal void dead();
+    }
+
+    [DBus(name = "com.expidus.GenesisShell")]
+    public interface ShellClient : GLib.Object {
+        public abstract string[] monitors { owned get; }
+        public abstract GLib.HashTable<string, string> monitor_overrides { owned get; }
+
+        public abstract void shutdown() throws GLib.DBusError, GLib.IOError;
+        public abstract void override_monitor(string monitor, string layout) throws GLib.DBusError, GLib.IOError;
+    }
+
+    [DBus(name = "com.expidus.GenesisShell")]
+    public class ShellServer : GLib.Object {
+        private Shell _shell;
+
+        [DBus(visible = false)]
+        public Shell shell {
+            get {
+                return this._shell;
+            }
+            construct {
+                this._shell = value;
+            }
+        }
+
+        public string[] monitors {
+            owned get {
+                return this.shell.monitors;
+            }
+        }
+
+        public GLib.HashTable<string, string> monitor_overrides {
+            get {
+                return this.shell.monitor_overrides;
+            }
+        }
+
+        construct {
+            assert(this.shell != null);
+        }
+
+        public ShellServer(Shell shell) {
+            Object(shell: shell);
+        }
+
+        public void shutdown() throws GLib.DBusError, GLib.IOError {
+            this.shell.shutdown();
+            this.shell.dead();
+        }
+
+        public void override_monitor(string monitor, string layout) throws GLib.DBusError, GLib.IOError {
+            if (layout.length == 0) {
+                this.shell.monitor_overrides.remove(monitor);
+            } else {
+                this.shell.monitor_overrides.set(monitor, layout);
+            }
+
+            var shell_type = typeof (Shell);
+            var ocl = (GLib.ObjectClass)shell_type.class_ref();
+            foreach (var prop in ocl.list_properties()) {
+                if (prop.get_name() == "monitor-overrides") {
+                    this.shell.notify["monitor-overrides"](prop);
+                    break;
+                }
+            }
+        }
     }
 }

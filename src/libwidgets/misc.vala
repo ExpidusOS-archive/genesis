@@ -11,6 +11,7 @@ namespace Genesis {
         typeof (SettingsAppGrid).name();
         typeof (SimpleClock).name();
         typeof (UserIcon).name();
+        typeof (UserIconMenu).name();
 
         typeof (X11.Tray).name();
     }

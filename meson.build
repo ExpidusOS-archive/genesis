@@ -59,7 +59,7 @@ libgenesis_component_dep = declare_dependency(link_with: libgenesis_component, d
 
 libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/component.vala', 'src/libshell/error.vala',
 		'src/libshell/misd.vala', 'src/libshell/shell.vala'],
-	dependencies: [gobject, gio, lua, devident],
+	dependencies: [gobject, gio, lua, devident, posix],
 	vala_gir: 'GenesisShell-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
@@ -68,11 +68,11 @@ libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependenc
 libgenesis_widgets = shared_library('genesis-widgets', ['src/libwidgets/app-grid.vala', 'src/libwidgets/app-launcher.vala',
 		'src/libwidgets/clock.vala', 'src/libwidgets/global-menu.vala', 'src/libwidgets/lua.vala', 'src/libwidgets/misc.vala',
 		'src/libwidgets/tray.vala', 'src/libwidgets/user.vala', 'src/libwidgets/wallpaper.vala'],
-	dependencies: [gobject, gio, gtk, lua, systemrt, hdy, dbusmenugtk, accountsservice, posix],
+	dependencies: [gobject, gio, gtk, lua, systemrt, hdy, dbusmenugtk, accountsservice, posix, libgenesis_shell_dep],
 	vala_gir: 'GenesisWidgets-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
-libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gio, gtk, lua, systemrt, hdy, dbusmenugtk])
+libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gio, gtk, lua, systemrt, hdy, dbusmenugtk, accountsservice])
 
 components = {
 	'genesis-desktop': [[

@@ -169,6 +169,20 @@ namespace Genesis {
             }
         }
 
+        public bool shutdown() {
+            if (this._dbus != null) {
+                try {
+                    this._dbus.shutdown();
+                    return true;
+                } catch (GLib.Error e) {
+                    return false;
+                }
+            } else {
+                Posix.kill(this._pid, Posix.Signal.KILL);
+                return true;
+            }
+        }
+
         public signal void killed();
     }
 
@@ -185,6 +199,9 @@ namespace Genesis {
 
         [DBus(name = "LoadLayout")]
         public abstract void load_layout(string monitor) throws GLib.Error;
+
+        [DBus(name = "Shutdown")]
+        public abstract void shutdown() throws GLib.Error;
  
         [DBus(name = "WidgetSimpleEvent")]
         public signal void widget_simple_event(string path, string name);

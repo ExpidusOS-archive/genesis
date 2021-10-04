@@ -18,14 +18,38 @@ namespace Genesis {
             };
 
             this._settings = new GLib.Settings("com.expidus.genesis.shell");
+            this._shell = new Shell();
+
+            this._settings.changed.connect((name) => {
+                if (name == "override-layouts") {
+                    var variant = this._settings.get_value(name);
+                    var iter = variant.iterator();
+
+                    string? key = null;
+                    string? value = null;
+                    while (iter.next("{ss}", out key, out value)) {
+                        this._shell.monitor_overrides.set(key, value);
+                    }
+                }
+            });
+
+            this._shell.notify["monitor-overrides"].connect(() => {
+                var vb = new GLib.VariantBuilder(new GLib.VariantType("a{ss}"));
+                foreach (var key in this._shell.monitor_overrides.get_keys()) {
+                    vb.add("{ss}", key, this._shell.monitor_overrides.get(key));
+                }
+                this._settings.set_value("override-layouts", vb.end());
+                this._settings.apply();
+            });
+
+            this._settings.changed("override-layouts");
+
+            this._shell.dead.connect(() => {
+                Meta.exit(Meta.ExitCode.SUCCESS);
+            });
             
             try {
                 this._systemrt = GLib.Bus.get_proxy_sync(GLib.BusType.SYSTEM, "com.expidus.SystemRT", "/com/expidus/SystemRT");
-                this._shell = new Shell();
-
-                this._shell.dead.connect(() => {
-                    Meta.exit(Meta.ExitCode.SUCCESS);
-                });
             } catch (GLib.Error e) {
                 stderr.printf("%s (%d): %s\n", e.domain.to_string(), e.code, e.message);
                 Meta.exit(Meta.ExitCode.ERROR);

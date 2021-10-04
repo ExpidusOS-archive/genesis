@@ -98,6 +98,11 @@ namespace Genesis {
             this.layout_changed(monitor);
         }
 
+        [DBus(name = "Shutdown")]
+        public void shutdown() throws GLib.Error {
+            this.killed();
+        }
+
         [DBus(name = "WidgetSimpleEvent")]
         public signal void widget_simple_event(string path, string name);
 
@@ -106,6 +111,9 @@ namespace Genesis {
 
         [DBus(visible = false)]
         public signal void monitor_changed(string monitor, bool added);
+
+        [DBus(visible = false)]
+        public signal void killed();
     }
 
     private void handler_widget_simple_event(Gtk.Widget widget, ComponentEvent* ev) {
