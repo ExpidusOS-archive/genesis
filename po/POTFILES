@@ -1,3 +1,4 @@
+src/applications/about/window.vala
 src/components/desktop/desktop.vala
 src/components/panel/panel.vala
 src/libwidgets/user.vala

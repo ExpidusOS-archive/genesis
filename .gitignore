@@ -17,3 +17,4 @@ build.vala
 *.vapi
 !vapi/*.vapi
 *.h
+*.glade~

@@ -5,6 +5,8 @@ add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
 add_project_arguments(['--vapidir', vapi_dir / 'vala-extra-vapis'], language: 'vala')
 add_project_arguments(['--vapidir', '/usr/share/vala/vapi'], language: 'vala')
 
+gnome = import('gnome')
+
 x11 = get_option('x11')
 wayland = get_option('wayland')
 
@@ -112,6 +114,14 @@ foreach name, c : components
 			install_dir: join_paths(datadir, 'dbus-1', 'services'))
 	endif
 endforeach
+
+genesis_about_res = gnome.compile_resources('genesis-about-res', 'data/res/applications/about/res.gresource.xml',
+	source_dir: 'data/res/applications/about',
+	c_name: 'genesis_about')
+
+executable('genesis-about', ['src/applications/about/application.vala', 'src/applications/about/window.vala', build_conf, genesis_about_res],
+	dependencies: [hdy, gtk, systemrt],
+	install: true)
 
 install_subdir('data/wallpaper',
 	install_dir: join_paths(get_option('datadir'), 'backgrounds', 'expidus'),
