@@ -85,30 +85,29 @@ namespace Genesis {
 
         public string? get_xdg_display(string type) {
             switch (type) {
-                case "HOME": return "Home";
-                case "USER_CACHE": return "Cache";
-                case "USER_CONFIG": return "Configuration";
-                case "USER_DATA": return "Data";
-                case "DESKTOP": return "Desktop";
-                case "DOCUMENTS": return "Documents";
-                case "DOWNLOADS": return "Downloads";
-                case "MUSIC": return "Music";
-                case "PICTURES": return "Pictures";
-                case "PUBLIC_SHARE": return "Public Share";
-                case "TEMPLATES": return "Templates";
-                case "VIDEOS": return "Videos";
+                case "HOME": return _("Home");
+                case "USER_CACHE": return _("Cache");
+                case "USER_CONFIG": return _("Configuration");
+                case "USER_DATA": return _("Data");
+                case "DESKTOP": return _("Desktop");
+                case "DOCUMENTS": return _("Documents");
+                case "DOWNLOADS": return _("Downloads");
+                case "MUSIC": return _("Music");
+                case "PICTURES": return _("Pictures");
+                case "PUBLIC_SHARE": return _("Public Share");
+                case "TEMPLATES": return _("Templates");
+                case "VIDEOS": return _("Videos");
             }
             return null;
         }
 
         private void build_menu() {
-            // TODO: localizations
             var app_menu = new GLib.Menu();
             {
                 var menu = new GLib.Menu();
 
-                menu.append("Settings", "app.settings");
-                menu.append("About", "app.about");
+                menu.append(_("Settings"), "app.settings");
+                menu.append(_("About"), "app.about");
 
                 {
                     var submenu = new GLib.Menu();
@@ -125,7 +124,7 @@ namespace Genesis {
                     menu.append_section(null, submenu);
                 }
 
-                app_menu.append_submenu("Genesis", menu);
+                app_menu.append_submenu(_("Genesis Shell"), menu);
             }
 
             app_menu.append_section(null, new GLib.Menu());

@@ -7,34 +7,84 @@ msgid ""
 msgstr ""
 "Project-Id-Version: genesis-shell\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-26 22:23-0700\n"
-"PO-Revision-Date: 2021-08-25 23:26-0700\n"
+"POT-Creation-Date: 2021-10-03 17:41-0700\n"
+"PO-Revision-Date: 2021-10-03 17:41-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=ASCII\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: src/shell/shell.vala:13
-msgid "Display version string"
-msgstr "バージョン文字列を表示する"
+#: src/components/desktop/desktop.vala:23
+msgid "- Genesis Shell Desktop Component"
+msgstr ""
 
-#: src/shell/shell.vala:14
-msgid "Display backend to use"
-msgstr "使用するバックエンド"
+#: src/components/desktop/desktop.vala:88
+msgid "Home"
+msgstr ""
 
-#: src/shell/shell.vala:16
-msgid "- Genesis Shell"
-msgstr "- ジェネシスシェル"
+#: src/components/desktop/desktop.vala:89
+msgid "Cache"
+msgstr ""
 
-#: src/shell/shell.vala:21
-#, c-format
-msgid "Version: %s\n"
-msgstr "バージョン: %s\n"
+#: src/components/desktop/desktop.vala:90
+msgid "Configuration"
+msgstr ""
 
-#: src/shell/shell.vala:30
-#, c-format
-msgid "Invalid display backend: %s\n"
-msgstr "無効な表示バックエンド: %s\n"
+#: src/components/desktop/desktop.vala:91
+msgid "Data"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:92
+msgid "Desktop"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:93
+msgid "Documents"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:94
+msgid "Downloads"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:95
+msgid "Music"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:96
+msgid "Pictures"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:97
+msgid "Public Share"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:98
+msgid "Templates"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:99
+msgid "Videos"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:109
+msgid "Settings"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:110
+msgid "About"
+msgstr ""
+
+#: src/components/desktop/desktop.vala:127
+msgid "Genesis Shell"
+msgstr ""
+
+#: src/components/panel/panel.vala:23
+msgid "- Genesis Shell Panel Component"
+msgstr ""
+
+#: src/libwidgets/user.vala:186
+msgid "Log Out"
+msgstr ""

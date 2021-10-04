@@ -183,7 +183,7 @@ namespace Genesis {
             this._menu.@foreach((w) => this._menu.remove(w));
 
             {
-                var item = new Gtk.MenuItem.with_label("Log Out");
+                var item = new Gtk.MenuItem.with_label(_("Log Out"));
                 item.activate.connect(() => {
                     try {
                         ShellClient shell = GLib.Bus.get_proxy_sync(GLib.BusType.SESSION, "com.expidus.GenesisShell", "/com/expidus/GenesisShell");
