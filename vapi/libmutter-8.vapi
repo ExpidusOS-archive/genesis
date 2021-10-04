@@ -873,7 +873,6 @@ namespace Meta {
 		public int get_shape_event_base ();
 		public bool has_shape ();
 		public void set_cm_selection ();
-		public void set_stage_input_region (X.XserverRegion region);
 		public bool xwindow_is_a_no_focus_window (X.Window xwindow);
 	}
 	[CCode (cheader_filename = "meta/meta-close-dialog.h", type_cname = "MetaCloseDialogInterface", type_id = "meta_close_dialog_get_type ()")]
