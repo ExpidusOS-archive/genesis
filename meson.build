@@ -52,24 +52,32 @@ build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
 build_conf = configure_file(input: 'src/build.vala.in', output: 'build.vala',
 	configuration: conf_data)
 
-libgenesis_component = shared_library('genesis-component', ['src/libcomponent/component.vala', build_conf],
+libgenesis_component = shared_library('genesis-component', ['src/lib/component/component.vala', build_conf],
 	dependencies: [gobject, gtk],
 	vala_gir: 'GenesisComponent-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
 libgenesis_component_dep = declare_dependency(link_with: libgenesis_component, dependencies: [gobject, gtk])
 
-libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/libshell/component.vala', 'src/libshell/error.vala',
-		'src/libshell/misd.vala', 'src/libshell/shell.vala'],
+libgenesis_notifications = shared_library('genesis-notifications', ['src/lib/notifications/client.vala', 'src/lib/notifications/iface.vala',
+		'src/lib/notifications/server.vala'],
+	dependencies: [gobject, gio],
+	vala_gir: 'GenesisNotifications-1.0.gir',
+	install: true,
+	install_dir: [true, true, true, true])
+libgenesis_notifications_dep = declare_dependency(link_with: libgenesis_notifications, dependencies: [gobject, gio])
+
+libgenesis_shell = shared_library('genesis-shell', [build_conf, 'src/lib/shell/component.vala', 'src/lib/shell/error.vala',
+		'src/lib/shell/misd.vala', 'src/lib/shell/shell.vala'],
 	dependencies: [gobject, gio, lua, devident, posix],
 	vala_gir: 'GenesisShell-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependencies: [gobject, gio, lua, devident])
 
-libgenesis_widgets = shared_library('genesis-widgets', ['src/libwidgets/app-grid.vala', 'src/libwidgets/app-launcher.vala',
-		'src/libwidgets/clock.vala', 'src/libwidgets/global-menu.vala', 'src/libwidgets/lua.vala', 'src/libwidgets/misc.vala',
-		'src/libwidgets/tray.vala', 'src/libwidgets/user.vala', 'src/libwidgets/wallpaper.vala'],
+libgenesis_widgets = shared_library('genesis-widgets', ['src/lib/widgets/app-grid.vala', 'src/lib/widgets/app-launcher.vala',
+		'src/lib/widgets/clock.vala', 'src/lib/widgets/global-menu.vala', 'src/lib/widgets/lua.vala', 'src/lib/widgets/misc.vala',
+		'src/lib/widgets/tray.vala', 'src/lib/widgets/user.vala', 'src/lib/widgets/wallpaper.vala'],
 	dependencies: [gobject, gio, gtk, lua, systemrt, hdy, dbusmenugtk, accountsservice, posix, libgenesis_shell_dep],
 	vala_gir: 'GenesisWidgets-1.0.gir',
 	install: true,
@@ -80,6 +88,11 @@ components = {
 	'genesis-desktop': [[
 		'src/components/desktop/desktop.vala', 'src/components/desktop/window.vala'
 	], [libgenesis_component_dep, libgenesis_widgets_dep], true, 'com.expidus.GenesisDesktop'],
+
+	'genesis-notifications': [[
+		'src/components/notifications/daemon.vala', 'src/components/notifications/notification.vala',
+		'src/components/notifications/notifications.vala'
+	], [libgenesis_component_dep, libgenesis_widgets_dep, libgenesis_notifications_dep], true, 'com.expidus.GenesisNotifications'],
 
 	'genesis-panel': [[
 		'src/components/panel/panel.vala', 'src/components/panel/utils.vala',

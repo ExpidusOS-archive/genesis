@@ -7,9 +7,21 @@ namespace Genesis {
     [DBus(name = "com.expidus.GenesisComponent")]
     public class Component : GLib.Object {
         private string _default_id = "";
+        private bool _should_build_ui = true;
         private GLib.HashTable<string, string> _layouts = new GLib.HashTable<string, string>(GLib.str_hash, GLib.str_equal);
         private GLib.HashTable<string, Gtk.Builder> _builders = new GLib.HashTable<string, Gtk.Builder>(GLib.str_hash, GLib.str_equal);
         private GLib.HashTable<string, string?> _monitors = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
+
+        [DBus(visible = false)]
+        public bool should_build_ui {
+            get {
+                return this._should_build_ui;
+            }
+            set {
+                this._should_build_ui = value;
+                foreach (var monitor in this._monitors.get_keys()) this.layout_changed(monitor);
+            }
+        }
 
         [DBus(name = "DefaultID")]
         public string default_id {
@@ -19,6 +31,14 @@ namespace Genesis {
             set {
                 this._default_id = value;
             }
+        }
+
+        [DBus(visible = false)]
+        public string? get_layout(string monitor) {
+            var misd = this._monitors.get(monitor);
+            if (misd == null) return null;
+
+            return this._layouts.get(misd);
         }
 
         [DBus(visible = false)]
@@ -75,25 +95,26 @@ namespace Genesis {
             var layout = this._layouts.get(misd);
             if (layout == null) return;
 
-            var builder = new Gtk.Builder();
-            builder.connect_signals_full((builder, obj, sig_name, handler_name, conn_obj, flags) => {
-                var widget = obj as Gtk.Widget;
-                if (widget != null) {
-                    ComponentEvent ev = {
-                        self: this,
-                        name: sig_name
-                    };
+            if (this.should_build_ui) {
+                var builder = new Gtk.Builder();
+                builder.connect_signals_full((builder, obj, sig_name, handler_name, conn_obj, flags) => {
+                    var widget = obj as Gtk.Widget;
+                    if (widget != null) {
+                        ComponentEvent ev = {
+                            self: this,
+                            name: sig_name
+                        };
 
-                    switch (handler_name) {
-                        case "widget_simple_event":
-                            GLib.Signal.connect(obj, sig_name, (GLib.Callback)handler_widget_simple_event, &ev);
-                            break;
+                        switch (handler_name) {
+                            case "widget_simple_event":
+                                GLib.Signal.connect(obj, sig_name, (GLib.Callback)handler_widget_simple_event, &ev);
+                                break;
+                        }
                     }
-                }
-            });
-            builder.add_from_string(layout, layout.length);
-
-            this._builders.set(monitor, builder);
+                });
+                builder.add_from_string(layout, layout.length);
+                this._builders.set(monitor, builder);
+            }
 
             this.layout_changed(monitor);
         }

@@ -20,6 +20,8 @@ namespace Genesis {
         }
 
         public Component(Shell shell, string id) throws GLib.Error {
+            Object();
+
             this._shell = shell;
             this._id = id;
 
