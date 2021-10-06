@@ -18,6 +18,10 @@ namespace Genesis {
         public abstract void toggle_read(uint32 id) throws GLib.DBusError, GLib.IOError, NotificationDaemonError;
         public abstract Notification @get(uint32 id) throws GLib.DBusError, GLib.IOError, NotificationDaemonError;
 
+        public static NotificationDaemonClient get_default() throws GLib.IOError {
+            return GLib.Bus.get_proxy_sync<NotificationDaemonClient>(GLib.BusType.SYSTEM, "com.expidus.GenesisNotifications", "/com/expidus/GenesisNotifications");
+        }
+
         public signal void notified(Notification notif, uint32 id, bool replaced);
         public signal void read(uint32 id);
         public signal void unread(uint32 id);
