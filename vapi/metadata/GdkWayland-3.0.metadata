@@ -1,0 +1,2 @@
+GdkWayland* name="Gdk.Wayland"
+GdkWayland* skip=false

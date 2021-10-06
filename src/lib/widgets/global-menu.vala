@@ -46,8 +46,7 @@ namespace Genesis {
             var old_value = this._active_win;
             this._active_win = null;
 #if BUILD_X11
-            var is_x11 = this.get_display() is Gdk.X11.Display;
-            if (is_x11) {
+            if (this.get_display() is Gdk.X11.Display) {
                 var xdisp = this.get_display() as Gdk.X11.Display;
                 Gdk.Atom real_type;
                 int real_fmt;
@@ -66,8 +65,16 @@ namespace Genesis {
                         }*/
                     }
                 }
-            }
+            } else
 #endif
+#if BUILD_WAYLAND
+            if (this.get_display() is Gdk.Wayland.Display) {
+                // TODO
+            } else
+#endif
+            {
+                stderr.printf("Failed to find a compatible display backend\n");
+            }
 
             if (this._active_win != old_value) this.update_menu();
         }
@@ -78,8 +85,7 @@ namespace Genesis {
 
             if (this._active_win != null) {
 #if BUILD_X11
-                var is_x11 = this.get_display() is Gdk.X11.Display;
-                if (is_x11) {
+                if (this.get_display() is Gdk.X11.Display) {
                     Gdk.Atom real_type;
                     int real_fmt;
                     uint8[] data;
@@ -127,8 +133,16 @@ namespace Genesis {
                             this.insert_action_group("win", this._win_group);
                         }
                     }
-                }
+                } else
 #endif
+#if BUILD_WAYLAND
+                if (this.get_display() is Gdk.Wayland.Display) {
+                    // TODO
+                } else
+#endif
+                {
+                    stderr.printf("Failed to find a compatible display backend\n");
+                }
             }
 
             this.@foreach((w) => this.remove(w));

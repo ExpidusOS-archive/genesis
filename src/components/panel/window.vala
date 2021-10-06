@@ -130,9 +130,7 @@ namespace Genesis {
 
         private void update_struts() {
 #if BUILD_X11
-            var is_x11 = this.get_display() is Gdk.X11.Display;
-
-            if (is_x11) {
+            if (this.get_display() is Gdk.X11.Display) {
                 long struts[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
                 if (!this.get_realized()) return;
 
@@ -165,6 +163,13 @@ namespace Genesis {
                 
                 atom = Gdk.Atom.intern("_NET_WM_STRUT_PARTIAL", false);
                 Gdk.property_change(this.get_window(), atom, Gdk.Atom.intern("CARDINAL", false), 32, Gdk.PropMode.REPLACE, (uint8[])struts, 12);
+            } else
+#endif
+#if BUILD_WAYLAND
+            if (this.get_display() is Gdk.Wayland.Display) {
+                GtkLayerShell.init_for_window(this);
+                GtkLayerShell.auto_exclusive_zone_enable(this);
+                GtkLayerShell.set_layer(this, GtkLayerShell.Layer.TOP);
             } else
 #endif
             {

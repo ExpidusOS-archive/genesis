@@ -33,7 +33,7 @@ if x11
 endif
 
 if wayland
-	gtk += dependency('gtk-layer-shell-0')
+	gtk += [dependency('gdk-wayland-3.0'), dependency('gtk-layer-shell-0')]
 	add_project_arguments('-D', 'BUILD_WAYLAND', language: 'vala')
 endif
 
