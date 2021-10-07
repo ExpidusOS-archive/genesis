@@ -27,18 +27,6 @@ hdy = dependency('libhandy-1')
 dbusmenugtk = [dependency('dbusmenu-gtk3-0.4'), dependency('dbusmenu-glib-0.4')]
 posix = meson.get_compiler('vala').find_library('posix')
 
-if x11
-	gtk += [dependency('gdk-x11-3.0'), dependency('x11')]
-	add_project_arguments('-D', 'BUILD_X11', language: 'vala')
-endif
-
-if wayland
-	gtk += [dependency('gdk-wayland-3.0'), dependency('gtk-layer-shell-0')]
-	add_project_arguments('-D', 'BUILD_WAYLAND', language: 'vala')
-endif
-
-subdir('po')
-
 conf_data = configuration_data()
 conf_data.set('PREFIX', prefix)
 conf_data.set('BINDIR', bindir)
@@ -46,6 +34,27 @@ conf_data.set('DATADIR', datadir)
 conf_data.set('VERSION', meson.project_version())
 conf_data.set('BUILD_X11', x11)
 conf_data.set('BUILD_WAYLAND', wayland)
+
+if x11
+	gtk += [dependency('gdk-x11-3.0'), dependency('x11')]
+	add_project_arguments('-D', 'BUILD_X11', language: 'vala')
+
+	configure_file(input: 'data/xsessions/genesis.desktop.in', output: 'genesis.desktop',
+		configuration: conf_data,
+		install: true,
+		install_dir: join_paths(datadir, 'xsessions'))
+endif
+
+if wayland
+	gtk += [dependency('gdk-wayland-3.0'), dependency('gtk-layer-shell-0')]
+	add_project_arguments('-D', 'BUILD_WAYLAND', language: 'vala')
+	configure_file(input: 'data/wayland-sessions/genesis.desktop.in', output: 'genesis.desktop',
+		configuration: conf_data,
+		install: true,
+		install_dir: join_paths(datadir, 'wayland-sessions'))
+endif
+
+subdir('po')
 
 build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
 	configuration: conf_data)

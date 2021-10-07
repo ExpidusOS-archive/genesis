@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Genesis
+Comment=The shell for ExpidusOS
+Exec=@BINDIR@/genesis-shell --wayland
+Type=Application
+DesktopNames=Genesis
