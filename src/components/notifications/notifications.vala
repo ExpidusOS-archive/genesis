@@ -18,8 +18,8 @@ namespace Genesis {
             this.set_option_context_parameter_string(_("- Genesis Shell Notifications Daemon and Component"));
 
             this._comp = new Component();
-            this._fd_daemon = new FreedesktopDaemon();
             this._genesis_daemon = new NotificationDaemonServer();
+            this._fd_daemon = new FreedesktopDaemon(this._genesis_daemon);
 
             this._comp.killed.connect(() => {
                 GLib.Process.exit(0);
