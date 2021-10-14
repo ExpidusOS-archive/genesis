@@ -67,6 +67,11 @@ namespace Genesis {
                 this.update();
                 return false;
             });
+
+            GLib.Timeout.add(10000, () => {
+                this.update();
+                return true;
+            });
         }
 
         public override void get_preferred_width(out int min_width, out int nat_width) {

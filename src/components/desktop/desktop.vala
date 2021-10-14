@@ -124,7 +124,7 @@ namespace Genesis {
                     menu.append_section(null, submenu);
                 }
 
-                app_menu.append_submenu(_("Genesis Shell"), menu);
+                app_menu.append_submenu(_("Genesis"), menu);
             }
 
             app_menu.append_section(null, new GLib.Menu());

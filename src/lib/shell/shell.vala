@@ -4,6 +4,7 @@ namespace Genesis {
         private GLib.HashTable<string, MISDBase?> _misd;
         private GLib.HashTable<string, string?> _monitors;
         private GLib.HashTable<string, string?> _monitor_overrides;
+        private GLib.HashTable<string, string> _components_monitors;
         private string _comp_dir;
         private devident.BaseDaemon _devident;
         private uint _server_obj;
@@ -53,6 +54,7 @@ namespace Genesis {
             this._misd = new GLib.HashTable<string, MISDBase?>(GLib.str_hash, GLib.str_equal);
             this._monitors = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
             this._monitor_overrides = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
+            this._components_monitors = new GLib.HashTable<string, string>(GLib.str_hash, GLib.str_equal);
 
             try {
                 this._devident = GLib.Bus.get_proxy_sync(GLib.BusType.SYSTEM, "com.devident", "/com/devident");
@@ -118,11 +120,16 @@ namespace Genesis {
 
             foreach (var comp in this._components) {
                 if (comp.dbus != null) {
-                    try {
-                        comp.dbus.apply_layout(monitor, this._monitors.get(monitor));
-                        comp.dbus.load_layout(monitor);
-                    } catch (GLib.Error e) {
-                        stderr.printf("Failed to apply and load: %s (%d) %s\n", e.domain.to_string(), e.code, e.message);
+                    if (this._components_monitors.contains(comp.id)) {
+                        var val = this._monitors.get(monitor);
+                        if (this._components_monitors.get(comp.id).contains(val)) {
+                            try {
+                                comp.dbus.apply_layout(monitor, val);
+                                comp.dbus.load_layout(monitor);
+                            } catch (GLib.Error e) {
+                                stderr.printf("Failed to apply and load: %s (%d) %s\n", e.domain.to_string(), e.code, e.message);
+                            }
+                        }
                     }
                 }
             }
@@ -160,7 +167,7 @@ namespace Genesis {
             return null;
         }
 
-        public Component? request_component(string id) throws GLib.Error {
+        public Component? request_component(string id, string? def) throws GLib.Error {
             var comp = this.get_component(id);
             if (comp == null) {
                 comp = new Component(this, id);
@@ -168,11 +175,24 @@ namespace Genesis {
                     this._components.remove(comp);
                     if (this._components.length() == 0) this.dead();
                 });
+                if (def != null) {
+                    if (!this._components_monitors.contains(id)) {
+                        this._components_monitors.set(id, def);
+                    } else {
+                        var a = this._components_monitors.get(id).split(":");
+                        a += def;
+                        this._components_monitors.set(id, string.joinv(":", a));
+                    }
+                }
                 foreach (var key in this._monitors.get_keys()) {
                     if (comp.dbus != null) {
-                        var val = this._monitors.get(key);
-                        comp.dbus.apply_layout(key, val == null ? "" : val);
-                        comp.dbus.load_layout(key);
+                        if (this._components_monitors.contains(id)) {
+                            var val = this._monitors.get(key);
+                            if (this._components_monitors.get(id).contains(val)) {
+                                comp.dbus.apply_layout(key, val == null ? "" : val);
+                                comp.dbus.load_layout(key);
+                            }
+                        }
                     }
                 }
                 this._components.append(comp);
@@ -361,7 +381,8 @@ namespace Genesis {
                     _misd_name = lvm.to_string(4);
                 }
 
-                var comp = self.get_component(lvm.to_string(2));
+                var comp_id = lvm.to_string(2);
+                var comp = self.get_component(comp_id);
                 if (comp == null) {
                     lvm.push_nil();
                 } else {
@@ -401,7 +422,7 @@ namespace Genesis {
                 }
 
                 try {
-                    var comp = self.request_component(lvm.to_string(2));
+                    var comp = self.request_component(lvm.to_string(2), _misd_name);
                     if (comp == null) {
                         lvm.push_nil();
                     } else {
