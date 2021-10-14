@@ -22,7 +22,6 @@ gio = [dependency('gio-2.0'), dependency('gio-unix-2.0')]
 mutter = [dependency('libmutter-8'), dependency('mutter-cogl-8'), dependency('mutter-clutter-8'),
 	dependency('gsettings-desktop-schemas')]
 devident = dependency('devident-1.0')
-systemrt = dependency('systemrt')
 hdy = dependency('libhandy-1')
 dbusmenugtk = [dependency('dbusmenu-gtk3-0.4'), dependency('dbusmenu-glib-0.4')]
 posix = meson.get_compiler('vala').find_library('posix')
@@ -87,11 +86,11 @@ libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependenc
 libgenesis_widgets = shared_library('genesis-widgets', ['src/lib/widgets/app-grid.vala', 'src/lib/widgets/app-launcher.vala',
 		'src/lib/widgets/clock.vala', 'src/lib/widgets/global-menu.vala', 'src/lib/widgets/lua.vala', 'src/lib/widgets/misc.vala',
 		'src/lib/widgets/tray.vala', 'src/lib/widgets/user.vala', 'src/lib/widgets/wallpaper.vala'],
-	dependencies: [gobject, gio, gtk, lua, systemrt, hdy, dbusmenugtk, accountsservice, posix, libgenesis_shell_dep],
+	dependencies: [gobject, gio, gtk, lua, hdy, dbusmenugtk, accountsservice, posix, libgenesis_shell_dep],
 	vala_gir: 'GenesisWidgets-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
-libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gio, gtk, lua, systemrt, hdy, dbusmenugtk, accountsservice])
+libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gio, gtk, lua, hdy, dbusmenugtk, accountsservice])
 
 components = {
 	'genesis-desktop': [[
@@ -110,7 +109,7 @@ components = {
 }
 
 executable('genesis-shell', ['src/shell/shell.vala', 'src/shell/wm.vala'],
-	dependencies: [mutter, systemrt, libgenesis_shell_dep],
+	dependencies: [mutter, libgenesis_shell_dep],
 	install_rpath: mutter[0].get_pkgconfig_variable('libdir') / 'mutter-' + mutter[0].get_pkgconfig_variable('apiversion'),
 	build_rpath: mutter[0].get_pkgconfig_variable('libdir') / 'mutter-' + mutter[0].get_pkgconfig_variable('apiversion'),
 	install: true)
@@ -142,7 +141,7 @@ genesis_about_res = gnome.compile_resources('genesis-about-res', 'data/res/appli
 	c_name: 'genesis_about')
 
 executable('genesis-about', ['src/applications/about/application.vala', 'src/applications/about/window.vala', build_conf, genesis_about_res],
-	dependencies: [hdy, gtk, systemrt],
+	dependencies: [hdy, gtk],
 	install: true)
 
 install_subdir('data/wallpaper',

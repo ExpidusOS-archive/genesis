@@ -101,6 +101,21 @@ namespace Genesis {
             return null;
         }
 
+        private void load_apps(GLib.Menu menu) {
+            var apps = GLib.AppInfo.get_all();
+            apps.sort((a, b) => {
+                return GLib.strcmp(a.get_display_name(), b.get_display_name());
+            });
+            menu.remove_all();
+            foreach (var app in apps) {
+                if (app.should_show()) {
+                    var item = new GLib.MenuItem(app.get_display_name(), "app.launch");
+                    item.set_action_and_target("app.launch", "s", app.get_id());
+                    menu.append_item(item);
+                }
+            }
+        }
+
         private void build_menu() {
             var app_menu = new GLib.Menu();
             {
@@ -118,7 +133,9 @@ namespace Genesis {
                         var disp = this.get_xdg_display(str);
                         if (dir == null || disp == null) continue;
 
-                        submenu.append(disp, "app.dir-" + str.down());
+                        var item = new GLib.MenuItem(disp, "app.dir");
+                        item.set_action_and_target("app.dir", "s", dir);
+                        submenu.append_item(item);
                     }
 
                     menu.append_section(null, submenu);
@@ -127,7 +144,15 @@ namespace Genesis {
                 app_menu.append_submenu(_("Genesis"), menu);
             }
 
-            app_menu.append_section(null, new GLib.Menu());
+            {
+                var menu = new GLib.Menu();
+                this.load_apps(menu);
+                GLib.AppInfoMonitor.@get().changed.connect(() => {
+                    this.load_apps(menu);
+                    this.set_menubar(app_menu);
+                });
+                app_menu.append_submenu(_("Applications"), menu);
+            }
             this.set_menubar(app_menu);
         }
 
@@ -138,8 +163,8 @@ namespace Genesis {
                 var action = new GLib.SimpleAction("settings", null);
                 action.activate.connect(() => {
                     try {
-                        var sysrt = GLib.Bus.get_proxy_sync<SystemRT.SystemRT>(GLib.BusType.SYSTEM, "com.expidus.SystemRT", "/com/expidus/SystemRT");
-                        sysrt.spawn({ BINDIR + "/genesis-settings" });
+                        var app = GLib.AppInfo.create_from_commandline(BINDIR + "/genesis-settings", _("Genesis Settings"), GLib.AppInfoCreateFlags.NONE);
+                        app.launch(null, null);
                     } catch (GLib.Error e) {}
                 });
                 this.add_action(action);
@@ -149,25 +174,32 @@ namespace Genesis {
                 var action = new GLib.SimpleAction("about", null);
                 action.activate.connect(() => {
                     try {
-                        var sysrt = GLib.Bus.get_proxy_sync<SystemRT.SystemRT>(GLib.BusType.SYSTEM, "com.expidus.SystemRT", "/com/expidus/SystemRT");
-                        sysrt.spawn({ BINDIR + "/genesis-about" });
+                        var app = GLib.AppInfo.create_from_commandline(BINDIR + "/genesis-about", _("Genesis About"), GLib.AppInfoCreateFlags.NONE);
+                        app.launch(null, null);
                     } catch (GLib.Error e) {}
                 });
                 this.add_action(action);
             }
 
             {
-                string[] dirs = { "home", "desktop", "documents", "downloads", "music", "pictures", "videos" };
-                foreach (var dir in dirs) {
-                    var action = new GLib.SimpleAction("dir-" + dir, null);
-                    action.activate.connect(() => {
-                        try {
-                            var sysrt = GLib.Bus.get_proxy_sync<SystemRT.SystemRT>(GLib.BusType.SYSTEM, "com.expidus.SystemRT", "/com/expidus/SystemRT");
-                            sysrt.spawn({ BINDIR + "/ghostfm", "--open", this.get_xdg_dir(dir.up()) });
-                        } catch (GLib.Error e) {}
-                    });
-                    this.add_action(action);
-                }
+                var action = new GLib.SimpleAction("launch", GLib.VariantType.STRING);
+                action.activate.connect((param) => {
+                    var app = new GLib.DesktopAppInfo(param.get_string());
+                    try {
+                        app.launch(null, null);
+                    } catch (GLib.Error e) {}
+                });
+                this.add_action(action);
+            }
+
+            {
+                var action = new GLib.SimpleAction("dir", GLib.VariantType.STRING);
+                action.activate.connect((param) => {
+                    try {
+                        GLib.AppInfo.launch_default_for_uri("file://" + param.get_string(), null);
+                    } catch (GLib.Error e) {}
+                });
+                this.add_action(action);
             }
 
             this.build_menu();

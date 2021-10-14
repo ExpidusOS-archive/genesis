@@ -5,7 +5,6 @@ namespace Genesis {
         private Meta.PluginInfo _plugin_info;
         private Meta.MonitorManager _monitor_mngr;
         private Meta.BackgroundGroup _bg_group;
-        private SystemRT.SystemRT _systemrt;
         private GLib.Settings _settings;
 
         construct {
@@ -47,13 +46,6 @@ namespace Genesis {
             this._shell.dead.connect(() => {
                 Meta.exit(Meta.ExitCode.SUCCESS);
             });
-            
-            try {
-                this._systemrt = GLib.Bus.get_proxy_sync(GLib.BusType.SYSTEM, "com.expidus.SystemRT", "/com/expidus/SystemRT");
-            } catch (GLib.Error e) {
-                stderr.printf("%s (%d): %s\n", e.domain.to_string(), e.code, e.message);
-                Meta.exit(Meta.ExitCode.ERROR);
-            }
 
             this._lvm = new Lua.LuaVM.with_alloc_func((ptr, osize, nsize) => {
                 if (nsize == 0) {
@@ -81,8 +73,6 @@ namespace Genesis {
 
         public override void start() {
             try {
-                this._systemrt.own_session(GLib.Environment.get_variable("DISPLAY"), GLib.Environment.get_variable("XAUTHORITY"));
-
                 var dir = GLib.Dir.open(Genesis.DATADIR + "/genesis/misd");
                 string? name;
 

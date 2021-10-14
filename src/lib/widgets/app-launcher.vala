@@ -56,24 +56,12 @@ namespace Genesis {
         public AppIconLauncher.from_id(string app_id) throws GLib.Error {
             this._app_id = app_id;
 
-            var sysrt = GLib.Bus.get_proxy_sync<SystemRT.SystemRT>(GLib.BusType.SYSTEM, "com.expidus.SystemRT", "/com/expidus/SystemRT");
             var app_info = new GLib.DesktopAppInfo(app_id);
-
             this._label = app_info.get_display_name();
 
             this.launch.connect(() => {
                 try {
-                    string[] args;
-                    if (GLib.Shell.parse_argv(app_info.get_executable(), out args)) {
-                        var path = GLib.Environment.get_variable("PATH").split(":");
-                        foreach (var p in path) {
-                            if (GLib.FileUtils.test(p + "/" + args[0], GLib.FileTest.EXISTS)) {
-                                args[0] = p + "/" + args[0];
-                                break;
-                            }
-                        }
-                        sysrt.spawn(args);
-                    }
+                    app_info.launch(null, null);
                 } catch (GLib.Error e) {
                     stderr.printf("%s (%d): %s\n", e.domain.to_string(), e.code, e.message);
                 }
