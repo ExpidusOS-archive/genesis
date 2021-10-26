@@ -1,47 +1,54 @@
 namespace GenesisAbout {
     [GtkTemplate(ui = "/com/expidus/genesis/about/window.glade")]
-    public class Window : Hdy.Window {
-        [GtkChild(name = "header_bar")]
-        private unowned Hdy.HeaderBar _header_bar;
+    public class Window : Adw.ApplicationWindow {
+        [GtkChild(name = "win_title")]
+        private unowned Adw.WindowTitle _win_title;
 
         [GtkChild(name = "shell_version")]
         private unowned Gtk.Label _shell_version;
 
-        [GtkChild(name = "os_version")]
-        private unowned Gtk.Label _os_version;
+        [GtkChild(name = "website")]
+        private unowned Gtk.Label _website;
+
+        [GtkChild(name = "os")]
+        private unowned Gtk.Label _os;
+
+        [GtkChild(name = "windowing_system")]
+        private unowned Gtk.Label _windowing_system;
 
         construct {
             this.set_resizable(false);
-            this.set_gravity(Gdk.Gravity.CENTER);
-            this.set_position(Gtk.WindowPosition.CENTER_ALWAYS);
             this.set_default_size(600, 400);
             this.set_title(_("About Genesis Shell"));
 
-            this._shell_version.label = _("Genesis Shell Version: %s").printf(Genesis.VERSION);
-            this._os_version.label = _("OS: %s").printf(GLib.Environment.get_os_info("PRETTY_NAME"));
+            this._shell_version.label = Genesis.VERSION;
+            this._website.set_markup("<a href=\"https://expidusos.com\">https://expidusos.com</a>");
+            this._os.label = GLib.Environment.get_os_info("PRETTY_NAME");
+
+#if BUILD_X11
+            if (this.get_display() is Gdk.X11.Display) {
+                var xdisp = (Gdk.X11.Display)this.get_display();
+                this._windowing_system.label = _("X11 on %s").printf(xdisp.get_name());
+            } else
+#endif
+#if BUILD_WAYLAND
+            if (this.get_display() is Gdk.Wayland.Display) {
+                var xdisp = (Gdk.Wayland.Display)this.get_display();
+                this._windowing_system.label = _("Wayland on %s").printf(xdisp.get_name());
+            } else
+#endif
+            {
+                this._windowing_system.label = _("Unknown");
+            }
         }
 
-        public Window() {
-            Object();
+        public Window(Adw.Application application) {
+            Object(application: application);
         }
 
         public new void set_title(string str) {
             base.set_title(str);
-            this._header_bar.set_title(str);
-        }
-
-        [GtkCallback(name = "open_website")]
-        private void open_website() {
-            var app_info = GLib.AppInfo.get_default_for_uri_scheme("https");
-            if (app_info == null) app_info = GLib.AppInfo.get_default_for_uri_scheme("http");
-            if (app_info == null) return;
-            try {
-                var list = new GLib.List<string>();
-                list.append("https://expidusos.com");
-                app_info.launch_uris(list, null);
-            } catch (GLib.Error e) {
-                stderr.printf("%s (%d): %s\n", e.domain.to_string(), e.code, e.message);
-            }
+            this._win_title.set_title(str);
         }
     }
 }

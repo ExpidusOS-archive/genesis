@@ -148,19 +148,66 @@ namespace Genesis {
                         return 0;
                     }
 
-                    string? _misd_name = null;
                     lvm.get_field(1, "_misd_name");
                     if (lvm.type(3) != Lua.Type.STRING) {
                         lvm.push_literal("Missing the MISD name, cannot access component feature.");
                         lvm.error();
                         return 0;
                     }
+                    var _misd_name = lvm.to_string(3);
 
                     lvm.get_field(1, "_native");
                     var self = (Component)lvm.to_userdata(4);
 
                     try {
                         self.dbus.define_layout(_misd_name, lvm.to_string(2));
+                    } catch (GLib.Error e) {
+                        lvm.push_string("%s (%d): %s".printf(e.domain.to_string(), e.code, e.message));
+                        lvm.error();
+                    }
+                    return 0;
+                });
+                lvm.raw_set(-3);
+
+                lvm.push_string("export_objects");
+                lvm.push_cfunction((lvm) => {
+                    if (lvm.get_top() < 1) {
+                        lvm.push_literal("Expecting at least one argument");
+                        lvm.error();
+                        return 0;
+                    }
+
+                    if (lvm.type(1) != Lua.Type.TABLE) {
+                        lvm.push_literal("Invalid argument #1: expected a table");
+                        lvm.error();
+                        return 0;
+                    }
+
+                    lvm.get_field(1, "_misd_name");
+                    if (lvm.type(lvm.get_top()) != Lua.Type.STRING) {
+                        lvm.push_literal("Missing the MISD name, cannot access component feature.");
+                        lvm.error();
+                        return 0;
+                    }
+                    var _misd_name = lvm.to_string(lvm.get_top());
+
+                    lvm.get_field(1, "_native");
+                    var self = (Component)lvm.to_userdata(lvm.get_top());
+
+                    string[] obj_names = {};
+                    for (var i = 2; i < (lvm.get_top() - 1); i++) {
+                        if (lvm.type(i) != Lua.Type.STRING) {
+                            lvm.push_string("Invalid argument #%d: expected a string".printf(i));
+                            lvm.error();
+                            return 0;
+                        }
+
+                        var v = lvm.to_string(i);
+                        obj_names += v;
+                    }
+
+                    try {
+                        self.dbus.export_objects(_misd_name, obj_names);
                     } catch (GLib.Error e) {
                         lvm.push_string("%s (%d): %s".printf(e.domain.to_string(), e.code, e.message));
                         lvm.error();
@@ -204,6 +251,9 @@ namespace Genesis {
 
         [DBus(name = "Shutdown")]
         public abstract void shutdown() throws GLib.Error;
+
+        [DBus(name = "ExportObjects")]
+        public abstract void export_objects(string misd, string[] objs) throws GLib.Error;
  
         [DBus(name = "WidgetSimpleEvent")]
         public signal void widget_simple_event(string path, string name);

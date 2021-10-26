@@ -1,5 +1,5 @@
 namespace Genesis {
-    public class BaseClock : Gtk.Bin {
+    public class BaseClock : Gtk.Box {
         private string _fmt = "%r";
         private uint _interval = 1;
         private uint _timeout = 0;
@@ -70,7 +70,7 @@ namespace Genesis {
                 this._label.label = time;
             });
             this.do_update();
-            this.add(this._label);
+            this.append(this._label);
             this._label.show();
         }
 

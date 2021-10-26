@@ -1,23 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-    <object class="GenesisDesktopWallpaper" id="genesis_desktop">
+    <object class="GenesisDesktop" id="genesis_desktop">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>
         <child>
-            <object class="GenesisSettingsAppGrid">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="schema-id">com.expidus.genesis.desktop</property>
-                <property name="schema-key">favorite-applications</property>
-                <property name="max-columns">6</property>
-                <property name="max-rows">6</property>
-                <property name="column-spacing">6</property>
-                <property name="margin-top">3</property>
-                <property name="margin-bottom">3</property>
-                <property name="margin-start">3</property>
-                <property name="margin-end">3</property>
+            <object class="GenesisSettingsWallpaper">
+                <child>
+                    <object class="GenesisSettingsAppGrid">
+                        <property name="max-columns">4</property>
+                        <property name="min-columns">1</property>
+                        <property name="orientation">vertical</property>
+                    </object>
+                </child>
             </object>
         </child>
     </object>

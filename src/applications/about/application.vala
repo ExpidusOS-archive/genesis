@@ -1,14 +1,13 @@
 namespace GenesisAbout {
-    public class Application : Gtk.Application {
+    public class Application : Adw.Application {
         public Application() {
             Object(application_id: "com.expidus.GenesisAbout");
         }
 
         public override void activate() {
             if (this.get_windows().length() == 0) {
-                var win = new Window();
-                this.add_window(win);
-                win.show_all();
+                var win = new Window(this);
+                win.show();
             } else {
                 this.get_windows().nth_data(0).present();
             }
@@ -23,8 +22,6 @@ namespace GenesisAbout {
 
         GLib.Environment.set_application_name(GETTEXT_PACKAGE);
         GLib.Environment.set_prgname(GETTEXT_PACKAGE);
-
-        Gtk.init(ref argv);
         return new Application().run(argv);
     }
 }

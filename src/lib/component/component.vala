@@ -11,6 +11,7 @@ namespace Genesis {
         private GLib.HashTable<string, string> _layouts = new GLib.HashTable<string, string>(GLib.str_hash, GLib.str_equal);
         private GLib.HashTable<string, Gtk.Builder> _builders = new GLib.HashTable<string, Gtk.Builder>(GLib.str_hash, GLib.str_equal);
         private GLib.HashTable<string, string?> _monitors = new GLib.HashTable<string, string?>(GLib.str_hash, GLib.str_equal);
+        private GLib.HashTable<string, string> _exported_objs = new GLib.HashTable<string, string>(GLib.str_hash, GLib.str_equal);
 
         [DBus(visible = false)]
         public bool should_build_ui {
@@ -55,15 +56,43 @@ namespace Genesis {
             return this.tree(builder.get_object(root) as Gtk.Widget, path);
         }
 
-        private unowned Gtk.Widget? tree(Gtk.Widget parent, string[] path) {
+        [DBus(visible = false)]
+        public Gtk.Widget[]? get_widgets(string monitor) {
+            var misd = this._monitors.get(monitor);
+            if (misd == null) return null;
+
+            if (this._exported_objs.contains(misd)) {
+                var builder = this._builders.get(monitor);
+                if (builder == null) return null;
+
+                var ids = this._exported_objs.get(misd).split(",");
+
+                Gtk.Widget[] widgets = {};
+                foreach (var id in ids) {
+                    var path = id.split("/");
+                    var root = path[0];
+                    path = path[1:path.length];
+
+                    widgets += this.tree(builder.get_object(root) as Gtk.Widget, path);
+                }
+                return widgets;
+            }
+            return { this.get_default_widget(monitor) };
+        }
+
+        private unowned Gtk.Widget? tree(Gtk.Widget? parent, string[] path) {
+            if (parent == null) return null;
             if (path.length == 0) return parent;
 
             var curr = path[0];
             var next = path[1:path.length];
 
-            var container = parent as Gtk.Container;
-            if (container == null) return null;
-            foreach (var child in container.get_children()) {
+            var children = parent.observe_children();
+            if (children == null) return null;
+            for (var i = 0; i < children.get_n_items(); i++) {
+                var child = children.get_item(i) as Gtk.Widget;
+                if (child == null) continue;
+
                 if (child.name == curr) {
                     return this.tree(child, next);
                 }
@@ -97,21 +126,6 @@ namespace Genesis {
 
             if (this.should_build_ui) {
                 var builder = new Gtk.Builder();
-                builder.connect_signals_full((builder, obj, sig_name, handler_name, conn_obj, flags) => {
-                    var widget = obj as Gtk.Widget;
-                    if (widget != null) {
-                        ComponentEvent ev = {
-                            self: this,
-                            name: sig_name
-                        };
-
-                        switch (handler_name) {
-                            case "widget_simple_event":
-                                GLib.Signal.connect(obj, sig_name, (GLib.Callback)handler_widget_simple_event, &ev);
-                                break;
-                        }
-                    }
-                });
                 builder.add_from_string(layout, layout.length);
                 this._builders.set(monitor, builder);
             }
@@ -122,6 +136,11 @@ namespace Genesis {
         [DBus(name = "Shutdown")]
         public void shutdown() throws GLib.Error {
             this.killed();
+        }
+
+        [DBus(name = "ExportObjects")]
+        public void export_objects(string misd, string[] objs) throws GLib.Error {
+            this._exported_objs.set(misd, string.joinv(",", objs));
         }
 
         [DBus(name = "WidgetSimpleEvent")]

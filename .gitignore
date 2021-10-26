@@ -18,3 +18,4 @@ build.vala
 !vapi/*.vapi
 *.h
 *.glade~
+!src/**/*.h

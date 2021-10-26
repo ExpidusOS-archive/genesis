@@ -1,0 +1,8 @@
+[Component]
+exec=@BINDIR@/genesis-lock
+respawns=true
+
+[DBus]
+bus=session
+name=com.expidus.GenesisLock
+obj_path=/com/expidus/GenesisLock

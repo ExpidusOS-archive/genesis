@@ -1,74 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-    <object class="GtkBox" id="genesis_panel">
+    <object class="GenesisPanel" id="genesis_panel">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>
-        <property name="orientation">horizontal</property>
+        <property name="side">top</property>
+        <property name="height">25</property>
         <child>
-            <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
+            <object class="GtkCenterBox">
                 <property name="orientation">horizontal</property>
-                <child>
-                    <object class="GenesisGlobalMenu">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
+                <child type="start">
+                    <object class="GenesisGlobalMenuBar">
                     </object>
                 </child>
-            </object>
-            <packing>
-                <property name="pack_type">start</property>
-                <property name="fill">True</property>
-                <property name="expand">False</property>
-                <property name="position">2</property>
-            </packing>
-        </child>
-        <child>
-            <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="orientation">horizontal</property>
-                <child>
-                    <object class="GenesisX11Tray">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
+                <child type="end">
+                    <object class="GtkBox">
                         <property name="orientation">horizontal</property>
-                        <property name="margin-start">3</property>
-                        <property name="margin-end">3</property>
-                        <property name="margin-top">3</property>
-                        <property name="margin-bottom">3</property>
-                    </object>
-                </child>
-                <child>
-                    <object class="GenesisSimpleClock">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="margin-start">3</property>
-                        <property name="margin-end">3</property>
-                    </object>
-                </child>
-                <child>
-                    <object class="GenesisUserIconMenu">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="margin-start">3</property>
-                        <property name="margin-end">3</property>
+                        <child>
+                            <object class="GenesisSimpleClock">
+                            </object>
+                            <object class="GenesisUserButton">
+                            </object>
+                        </child>
                     </object>
                 </child>
             </object>
-            <packing>
-                <property name="pack_type">end</property>
-                <property name="fill">True</property>
-                <property name="expand">False</property>
-                <property name="position">2</property>
-            </packing>
         </child>
+    </object>
+    <object class="GenesisPanel" id="genesis_dock">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">True</property>
+        <property name="side">bottom</property>
+        <property name="height">45</property>
+        <property name="width">600</property>
     </object>
 </interface>
