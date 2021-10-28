@@ -52,7 +52,7 @@ namespace Genesis {
 					this._menu_bar.menu_model = this._default_menu;
 					app_group = this._default_group;
 				}
-				this._menu_bar.insert_action_group("app", app_group);
+				//this._menu_bar.insert_action_group("app", app_group);
 			}
 		}
 	}

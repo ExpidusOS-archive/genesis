@@ -19,8 +19,8 @@ namespace Genesis {
 				this._uid = -1;
 				this._user = null;
 
-				notify_prop(this, "uid");
-				notify_prop(this, "user");
+				this.notify_property("uid");
+				this.notify_property("user");
 			}
 		}
 
@@ -38,8 +38,8 @@ namespace Genesis {
 				this._uid = value;
 				this._user = null;
 
-				notify_prop(this, "username");
-				notify_prop(this, "user");
+				this.notify_property("username");
+				this.notify_property("user");
 			}
 		}
 
@@ -58,13 +58,13 @@ namespace Genesis {
 								act_mngr.disconnect(id);
 								id = 0;
 							}
-							notify_prop(this, "user");
+							this.notify_property("user");
 						});
 					}
 
 					if (this._user != null && this._changed_id == 0) {
 						this._changed_id = this._user.changed.connect(() => {
-							notify_prop(this, "user");
+							this.notify_property("user");
 						});
 					}
 					return this._user;
@@ -83,12 +83,12 @@ namespace Genesis {
 
 				if (this._user != null && this._changed_id == 0) {
 					this._changed_id = this._user.changed.connect(() => {
-						notify_prop(this, "user");
+						this.notify_property("user");
 					});
 				}
 
-				notify_prop(this, "uid");
-				notify_prop(this, "username");
+				this.notify_property("uid");
+				this.notify_property("username");
 			}
 		}
 
