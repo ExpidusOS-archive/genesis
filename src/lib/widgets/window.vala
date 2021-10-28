@@ -182,6 +182,20 @@ namespace Genesis {
 				win.geometry = this.monitor.geometry;
 			}
 
+#if BUILD_X11
+			if (this.application != null) {
+				var xsurf = this.get_window().backend as Gdk.X11.Surface;
+				if (xsurf != null) {
+					xsurf.set_utf8_property("_GTK_APPLICATION_ID", this.application.application_id);
+					xsurf.set_utf8_property("_GTK_APPLICATION_OBJECT_PATH", "/%s".printf(this.application.application_id.replace(".", "/")));
+					xsurf.set_utf8_property("_GTK_WINDOW_OBJECT_PATH", "/%s/window/%lu".printf(this.application.application_id.replace(".", "/"), ((Gtk.ApplicationWindow)this).get_id()));
+					if (this.application.get_menubar() != null) {
+						xsurf.set_utf8_property("_GTK_MENUBAR_OBJECT_PATH", "/%s/menus/menubar".printf(this.application.application_id.replace(".", "/")));
+					}
+				}
+			}
+#endif
+
 			this.update_monitor(this.monitor_name);
 		}
 

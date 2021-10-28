@@ -37,5 +37,7 @@ namespace Genesis {
 			{}
 			return null;
 		}
+
+		public signal void workarea_updated();
 	}
 }

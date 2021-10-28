@@ -21,7 +21,12 @@ namespace Genesis.X11 {
 				GLib.Memory.copy(data, prop_ret, n_items * sizeof (ulong));
 
 				if (data != null && n_items > 0) {
-					return Genesis.DisplayWindow.from(Gdk.X11.Surface.lookup_for_display(gxdisplay, (X.Window)data[0]));
+					if (data[0] != 0) {
+						var root = new X11.DisplayWindow.from_xid(xdisp, gxdisplay.get_xrootwindow());
+						if (root.has_child_xid(data[0])) {
+							return new X11.DisplayWindow.from_xid(xdisp, data[0]);
+						}
+					}
 				}
 				return null;
 			}
@@ -40,12 +45,8 @@ namespace Genesis.X11 {
 							var cref = type.class_ref();
 							unowned var obj_class = (GLib.ObjectClass)cref;
 
-							foreach (var pspec in obj_class.list_properties()) {
-								if (pspec.get_name() == "active-window") {
-									this.notify["active-window"](pspec);
-									break;
-								}
-							}
+							this.notify_property("active-window");
+							this.active_window_changed();
 							return true;
 						}
 					}

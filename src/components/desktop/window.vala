@@ -25,6 +25,11 @@ namespace Genesis {
 		public override void map() {
 			base.map();
 
+#if BUILD_X11
+			var xsurf = this.get_window().backend as Gdk.X11.Surface;
+			if (xsurf != null) xsurf.set_utf8_property("_NET_WM_NAME", "genesis-desktop");
+#endif
+
 			this.update_margins();
 		}
 

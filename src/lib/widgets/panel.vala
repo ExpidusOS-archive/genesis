@@ -111,6 +111,11 @@ namespace Genesis {
 		public override void map() {
 			base.map();
 			this.update_side();
+
+#if BUILD_X11
+			var xsurf = this.get_window().backend as Gdk.X11.Surface;
+			if (xsurf != null) xsurf.set_utf8_property("_NET_WM_NAME", "genesis-panel");
+#endif
 		}
 
 		public override void measure(Gtk.Orientation ori, int for_size, out int min, out int nat, out int min_base, out int nat_base) {
@@ -176,12 +181,8 @@ namespace Genesis {
 
 					this.set_default_size(this.get_computed_width(), this.get_computed_height());
 
-					unowned var xdisp = ((Gdk.X11.Display)this.get_display().backend).get_xdisplay();
-					var atom = xdisp.intern_atom("_NET_WM_STRUT", false);
-					win.set_property(atom, X.XA_CARDINAL, 32, X.PropMode.Replace, (uint8[])struts, 4);
-
-					atom = xdisp.intern_atom("_NET_WM_STRUT_PARTIAL", false);
-					win.set_property(atom, X.XA_CARDINAL, 32, X.PropMode.Replace, (uint8[])struts, 12);
+					win.set_property("_NET_WM_STRUT", "CARDINAL", 32, X.PropMode.Replace, (uint8[])struts, 4);
+					win.set_property("_NET_WM_STRUT_PARTIAL", "CARDINAL", 32, X.PropMode.Replace, (uint8[])struts, 12);
 				}
 			} else
 #endif

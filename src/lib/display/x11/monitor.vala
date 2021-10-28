@@ -55,12 +55,8 @@ namespace Genesis.X11 {
 							var cref = type.class_ref();
 							unowned var obj_class = (GLib.ObjectClass)cref;
 
-							foreach (var pspec in obj_class.list_properties()) {
-								if (pspec.get_name() == "workarea") {
-									this.notify["workarea"](pspec);
-									break;
-								}
-							}
+							this.notify_property("workarea");
+							this.workarea_updated();
 							return true;
 						}
 					}

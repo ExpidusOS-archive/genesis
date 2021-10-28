@@ -38,6 +38,8 @@ namespace Genesis {
 			return this._monitors;
 		}
 
+		public signal void active_window_changed();
+
 		public static Display? from(Gdk.Display disp) {
 			if (display_store == null) display_store = new GLib.HashTable<Gdk.Display, Display>(GLib.direct_hash, GLib.direct_equal);
 			else if (display_store.contains(disp)) return display_store.get(disp);

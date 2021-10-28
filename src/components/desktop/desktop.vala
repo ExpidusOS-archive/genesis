@@ -222,6 +222,7 @@ namespace Genesis {
 								foreach (var obj in wins) {
 										if (obj == null && !(obj is Desktop)) continue;
 										var win = (Desktop)obj;
+										win.hide();
 										win.monitor_name = monitor;
 										win.application = this;
 										win.show();
@@ -242,6 +243,7 @@ namespace Genesis {
 										foreach (var obj in wins) {
 												if (obj == null && !(obj is Desktop)) continue;
 												var win = (Desktop)obj;
+												win.hide();
 												win.monitor_name = monitor;
 												win.application = this;
 												win.show();
@@ -267,6 +269,7 @@ namespace Genesis {
 
 				GLib.Environment.set_application_name(GETTEXT_PACKAGE);
 				GLib.Environment.set_prgname(GETTEXT_PACKAGE);
+				Gdk.set_allowed_backends("x11");
 				Gtk.init();
 				Adw.init();
 				return new DesktopApplication().run(argv);
