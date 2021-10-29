@@ -82,15 +82,11 @@ namespace Genesis.X11 {
 
 		public override string? dbus_id {
 			owned get {
-				uint8[] data;
-				if (this.get_property("_GTK_APPLICATION_ID", "UTF8_STRING", 0, 128, false, out data)) {
-					var sb = new GLib.StringBuilder.sized(data.length);
-        	foreach (var c in data) sb.append_c((char)c);
-					return sb.str;
-				} else if (this.get_property("_GTK_UNIQUE_BUS_NAME", "UTF8_STRING", 0, 128, false, out data)) {
-					var sb = new GLib.StringBuilder.sized(data.length);
-        	foreach (var c in data) sb.append_c((char)c);
-					return sb.str;
+				string? data;
+				if (this.get_utf8_property("_GTK_APPLICATION_ID", 0, false, out data)) {
+					return data;
+				} else if (this.get_utf8_property("_GTK_UNIQUE_BUS_NAME", 0, false, out data)) {
+					return data;
 				}
 				return null;
 			}
@@ -98,11 +94,8 @@ namespace Genesis.X11 {
 
 		public override GLib.MenuModel? menu {
 			owned get {
-				uint8[] data;
-				if (!this.get_property("_GTK_MENUBAR_OBJECT_PATH", "UTF8_STRING", 0, 128, false, out data)) return null;
-				var sb = new GLib.StringBuilder.sized(data.length);
-        foreach (var c in data) sb.append_c((char)c);
-				var gtk_menubar_obj_path = sb.str;
+				string? gtk_menubar_obj_path;
+				if (!this.get_utf8_property("_GTK_MENUBAR_OBJECT_PATH", 0, false, out gtk_menubar_obj_path)) return null;
 
 				var dbus_id = this.dbus_id;
 				if (dbus_id == null) return null;
@@ -118,11 +111,8 @@ namespace Genesis.X11 {
 
 		public override GLib.ActionGroup? action_group_app {
 			owned get {
-				uint8[] data;
-				if (!this.get_property("_GTK_APPLICATION_OBJECT_PATH", "UTF8_STRING", 0, 128, false, out data)) return null;
-				var sb = new GLib.StringBuilder.sized(data.length);
-        foreach (var c in data) sb.append_c((char)c);
-				var gtk_application_obj_path = sb.str;
+				string? gtk_application_obj_path;
+				if (!this.get_utf8_property("_GTK_APPLICATION_OBJECT_PATH", 0, false, out gtk_application_obj_path)) return null;
 
 				var dbus_id = this.dbus_id;
 				if (dbus_id == null) return null;
@@ -138,11 +128,8 @@ namespace Genesis.X11 {
 
 		public override GLib.ActionGroup? action_group_win {
 			owned get {
-				uint8[] data;
-				if (!this.get_property("_GTK_WINDOW_OBJECT_PATH", "UTF8_STRING", 0, 128, false, out data)) return null;
-				var sb = new GLib.StringBuilder.sized(data.length);
-        foreach (var c in data) sb.append_c((char)c);
-				var gtk_window_obj_path = sb.str;
+				string? gtk_window_obj_path;
+				if (!this.get_utf8_property("_GTK_WINDOW_OBJECT_PATH", 0, false, out gtk_window_obj_path)) return null;
 
 				var dbus_id = this.dbus_id;
 				if (dbus_id == null) return null;
@@ -219,6 +206,37 @@ namespace Genesis.X11 {
 
 			data = new uint8[n_items];
 			GLib.Memory.copy(data, prop_ret, n_items * sizeof (ulong));
+			return true;
+		}
+
+		public bool get_utf8_property(string atom, long offset, bool @delete, out string? data) {
+			data = null;
+
+			X.Atom real_type;
+			int real_fmt;
+			ulong n_items;
+			ulong bar;
+			void* prop_ret = null;
+			var raw_data = new uint8[0];
+			var type_atom = this.xdisp.intern_atom("UTF8_STRING", false);
+			var atom_name = this.xdisp.intern_atom(atom, false);
+			var success = this.xdisp.get_window_property(this.xid, atom_name, offset, 1, false, type_atom, out real_type, out real_fmt, out n_items, out bar, out prop_ret) == X.Success;
+
+			if (!success) return false;
+			if (real_type != type_atom) return false;
+
+			success = this.xdisp.get_window_property(this.xid, atom_name, offset, (long)bar, @delete, type_atom, out real_type, out real_fmt, out n_items, out bar, out prop_ret) == X.Success;
+
+			if (!success) return false;
+			if (real_type != type_atom) return false;
+
+			raw_data = new uint8[n_items];
+			stdout.printf("%lu\n", n_items);
+			GLib.Memory.copy(raw_data, prop_ret, n_items * sizeof (ulong));
+
+			var sb = new GLib.StringBuilder.sized(raw_data.length);
+      foreach (var c in raw_data) sb.append_c((char)c);
+			data = sb.str;
 			return true;
 		}
 
