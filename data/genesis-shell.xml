@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<wayfire>
+	<plugin name="genesis-shell">
+		<_short>Genesis Shell</_short>
+		<_long>Genesis Shell</_long>
+		<category>General</category>
+	</plugin>
+</wayfire>

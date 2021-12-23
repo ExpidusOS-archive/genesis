@@ -16,7 +16,7 @@ namespace GenesisAbout {
 
     public int main(string[] argv) {
         GLib.Intl.setlocale(GLib.LocaleCategory.ALL, ""); 
-        GLib.Intl.bindtextdomain(GETTEXT_PACKAGE, Genesis.DATADIR + "/locale");
+        GLib.Intl.bindtextdomain(GETTEXT_PACKAGE, GenesisCommon.DATADIR + "/locale");
         GLib.Intl.bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
         GLib.Intl.textdomain(GETTEXT_PACKAGE);
 

@@ -1,0 +1,7 @@
+[Plugin]
+Module=expidus-desktop
+Name=ExpidusOS - Desktop
+Description=Adds necessary compatibility for desktop devices.
+Authors=Tristan Ross <rosscomputerguy@protonmail.com>
+Copyright=Copyright Midstall Software, 2021
+Website=https://expidusos.com

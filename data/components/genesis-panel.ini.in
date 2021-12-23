@@ -1,8 +1,0 @@
-[Component]
-exec=@BINDIR@/genesis-panel
-respawns=true
-
-[DBus]
-bus=session
-name=com.expidus.GenesisPanel
-obj_path=/com/expidus/GenesisPanel

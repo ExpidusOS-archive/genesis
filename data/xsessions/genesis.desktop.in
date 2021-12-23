@@ -1,6 +1,0 @@
-[Desktop Entry]
-Name=Genesis
-Comment=The shell for ExpidusOS
-Exec=@BINDIR@/genesis-shell
-Type=Application
-DesktopNames=Genesis

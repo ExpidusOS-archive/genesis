@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=Genesis Shell Greeter
-Comment=The default greeter for Genesis Shell
-Exec=@BINDIR@/genesis-greeter
-Type=Application

@@ -19,3 +19,4 @@ build.vala
 *.h
 *.glade~
 !src/**/*.h
+!src/**/*genesis-shell*

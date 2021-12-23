@@ -1,8 +1,0 @@
-[Component]
-exec=@BINDIR@/genesis-notifications
-respawns=true
-
-[DBus]
-bus=session
-name=com.expidus.GenesisNotifications
-obj_path=/com/expidus/GenesisNotifications

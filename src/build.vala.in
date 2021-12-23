@@ -1,7 +1,11 @@
-namespace Genesis {
+namespace GenesisCommon {
+    /**
+      * Version of Genesis Shell
+      */
     public const string VERSION = @VERSION@;
     public const string BINDIR = "@BINDIR@";
     public const string DATADIR = "@DATADIR@";
+    public const string LIBDIR = "@LIBDIR@";
 }
 
 [CCode(cheader_filename="build.h")]

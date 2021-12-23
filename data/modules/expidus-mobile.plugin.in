@@ -1,0 +1,7 @@
+[Plugin]
+Module=expidus-mobile
+Name=ExpidusOS - Mobile
+Description=Adds necessary compatibility for phones and other mobile devices.
+Authors=Tristan Ross <rosscomputerguy@protonmail.com>
+Copyright=Copyright Midstall Software, 2021
+Website=https://expidusos.com

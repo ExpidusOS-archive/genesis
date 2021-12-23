@@ -1,15 +1,21 @@
 # Genesis
 
-Genesis, formerly known as ExpidusOS Shell, is a next-gen desktop environment for mobile devices, desktops, laptops, and many other devices. This desktop environment is highly configurable and programmable with the ExpidusOS Settings application and Lua. New "UI modes" can be programmed and implemented via Lua. Since Lua is used, support for using LGI is built in. In the future, Genesis will be able to interact with services provided by Midstall Software for ExpidusOS to improve usability and quality of life features.
+Genesis Shell is a modular Wayland compositor based on Wayfire. The name "Genesis" was chosen as the shell is designed to be a "next-generation"
+desktop environment. It is designed to be modular, the core of the shell is designed to not rely on any display backends. This means Genesis can be ported
+between any display technology with little hassle.
 
 ## Dependencies
 * `valac` (build)
-* meson (build)
-* Mutter 8
+* `valadoc` (build)
+* `meson` (build)
+* Wayfire
 * gtk4
-* gtk-layer-shell (if `wayland`)
-* lua
+* gtk+3.0
+* gtk-layer-shell
 * devident
 * accountsservice
 * libadwaita 1.0
-* lgi (*optional*)
+* Libhandy 1.0
+* Polkit
+* libpeas
+* libdazzle

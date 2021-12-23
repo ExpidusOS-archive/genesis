@@ -1,0 +1,4 @@
+[portal]
+DBusName=org.freedesktop.impl.portal.desktop.genesis
+Interfaces=org.freedesktop.impl.portal.Settings
+UseIn=Genesis

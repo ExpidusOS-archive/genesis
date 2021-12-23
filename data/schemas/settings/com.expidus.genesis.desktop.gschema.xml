@@ -4,6 +4,7 @@
         <value nick="centered" value="1"/>
         <value nick="scaled" value="2"/>
         <value nick="stretched" value="3"/>
+        <value nick="tiled" value="4"/>
     </enum>
     <schema path="/com/expidus/genesis/desktop/" id="com.expidus.genesis.desktop">
         <key name="wallpaper" type="s">
@@ -25,6 +26,20 @@
             <summary>Favorite Applications</summary>
             <description>
                 List of favorite applications.
+            </description>
+        </key>
+        <key name="dark-theme" type="b">
+            <default>true</default>
+            <summary>Dark Theme</summary>
+            <description>
+                Set this to enable the dark theme.
+            </description>
+        </key>
+        <key name="high-contrast" type="b">
+            <default>false</default>
+            <summary>High Contrast</summary>
+            <description>
+                Set this to enable higher contrast.
             </description>
         </key>
     </schema>
