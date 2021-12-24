@@ -22,6 +22,8 @@ display backend work between instances.
 * libpeas
 * libdazzle
 
+**Note**: as of 2021-12-23, Genesis Shell requires the [ExpidusOS fork of Wayfire](https://github.com/ExpidusOS/wayfire) until pull request [1392](https://github.com/WayfireWM/wayfire/pull/1392) is merged.
+
 ## Implemented Features & Components
 * IBus
 * XDG Desktop Portal
