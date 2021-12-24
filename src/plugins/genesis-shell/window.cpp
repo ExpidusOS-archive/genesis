@@ -14,6 +14,21 @@ static const gchar* genesis_shell_wayfire_window_get_gtk_application_id(GenesisS
 	return g_strdup(get_gtk_shell_app_id(view).c_str());
 }
 
+static const gchar* genesis_shell_wayfire_window_get_dbus_app_menu_path(GenesisShellWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+	return g_strdup(get_gtk_shell_app_menu_path(view).c_str());
+}
+
+static const gchar* genesis_shell_wayfire_window_get_dbus_menubar_path(GenesisShellWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+	return g_strdup(get_gtk_shell_menubar_path(view).c_str());
+}
+
+static const gchar* genesis_shell_wayfire_window_get_dbus_name(GenesisShellWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+	return g_strdup(get_gtk_shell_dbus_name(view).c_str());
+}
+
 static GenesisShellWindowRole genesis_shell_wayfire_window_get_role(GenesisShellWindow* win) {
 	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
 
@@ -88,6 +103,9 @@ static void genesis_shell_wayfire_window_class_init(GenesisShellWayfireWindowCla
 
 	win_class->get_application_id = genesis_shell_wayfire_window_get_application_id;
 	win_class->get_gtk_application_id = genesis_shell_wayfire_window_get_gtk_application_id;
+	win_class->get_dbus_app_menu_path = genesis_shell_wayfire_window_get_dbus_app_menu_path;
+	win_class->get_dbus_menubar_path = genesis_shell_wayfire_window_get_dbus_menubar_path;
+	win_class->get_dbus_name = genesis_shell_wayfire_window_get_dbus_name;
 	win_class->get_role = genesis_shell_wayfire_window_get_role;
 	win_class->get_flags = genesis_shell_wayfire_window_get_flags;
 	win_class->get_state = genesis_shell_wayfire_window_get_state;

@@ -155,7 +155,8 @@ void genesis_shell_wayfire_window_init_view(GenesisShellWindow* self) {
 	auto ptr = surf.get();
 
 	view->add_subsurface(std::move(surf), true);
-	view->set_decoration(ptr);
+	// TODO: fix to work on wayfire-git
+	// view->set_decoration(ptr);
 	view->damage();
 	LOGD("Created decoration ", ptr, " for view \"", view->to_string());
 }

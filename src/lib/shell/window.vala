@@ -50,6 +50,24 @@ namespace GenesisShell {
 				return "";
 			}
 		}
+		
+		public virtual string? dbus_app_menu_path {
+			get {
+				return "";
+			}
+		}
+		
+		public virtual string? dbus_menubar_path {
+			get {
+				return "";
+			}
+		}
+		
+		public virtual string? dbus_name {
+			get {
+				return "";
+			}
+		}
 
 		public string? layout_name {
 			get {
