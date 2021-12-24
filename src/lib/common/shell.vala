@@ -75,6 +75,11 @@ namespace GenesisCommon {
 			* Names of the windows
 			*/
 		public abstract string[] windows { owned get; }
+		
+		/**
+			* Active window name
+			*/
+		public abstract string active_window { owned get; }
 
 		/**
 			* Type of the shell instance
@@ -278,6 +283,11 @@ namespace GenesisCommon {
 			* @param name The name of the module
 			*/
 		public signal void module_removed(string name);
+		
+		/**
+			* The window focus was changed
+			*/
+		public signal void window_changed();
 	}
 
 	/**
@@ -292,6 +302,7 @@ namespace GenesisCommon {
 		public abstract string[] monitors { owned get; }
 		public abstract string[] layouts { owned get; }
 		public abstract string[] windows { owned get; }
+		public abstract string active_window { owned get; }
 
 		public abstract void add_monitor(string name, int x, int y, int width, int height) throws GLib.Error;
 		public abstract void remove_monitor(string name) throws GLib.Error;
@@ -307,5 +318,7 @@ namespace GenesisCommon {
 		
 		public signal void module_added(string name);
 		public signal void module_removed(string name);
+		
+		public signal void window_changed();
 	}
 }

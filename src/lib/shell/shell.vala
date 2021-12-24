@@ -20,6 +20,7 @@ namespace GenesisShell {
 		private uint _obj_id;
 		private uint _own_id;
 		private bool _loading_modules = false;
+		private string _active_window;
 
 		public override string[] monitors {
 			owned get {
@@ -44,6 +45,12 @@ namespace GenesisShell {
 		public override string[] windows {
 			owned get {
 				return this._windows.get_keys_as_array();
+			}
+		}
+
+		public override string active_window {
+			owned get {
+				return this._active_window == null ? "" : this._active_window;
 			}
 		}
 
@@ -205,6 +212,14 @@ namespace GenesisShell {
 			if (this._own_id > 0) {
 				GLib.Bus.unown_name(this._own_id);
 				this._own_id = 0;
+			}
+		}
+		
+		[DBus(visible = false)]
+		public void set_active_window(string? name) {
+			if (name in this.windows || name == null) {
+				this._active_window = name;
+				this.window_changed();
 			}
 		}
 

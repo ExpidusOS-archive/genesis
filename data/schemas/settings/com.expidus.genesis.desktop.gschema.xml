@@ -7,6 +7,13 @@
         <value nick="tiled" value="4"/>
     </enum>
     <schema path="/com/expidus/genesis/desktop/" id="com.expidus.genesis.desktop">
+        <key name="clock-format" type="s">
+            <default>'%I:%M %p'</default>
+            <summary>Clock Format</summary>
+            <description>
+                C "strftime" formatted string for formating the time on the clock.
+            </description>
+        </key>
         <key name="wallpaper" type="s">
             <default>'/usr/share/backgrounds/expidus/default.png'</default>
             <summary>Wallpaper Path</summary>

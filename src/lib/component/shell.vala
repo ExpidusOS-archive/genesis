@@ -42,6 +42,12 @@ namespace GenesisComponent {
 			}
 		}
 
+		public override string active_window {
+			owned get {
+				return this._client.active_window;
+			}
+		}
+
 		public override GenesisCommon.ShellInstanceType instance_type {
 			get {
 				return GenesisCommon.ShellInstanceType.COMPONENT;
@@ -288,6 +294,8 @@ namespace GenesisComponent {
 					GLib.error("Failed to removee layout %s (%s:%d): %s", layout_name, e.domain.to_string(), e.code, e.message);
 				}
 			});
+			
+			this._client.window_changed.connect(() => this.window_changed());
 
 			foreach (var monitor_name in this.monitors) this.load_monitor(monitor_name);
 			foreach (var module_name in this.modules) this.load_module(module_name);

@@ -146,7 +146,7 @@ libgenesis_shell = shared_library('genesis-shell', libgenesis_shell_files,
 	install_dir: [true, true, true, true])
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependencies: [gobject, gtk, libgenesis_common_dep])
 
-libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/widgets/init.vala', 'src/lib/widgets/wallpaper.vala',
+libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/widgets/clock.vala', 'src/lib/widgets/init.vala', 'src/lib/widgets/wallpaper.vala',
 		'src/lib/widgets/widget.vala', 'src/lib/widgets/window.vala')
 libgenesis_widgets = shared_library('genesis-widgets', libgenesis_widgets_files,
 	dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libgenesis_component_dep, libgenesis_shell_dep],
@@ -173,7 +173,7 @@ executable('genesis-shell', ['src/shell/desktop.vala', 'src/shell/panel.vala', '
 
 modules = {
 	'expidus-desktop': [['src/modules/expidus-desktop/layout.vala', 'src/modules/expidus-desktop/module.vala'], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep]],
-	'expidus-mobile': [['src/modules/expidus-mobile/layout.vala', 'src/modules/expidus-mobile/module.vala'], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep]]
+	'expidus-mobile': [['src/modules/expidus-mobile/layout.vala', 'src/modules/expidus-mobile/module.vala'], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep, dazzel]]
 }
 
 foreach name, c : modules

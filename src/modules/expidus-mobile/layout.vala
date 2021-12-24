@@ -65,6 +65,10 @@ namespace ExpidusMobile {
 	}
 
 	public class StatusPanelLayout : GenesisCommon.PanelLayout {
+		private Gtk.Box _box;
+		private GenesisWidgets.SimpleClock _clock;
+		private GLib.Settings _settings;
+		
 		public override Gdk.Rectangle geometry {
 			get {
 				var geo = this.monitor.geometry;
@@ -80,6 +84,24 @@ namespace ExpidusMobile {
 
 		public StatusPanelLayout(GenesisCommon.Shell shell, string monitor_name) {
 			Object(shell: shell, monitor_name: monitor_name);
+			
+			this._settings = new GLib.Settings("com.expidus.genesis.desktop");
+
+			this._box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+
+			this._clock = new GenesisWidgets.SimpleClock();
+			this._settings.bind("clock-format", this._clock, "format", GLib.SettingsBindFlags.GET);
+			this._clock.format = this._settings.get_string("clock-format");
+			this._box.pack_end(this._clock, false, false, 0);
+		}
+		
+		public override void attach(Gtk.Container widget) {
+			widget.add(this._box);
+			this._box.show_all();
+		}
+		
+		public override void detach(Gtk.Container widget) {
+			widget.remove(this._box);
 		}
 
 		public override void draw(Cairo.Context cr) {
@@ -87,6 +109,8 @@ namespace ExpidusMobile {
 			cr.set_source_rgba(0.14, 0.15, 0.23, 1.0);
 			cr.rectangle(0, 0, geometry.width, geometry.height);
 			cr.fill();
+			
+			this._box.draw(cr);
 		}
 	}
 

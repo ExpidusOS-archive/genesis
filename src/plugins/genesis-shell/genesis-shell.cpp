@@ -23,6 +23,15 @@ struct wayfire_genesis_shell_global_cleanup_t {
 class wayfire_genesis_shell : public wf::singleton_plugin_t<wayfire_genesis_shell_global_cleanup_t, true> {
 	private:
 		GenesisShellShell* shell;
+		
+		wf::signal_connection_t focus_changed = [=] (wf::signal_data_t* data) {
+			auto signal_data = (wf::keyboard_focus_changed_signal*)data;
+			if (signal_data->view == nullptr) {
+				genesis_shell_shell_set_active_window(shell, NULL);
+			} else {
+				genesis_shell_shell_set_active_window(shell, signal_data->view->to_string().c_str());
+			}
+		};
 
 		wf::signal_connection_t view_attached = [=] (wf::signal_data_t* data) {
 			auto signal_data = (wf::view_attached_signal*)data;
@@ -54,6 +63,7 @@ class wayfire_genesis_shell : public wf::singleton_plugin_t<wayfire_genesis_shel
 
 		wf::signal_connection_t workarea_changed = [=] (wf::signal_data_t* data) {
 			auto signal_data = (wf::workarea_changed_signal*)data;
+			(void)signal_data;
 
 			for (auto output : wf::get_core().output_layout->get_outputs()) {
 				for (auto view : output->workspace->get_views_in_layer(wf::ALL_LAYERS)) {
@@ -70,8 +80,6 @@ class wayfire_genesis_shell : public wf::singleton_plugin_t<wayfire_genesis_shel
 							case GENESIS_COMMON_LAYOUT_WINDOWING_MODE_BOX:
 								{
 									auto workarea = view->get_output()->workspace->get_workarea();
-									auto geo = view->get_output_geometry();
-
 									view->set_geometry(workarea);
 									view->tile_request(wf::TILED_EDGES_ALL);
 								}
@@ -124,8 +132,6 @@ class wayfire_genesis_shell : public wf::singleton_plugin_t<wayfire_genesis_shel
 						case GENESIS_COMMON_LAYOUT_WINDOWING_MODE_BOX:
 							{
 								auto workarea = view->get_output()->workspace->get_workarea();
-								auto geo = view->get_output_geometry();
-
 								view->set_geometry(workarea);
 								view->tile_request(wf::TILED_EDGES_ALL);
 							}
@@ -169,6 +175,7 @@ class wayfire_genesis_shell : public wf::singleton_plugin_t<wayfire_genesis_shel
 				create_monitor(output);
 			}
 
+			wf::get_core().connect_signal("keyboard-focus-changed", &focus_changed);
 			wf::get_core().output_layout->connect_signal("output-added", &output_added);
 			wf::get_core().output_layout->connect_signal("output-removed", &output_removed);
 

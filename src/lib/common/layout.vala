@@ -108,14 +108,14 @@ namespace GenesisCommon {
 			*
 			* @param widget The parent widget to use
 			*/
-		public virtual void attach(Gtk.Widget widget) {}
+		public virtual void attach(Gtk.Container widget) {}
 
 		/**
 			* Detaches GTK Widgets
 			*
 			* @param widget The parent widget to use
 			*/
-		public virtual void detach(Gtk.Widget widget) {}
+		public virtual void detach(Gtk.Container widget) {}
 
 		/**
 			* Signaled when the layout wants to redraw
