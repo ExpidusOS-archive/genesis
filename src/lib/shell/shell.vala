@@ -225,23 +225,26 @@ namespace GenesisShell {
 
 		[DBus(visible = false)]
 		public void add_window(owned Window win) throws GLib.Error {
-			if (!this._windows.contains(win.to_string())) {
+			var name = win.to_string();
+			if (!this._windows.contains(name)) {
 				win.init(this);
-				this._windows.insert(win.to_string(), (owned)win);
+				this._windows.insert(name, (owned)win);
+				this.window_added(name);
 			}
 		}
 
 		[DBus(visible = false)]
-		public unowned Window? find_window(string key) {
+		public override unowned GenesisCommon.Window? find_window(string key) {
 			return this._windows.get(key);
 		}
 
 		[DBus(visible = false)]
 		public void remove_window(string key) {
 			if (this._windows.contains(key)) {
-				var win = this.find_window(key);
+				var win = this._windows.get(key);
 				this._windows.remove(key);
 				win.destroy();
+				this.window_removed(key);
 			}
 		}
 

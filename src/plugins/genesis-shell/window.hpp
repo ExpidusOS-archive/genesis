@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wayfire/view.hpp>
+#include <genesis-common.h>
 #include <genesis-shell.h>
 
 G_BEGIN_DECLS

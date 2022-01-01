@@ -12,6 +12,7 @@ namespace GenesisComponent {
 		private GLib.HashTable<string, ModuleState?> _plugins;
 		private GLib.HashTable<string, Monitor> _monitors;
 		private GLib.HashTable<string, GenesisCommon.Layout> _module_layouts;
+		private GLib.HashTable<string, Window> _windows;
 		private uint _obj_id;
 
 		public override string[] modules {
@@ -68,6 +69,7 @@ namespace GenesisComponent {
 			this._plugins = new GLib.HashTable<string, ModuleState?>(GLib.str_hash, GLib.str_equal);
 			this._monitors = new GLib.HashTable<string, Monitor>(GLib.str_hash, GLib.str_equal);
 			this._module_layouts = new GLib.HashTable<string, GenesisCommon.Layout>(GLib.str_hash, GLib.str_equal);
+			this._windows = new GLib.HashTable<string, Window>(GLib.str_hash, GLib.str_equal);
 
 			this._engine = new Peas.Engine();
 			this._engine.enable_loader("lua5.1");
@@ -140,6 +142,20 @@ namespace GenesisComponent {
 				}
 			}
 			return null;
+		}
+		
+		[DBus(visible = false)]
+		public override unowned GenesisCommon.Window? find_window(string key) {
+			if (!this._windows.contains(key)) {
+				try {
+					var win = new Window(key);
+					win.init(this);
+					this._windows.insert(key, (owned)win);
+				} catch (GLib.Error e) {
+					GLib.warning("Failed to add window %s (%s): %s", key, e.domain.to_string(), e.message);
+				}
+			}
+			return this._windows.get(key);
 		}
 
 		[DBus(visible = false)]
@@ -293,6 +309,22 @@ namespace GenesisComponent {
 				} catch (GLib.Error e) {
 					GLib.error("Failed to removee layout %s (%s:%d): %s", layout_name, e.domain.to_string(), e.code, e.message);
 				}
+			});
+			
+			this._client.window_added.connect((name) => {
+				var win = new Window(name);
+				try {
+					win.init(this);
+					this._windows.insert(name, (owned)win);
+					this.window_added(name);
+				} catch (GLib.Error e) {
+					GLib.warning("Failed to add window %s (%s): %s", name, e.domain.to_string(), e.message);
+				}
+			});
+
+			this._client.window_removed.connect((name) => {
+				this._windows.remove(name);
+				this.window_removed(name);
 			});
 			
 			this._client.window_changed.connect(() => this.window_changed());

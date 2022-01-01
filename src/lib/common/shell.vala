@@ -138,6 +138,11 @@ namespace GenesisCommon {
 			return null;
 		}
 
+		[DBus(visible = false)]
+		public virtual unowned Window? find_window(string key) {
+			return null;
+		}
+
 		/**
 			* Defines a new module layout
 			*
@@ -283,6 +288,20 @@ namespace GenesisCommon {
 			* @param name The name of the module
 			*/
 		public signal void module_removed(string name);
+
+		/**
+			* Signaled when a window is added
+			*
+			* @param name The name of the window
+			*/
+		public signal void window_added(string name);
+
+		/**
+			* Signaled when a window is removed
+			*
+			* @param name The name of the window
+			*/
+		public signal void window_removed(string name);
 		
 		/**
 			* The window focus was changed
@@ -318,6 +337,9 @@ namespace GenesisCommon {
 		
 		public signal void module_added(string name);
 		public signal void module_removed(string name);
+		
+		public signal void window_added(string name);
+		public signal void window_removed(string name);
 		
 		public signal void window_changed();
 	}

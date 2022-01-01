@@ -121,7 +121,7 @@ build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
 build_conf = configure_file(input: 'src/build.vala.in', output: 'build.vala',
 	configuration: conf_data)
 
-libgenesis_common_files = files('src/lib/common/layout.vala', 'src/lib/common/module.vala', 'src/lib/common/monitor.vala', 'src/lib/common/shell.vala')
+libgenesis_common_files = files('src/lib/common/layout.vala', 'src/lib/common/module.vala', 'src/lib/common/monitor.vala', 'src/lib/common/shell.vala', 'src/lib/common/window.vala')
 libgenesis_common = shared_library('genesis-common', libgenesis_common_files, build_conf,
 	dependencies: [gobject, gio, gtk, libpeas, polkit, devident_client, math],
 	vala_gir: 'GenesisCommon-1.0.gir',
@@ -129,7 +129,7 @@ libgenesis_common = shared_library('genesis-common', libgenesis_common_files, bu
 	install_dir: [true, true, true, true])
 libgenesis_common_dep = declare_dependency(link_with: libgenesis_common, dependencies: [gobject, gio, gtk, libpeas, polkit, devident_client])
 
-libgenesis_component_files = files('src/lib/component/module.vala', 'src/lib/component/monitor.vala', 'src/lib/component/shell.vala')
+libgenesis_component_files = files('src/lib/component/module.vala', 'src/lib/component/monitor.vala', 'src/lib/component/shell.vala', 'src/lib/component/window.vala')
 libgenesis_component = shared_library('genesis-component', libgenesis_component_files,
 	dependencies: [gobject, gtk, libgenesis_common_dep],
 	vala_gir: 'GenesisComponent-1.0.gir',
@@ -146,8 +146,8 @@ libgenesis_shell = shared_library('genesis-shell', libgenesis_shell_files,
 	install_dir: [true, true, true, true])
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependencies: [gobject, gtk, libgenesis_common_dep])
 
-libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/widgets/clock.vala', 'src/lib/widgets/init.vala', 'src/lib/widgets/wallpaper.vala',
-		'src/lib/widgets/widget.vala', 'src/lib/widgets/window.vala')
+libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/widgets/clock.vala', 'src/lib/widgets/global-menu.vala',
+		'src/lib/widgets/init.vala', 'src/lib/widgets/wallpaper.vala', 'src/lib/widgets/widget.vala', 'src/lib/widgets/window.vala')
 libgenesis_widgets = shared_library('genesis-widgets', libgenesis_widgets_files,
 	dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libgenesis_component_dep, libgenesis_shell_dep],
 	vala_gir: 'GenesisWidgets-1.0.gir',

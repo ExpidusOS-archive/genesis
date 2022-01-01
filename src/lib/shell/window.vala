@@ -1,73 +1,9 @@
 namespace GenesisShell {
-	public enum WindowRole {
-		NONE = 0,
-		TOPLEVEL,
-		UNMANAGED,
-		SHELL
-	}
-
-	[Flags]
-	public enum WindowFlags {
-		MAPPED,
-		FOCUSABLE,
-		DECORATABLE
-	}
-
-	[Flags]
-	public enum WindowState {
-		ACTIVE,
-		STICKY,
-		VISIBLE,
-		MINIMIZED,
-		MAXIMIZED,
-		FULLSCREEN
-	}
-
 	[DBus(name = "com.expidus.genesis.Window")]
-	public abstract class Window : GLib.Object {
-		private Shell _shell;
+	public abstract class Window : GenesisCommon.Window {
 		private string? _layout_name;
 		private WindowLayout? _window_layout;
 		private uint _obj_id;
-
-		[DBus(visible = false)]
-		public abstract Gdk.Rectangle geometry { get; }
-
-		public abstract string monitor_name { get; }
-
-		public virtual WindowRole role { get; }
-		public virtual WindowFlags flags { get; }
-		public virtual WindowState state { get; set; }
-
-		public virtual string? application_id {
-			get {
-				return "";
-			}
-		}
-
-		public virtual string? gtk_application_id {
-			get {
-				return "";
-			}
-		}
-		
-		public virtual string? dbus_app_menu_path {
-			get {
-				return "";
-			}
-		}
-		
-		public virtual string? dbus_menubar_path {
-			get {
-				return "";
-			}
-		}
-		
-		public virtual string? dbus_name {
-			get {
-				return "";
-			}
-		}
 
 		public string? layout_name {
 			get {
@@ -101,41 +37,22 @@ namespace GenesisShell {
 			}
 		}
 
-		[DBus(visible = false)]
-		public Shell shell {
-			get {
-				return this._shell;
-			}
-			construct {
-				this._shell = value;
-			}
-		}
-
 		~Window() {
 		}
 
 		[DBus(visible = false)]
 		public void destroy() {
 			if (this._obj_id > 0) {
-				this._shell.dbus_connection.unregister_object(this._obj_id);
+				this.shell.dbus_connection.unregister_object(this._obj_id);
 				this._obj_id = 0;
 			}
 		}
 
-		[DBus(name = "GetGeometry")]
-		public void get_geometry_dbus(out int x, out int y, out int width, out int height) throws GLib.Error {
-			x = this.geometry.x;
-			y = this.geometry.y;
-			width = this.geometry.width;
-			height = this.geometry.height;
-		}
-
 		[DBus(visible = false)]
-		public virtual bool init(Shell shell) throws GLib.Error {
-			if (this._shell != null) return false;
+		public override bool init(GenesisCommon.Shell shell) throws GLib.Error {
+			if (!base.init(shell)) return false;
 
-			this._shell = shell;
-			this._obj_id = this.shell.dbus_connection.register_object("/com/expidus/genesis/shell/window/%s".printf(this.to_string().down().replace("-", "").replace(" ", "")), this);
+			this._obj_id = this.shell.dbus_connection.register_object("/com/expidus/genesis/shell/window/%s".printf(this.to_string().down().replace("-", "").replace(" ", "")), (GenesisCommon.Window)this);
 			return true;
 		}
 

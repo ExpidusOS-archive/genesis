@@ -4,78 +4,88 @@
 
 G_DEFINE_TYPE(GenesisShellWayfireWindow, genesis_shell_wayfire_window, GENESIS_SHELL_TYPE_WINDOW);
 
-static const gchar* genesis_shell_wayfire_window_get_application_id(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static gchar* genesis_shell_wayfire_window_get_application_id(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 	return g_strdup(view->get_app_id().c_str());
 }
 
-static const gchar* genesis_shell_wayfire_window_get_gtk_application_id(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static gchar* genesis_shell_wayfire_window_get_gtk_application_id(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 	return g_strdup(get_gtk_shell_app_id(view).c_str());
 }
 
-static const gchar* genesis_shell_wayfire_window_get_dbus_app_menu_path(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static gchar* genesis_shell_wayfire_window_get_dbus_app_menu_path(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 	return g_strdup(get_gtk_shell_app_menu_path(view).c_str());
 }
 
-static const gchar* genesis_shell_wayfire_window_get_dbus_menubar_path(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static gchar* genesis_shell_wayfire_window_get_dbus_menubar_path(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 	return g_strdup(get_gtk_shell_menubar_path(view).c_str());
 }
 
-static const gchar* genesis_shell_wayfire_window_get_dbus_name(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static gchar* genesis_shell_wayfire_window_get_dbus_win_path(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
+	return g_strdup(get_gtk_shell_win_path(view).c_str());
+}
+
+static gchar* genesis_shell_wayfire_window_get_dbus_app_path(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
+	return g_strdup(get_gtk_shell_app_path(view).c_str());
+}
+
+static gchar* genesis_shell_wayfire_window_get_dbus_name(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 	return g_strdup(get_gtk_shell_dbus_name(view).c_str());
 }
 
-static GenesisShellWindowRole genesis_shell_wayfire_window_get_role(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static GenesisCommonWindowRole genesis_shell_wayfire_window_get_role(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 
 	switch (view->role) {
-		case wf::VIEW_ROLE_TOPLEVEL: return GENESIS_SHELL_WINDOW_ROLE_TOPLEVEL;
-		case wf::VIEW_ROLE_UNMANAGED: return GENESIS_SHELL_WINDOW_ROLE_UNMANAGED;
-		case wf::VIEW_ROLE_DESKTOP_ENVIRONMENT: return GENESIS_SHELL_WINDOW_ROLE_SHELL;
+		case wf::VIEW_ROLE_TOPLEVEL: return GENESIS_COMMON_WINDOW_ROLE_TOPLEVEL;
+		case wf::VIEW_ROLE_UNMANAGED: return GENESIS_COMMON_WINDOW_ROLE_UNMANAGED;
+		case wf::VIEW_ROLE_DESKTOP_ENVIRONMENT: return GENESIS_COMMON_WINDOW_ROLE_SHELL;
 	}
-	return GENESIS_SHELL_WINDOW_ROLE_NONE;
+	return GENESIS_COMMON_WINDOW_ROLE_NONE;
 }
 
-static GenesisShellWindowFlags genesis_shell_wayfire_window_get_flags(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static GenesisCommonWindowFlags genesis_shell_wayfire_window_get_flags(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 
 	uint8_t flags = 0;
-	if (view->is_mapped()) flags |= GENESIS_SHELL_WINDOW_FLAGS_MAPPED;
-	if (view->is_focuseable()) flags |= GENESIS_SHELL_WINDOW_FLAGS_FOCUSABLE;
-	if (view->should_be_decorated()) flags |= GENESIS_SHELL_WINDOW_FLAGS_DECORATABLE;
-	return (GenesisShellWindowFlags)flags;
+	if (view->is_mapped()) flags |= GENESIS_COMMON_WINDOW_FLAGS_MAPPED;
+	if (view->is_focuseable()) flags |= GENESIS_COMMON_WINDOW_FLAGS_FOCUSABLE;
+	if (view->should_be_decorated()) flags |= GENESIS_COMMON_WINDOW_FLAGS_DECORATABLE;
+	return (GenesisCommonWindowFlags)flags;
 }
 
-static GenesisShellWindowState genesis_shell_wayfire_window_get_state(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static GenesisCommonWindowState genesis_shell_wayfire_window_get_state(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 
 	uint8_t state = 0;
-	if (view->activated) state |= GENESIS_SHELL_WINDOW_STATE_ACTIVE;
-	if (view->sticky) state |= GENESIS_SHELL_WINDOW_STATE_STICKY;
-	if (view->minimized) state |= GENESIS_SHELL_WINDOW_STATE_MINIMIZED;
-	if (view->tiled_edges == wf::TILED_EDGES_ALL) state |= GENESIS_SHELL_WINDOW_STATE_MAXIMIZED;
-	if (view->fullscreen) state |= GENESIS_SHELL_WINDOW_STATE_FULLSCREEN;
-	return (GenesisShellWindowState)state;
+	if (view->activated) state |= GENESIS_COMMON_WINDOW_STATE_ACTIVE;
+	if (view->sticky) state |= GENESIS_COMMON_WINDOW_STATE_STICKY;
+	if (view->minimized) state |= GENESIS_COMMON_WINDOW_STATE_MINIMIZED;
+	if (view->tiled_edges == wf::TILED_EDGES_ALL) state |= GENESIS_COMMON_WINDOW_STATE_MAXIMIZED;
+	if (view->fullscreen) state |= GENESIS_COMMON_WINDOW_STATE_FULLSCREEN;
+	return (GenesisCommonWindowState)state;
 }
 
-static void genesis_shell_wayfire_window_set_state(GenesisShellWindow* win, GenesisShellWindowState state) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static void genesis_shell_wayfire_window_set_state(GenesisCommonWindow* win, GenesisCommonWindowState state) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 
-	view->set_activated(state & GENESIS_SHELL_WINDOW_STATE_ACTIVE);
-	view->set_sticky(state & GENESIS_SHELL_WINDOW_STATE_STICKY);
-	view->minimize_request(state & GENESIS_SHELL_WINDOW_STATE_MINIMIZED);
+	view->set_activated(state & GENESIS_COMMON_WINDOW_STATE_ACTIVE);
+	view->set_sticky(state & GENESIS_COMMON_WINDOW_STATE_STICKY);
+	view->minimize_request(state & GENESIS_COMMON_WINDOW_STATE_MINIMIZED);
 
-	if (state & GENESIS_SHELL_WINDOW_STATE_MAXIMIZED) view->tile_request(wf::TILED_EDGES_ALL);
+	if (state & GENESIS_COMMON_WINDOW_STATE_MAXIMIZED) view->tile_request(wf::TILED_EDGES_ALL);
 
-	view->set_fullscreen(state & GENESIS_SHELL_WINDOW_STATE_FULLSCREEN);
+	view->set_fullscreen(state & GENESIS_COMMON_WINDOW_STATE_FULLSCREEN);
 }
 
-static void genesis_shell_wayfire_window_get_geometry(GenesisShellWindow* win, GdkRectangle* rect) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static void genesis_shell_wayfire_window_get_geometry(GenesisCommonWindow* win, GdkRectangle* rect) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 
 	auto geo = view->get_output_geometry();
 	rect->x = geo.x;
@@ -84,8 +94,8 @@ static void genesis_shell_wayfire_window_get_geometry(GenesisShellWindow* win, G
 	rect->height = geo.height;
 }
 
-static const gchar* genesis_shell_wayfire_window_get_monitor_name(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static gchar* genesis_shell_wayfire_window_get_monitor_name(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 	return g_strdup(view->get_output()->to_string().c_str());
 }
 
@@ -99,19 +109,23 @@ static void genesis_shell_wayfire_window_init(GenesisShellWayfireWindow* self) {
 }
 
 static void genesis_shell_wayfire_window_class_init(GenesisShellWayfireWindowClass* klass) {
+	GenesisCommonWindowClass* common_win_class = GENESIS_COMMON_WINDOW_CLASS(klass);
 	GenesisShellWindowClass* win_class = GENESIS_SHELL_WINDOW_CLASS(klass);
 
-	win_class->get_application_id = genesis_shell_wayfire_window_get_application_id;
-	win_class->get_gtk_application_id = genesis_shell_wayfire_window_get_gtk_application_id;
-	win_class->get_dbus_app_menu_path = genesis_shell_wayfire_window_get_dbus_app_menu_path;
-	win_class->get_dbus_menubar_path = genesis_shell_wayfire_window_get_dbus_menubar_path;
-	win_class->get_dbus_name = genesis_shell_wayfire_window_get_dbus_name;
-	win_class->get_role = genesis_shell_wayfire_window_get_role;
-	win_class->get_flags = genesis_shell_wayfire_window_get_flags;
-	win_class->get_state = genesis_shell_wayfire_window_get_state;
-	win_class->set_state = genesis_shell_wayfire_window_set_state;
-	win_class->get_geometry = genesis_shell_wayfire_window_get_geometry;
-	win_class->get_monitor_name = genesis_shell_wayfire_window_get_monitor_name;
+	common_win_class->get_application_id = genesis_shell_wayfire_window_get_application_id;
+	common_win_class->get_gtk_application_id = genesis_shell_wayfire_window_get_gtk_application_id;
+	common_win_class->get_dbus_app_menu_path = genesis_shell_wayfire_window_get_dbus_app_menu_path;
+	common_win_class->get_dbus_menubar_path = genesis_shell_wayfire_window_get_dbus_menubar_path;
+	common_win_class->get_dbus_win_path = genesis_shell_wayfire_window_get_dbus_win_path;
+	common_win_class->get_dbus_app_path = genesis_shell_wayfire_window_get_dbus_app_path;
+	common_win_class->get_dbus_name = genesis_shell_wayfire_window_get_dbus_name;
+	common_win_class->get_role = genesis_shell_wayfire_window_get_role;
+	common_win_class->get_flags = genesis_shell_wayfire_window_get_flags;
+	common_win_class->get_state = genesis_shell_wayfire_window_get_state;
+	common_win_class->set_state = genesis_shell_wayfire_window_set_state;
+	common_win_class->get_geometry = genesis_shell_wayfire_window_get_geometry;
+	common_win_class->get_monitor_name = genesis_shell_wayfire_window_get_monitor_name;
+
 	win_class->to_string = genesis_shell_wayfire_window_to_string;
 }
 
