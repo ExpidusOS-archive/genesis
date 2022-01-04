@@ -219,7 +219,7 @@ namespace GenesisShell {
 		public void set_active_window(string? name) {
 			if (name in this.windows || name == null) {
 				this._active_window = name;
-				this.window_changed();
+				this.window_changed(name == null ? "" : name);
 			}
 		}
 

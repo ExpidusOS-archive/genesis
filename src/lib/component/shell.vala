@@ -13,6 +13,7 @@ namespace GenesisComponent {
 		private GLib.HashTable<string, Monitor> _monitors;
 		private GLib.HashTable<string, GenesisCommon.Layout> _module_layouts;
 		private GLib.HashTable<string, Window> _windows;
+		private string _active_window;
 		private uint _obj_id;
 
 		public override string[] modules {
@@ -45,7 +46,8 @@ namespace GenesisComponent {
 
 		public override string active_window {
 			owned get {
-				return this._client.active_window;
+				if (this._active_window == null) return this._client.active_window;
+				return this._active_window;
 			}
 		}
 
@@ -327,7 +329,10 @@ namespace GenesisComponent {
 				this.window_removed(name);
 			});
 			
-			this._client.window_changed.connect(() => this.window_changed());
+			this._client.window_changed.connect((name) => {
+				this._active_window = name;
+				this.window_changed(name);
+			});
 
 			foreach (var monitor_name in this.monitors) this.load_monitor(monitor_name);
 			foreach (var module_name in this.modules) this.load_module(module_name);

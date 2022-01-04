@@ -46,16 +46,14 @@ namespace GenesisWidgets {
     }
     
     private MenuImpl get_current() {
-      if (this.shell.active_window.length > 0 && this.shell.active_window in this.shell.windows) {
-        var win = this.shell.find_window(this.shell.active_window);
-        if (win != null) {
-          if (win.dbus_name != null && win.dbus_menubar_path != null && win.dbus_name.length > 0 && win.dbus_menubar_path.length > 0) {
-            GLib.debug("Using window for global menu");
-            var app_action_group = GLib.DBusActionGroup.@get(this.shell.dbus_connection, win.dbus_name, win.dbus_app_path);
-            var win_action_group = GLib.DBusActionGroup.@get(this.shell.dbus_connection, win.dbus_name, win.dbus_win_path);
-            var menu = GLib.DBusMenuModel.@get(this.shell.dbus_connection, win.dbus_name, win.dbus_menubar_path);
-            return MenuImpl(app_action_group, win_action_group, menu);
-          }
+      var win = this.shell.find_active_window();
+      if (win != null) {
+        if (win.dbus_name != null && win.dbus_menubar_path != null && win.dbus_name.length > 0 && win.dbus_menubar_path.length > 0) {
+          GLib.debug("Using window %s for global menu", win.to_string());
+          var app_action_group = GLib.DBusActionGroup.@get(this.shell.dbus_connection, win.dbus_name, win.dbus_app_path);
+          var win_action_group = GLib.DBusActionGroup.@get(this.shell.dbus_connection, win.dbus_name, win.dbus_win_path);
+          var menu = GLib.DBusMenuModel.@get(this.shell.dbus_connection, win.dbus_name, win.dbus_menubar_path);
+          return MenuImpl(app_action_group, win_action_group, menu);
         }
       }
 

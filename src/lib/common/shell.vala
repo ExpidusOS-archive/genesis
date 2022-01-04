@@ -142,6 +142,21 @@ namespace GenesisCommon {
 		public virtual unowned Window? find_window(string key) {
 			return null;
 		}
+		
+		[DBus(visible = false)]
+		public virtual unowned Window? find_active_window() {
+			if (this.active_window.length > 0) {
+				unowned var win = this.find_window(this.active_window);
+				if (win != null) return win;
+			}
+
+			foreach (var name in this.windows) {
+				unowned var win = this.find_window(name);
+				if (win == null) continue;
+				if (WindowState.ACTIVE in win.state) return win;
+			}
+			return null;
+		}
 
 		/**
 			* Defines a new module layout
@@ -305,8 +320,10 @@ namespace GenesisCommon {
 		
 		/**
 			* The window focus was changed
+			*
+			* @param name The name of the window
 			*/
-		public signal void window_changed();
+		public signal void window_changed(string name);
 	}
 
 	/**
@@ -341,6 +358,6 @@ namespace GenesisCommon {
 		public signal void window_added(string name);
 		public signal void window_removed(string name);
 		
-		public signal void window_changed();
+		public signal void window_changed(string name);
 	}
 }
