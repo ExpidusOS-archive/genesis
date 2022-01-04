@@ -99,8 +99,8 @@ static gchar* genesis_shell_wayfire_window_get_monitor_name(GenesisCommonWindow*
 	return g_strdup(view->get_output()->to_string().c_str());
 }
 
-static gchar* genesis_shell_wayfire_window_to_string(GenesisShellWindow* win) {
-	auto view = genesis_shell_wayfire_window_get_wayfire_view(win);
+static gchar* genesis_shell_wayfire_window_to_string(GenesisCommonWindow* win) {
+	auto view = genesis_shell_wayfire_window_get_wayfire_view(GENESIS_SHELL_WINDOW(win));
 	return g_strdup(view->to_string().c_str());
 }
 
@@ -110,7 +110,6 @@ static void genesis_shell_wayfire_window_init(GenesisShellWayfireWindow* self) {
 
 static void genesis_shell_wayfire_window_class_init(GenesisShellWayfireWindowClass* klass) {
 	GenesisCommonWindowClass* common_win_class = GENESIS_COMMON_WINDOW_CLASS(klass);
-	GenesisShellWindowClass* win_class = GENESIS_SHELL_WINDOW_CLASS(klass);
 
 	common_win_class->get_application_id = genesis_shell_wayfire_window_get_application_id;
 	common_win_class->get_gtk_application_id = genesis_shell_wayfire_window_get_gtk_application_id;
@@ -125,8 +124,7 @@ static void genesis_shell_wayfire_window_class_init(GenesisShellWayfireWindowCla
 	common_win_class->set_state = genesis_shell_wayfire_window_set_state;
 	common_win_class->get_geometry = genesis_shell_wayfire_window_get_geometry;
 	common_win_class->get_monitor_name = genesis_shell_wayfire_window_get_monitor_name;
-
-	win_class->to_string = genesis_shell_wayfire_window_to_string;
+	common_win_class->to_string = genesis_shell_wayfire_window_to_string;
 }
 
 GenesisShellWindow* genesis_shell_wayfire_window_new(wayfire_view view) {

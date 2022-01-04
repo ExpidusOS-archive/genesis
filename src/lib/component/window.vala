@@ -99,5 +99,9 @@ namespace GenesisComponent {
       }
       return false;
     }
+		
+		public override string to_string() {
+			return this.name;
+		}
   }
 }

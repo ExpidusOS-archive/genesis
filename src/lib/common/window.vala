@@ -82,6 +82,9 @@ namespace GenesisCommon {
 			}
 		}
 
+		[DBus(visible = false)]
+		public abstract string to_string();
+
 		/**
 			* Similar to ''GLib.Initable.init''
 			*
@@ -106,6 +109,11 @@ namespace GenesisCommon {
 			width = this.geometry.width;
 			height = this.geometry.height;
     }
+
+		[DBus(name = "ToString")]
+		public string to_string_dbus() throws GLib.Error {
+			return this.to_string();
+		}
   }
   
 	[DBus(name = "com.expidus.genesis.Window")]

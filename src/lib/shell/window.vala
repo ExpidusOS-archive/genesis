@@ -57,13 +57,8 @@ namespace GenesisShell {
 		}
 
 		[DBus(visible = false)]
-		public virtual string to_string() {
+		public override string to_string() {
 			return "%p".printf(this);
-		}
-
-		[DBus(name = "ToString")]
-		public string to_string_dbus() throws GLib.Error {
-			return this.to_string();
 		}
 	}
 }
