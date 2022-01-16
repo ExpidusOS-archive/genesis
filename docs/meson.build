@@ -18,6 +18,8 @@ basic_command = [
 	'--pkg', 'libhandy-1',
   '--pkg', 'libpulse',
 	'--pkg', 'libpulse-mainloop-glib',
+  '--pkg', 'libnm',
+  '--pkg', 'libmm-glib',
 	'--vapidir=' + join_paths(meson.source_root(), 'vapi'),
 	'--vapidir=' + meson.project_build_root(),
 	'--importdir=' + join_paths(get_option('prefix'), get_option('datadir'), 'gtk-doc', 'html'),

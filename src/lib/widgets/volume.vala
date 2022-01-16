@@ -26,8 +26,8 @@ namespace GenesisWidgets {
       this._main_loop = new PulseAudio.GLibMainLoop(this.main_context);
     }
 
-    public async bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
-      GLib.SourceFunc cb = init.callback;
+    public override async bool init_async(int io_pri = GLib.Priority.DEFAULT, GLib.Cancellable? cancellable = null) throws GLib.Error {
+      GLib.SourceFunc cb = init_async.callback;
       this._ctx = new PulseAudio.Context(this._main_loop.get_api(), null);
       var ret = false;
       var connected = false;
@@ -44,9 +44,9 @@ namespace GenesisWidgets {
                 GLib.Idle.add((owned) cb);
               } else {
                 GLib.Timeout.add_seconds(1, () => {
-                  this.init.begin(cancellable, (obj, res) => {
+                  this.init_async.begin(io_pri, cancellable, (obj, res) => {
                     try {
-                      ret = this.init.end(res);
+                      ret = this.init_async.end(res);
                     } catch (GLib.Error e) {
                       error = e;
                     }

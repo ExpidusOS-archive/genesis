@@ -80,6 +80,7 @@ namespace ExpidusDesktop {
 		private Gtk.Box _box;
 		private GenesisWidgets.SimpleClock _clock;
 		private GenesisWidgets.VolumePanelIcon _volume;
+		private GenesisWidgets.NetworkPanelIcon _net;
 		private GLib.Settings _settings;
 		
 		public override Gdk.Rectangle geometry {
@@ -120,12 +121,20 @@ namespace ExpidusDesktop {
 			this._box.pack_end(this._clock, false, false, 0);
 
 			this._volume = new GenesisWidgets.VolumePanelIcon();
-			this._volume.init.begin(null, (obj, res) => {
+			this._volume.init_async.begin(GLib.Priority.DEFAULT, null, (obj, res) => {
 				try {
-					this._volume.init.end(res);
+					this._volume.init_async.end(res);
 				} catch (GLib.Error e) {}
 			});
 			this._box.pack_end(this._volume, false, false, 0);
+
+			this._net = new GenesisWidgets.NetworkPanelIcon();
+			this._net.init_async.begin(GLib.Priority.DEFAULT, null, (obj, res) => {
+				try {
+					this._net.init_async.end(res);
+				} catch (GLib.Error e) {}
+			});
+			this._box.pack_end(this._net, false, false, 0);
 		}
 		
 		public override void attach(Gtk.Container widget) {

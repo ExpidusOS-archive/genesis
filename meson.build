@@ -29,6 +29,8 @@ gio = [dependency('gio-2.0'), dependency('gio-unix-2.0')]
 libpeas = dependency('libpeas-1.0')
 libpulse = [dependency('libpulse'), dependency('libpulse-mainloop-glib')]
 devident_client = dependency('devident-client-1.0')
+networkmanager = dependency('libnm')
+modemmanager = dependency('libmm-glib')
 polkit = [dependency('polkit-agent-1'), dependency('polkit-gobject-1')]
 libhandy = dependency('libhandy-1')
 wayfire = dependency('wayfire')
@@ -148,13 +150,14 @@ libgenesis_shell = shared_library('genesis-shell', libgenesis_shell_files,
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependencies: [gobject, gtk, libgenesis_common_dep])
 
 libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/widgets/clock.vala', 'src/lib/widgets/global-menu.vala',
-		'src/lib/widgets/init.vala', 'src/lib/widgets/volume.vala', 'src/lib/widgets/wallpaper.vala', 'src/lib/widgets/widget.vala', 'src/lib/widgets/window.vala')
+		'src/lib/widgets/init.vala', 'src/lib/widgets/net.vala', 'src/lib/widgets/volume.vala', 'src/lib/widgets/wallpaper.vala',
+		'src/lib/widgets/widget.vala', 'src/lib/widgets/window.vala')
 libgenesis_widgets = shared_library('genesis-widgets', libgenesis_widgets_files,
-	dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libgenesis_component_dep, libgenesis_shell_dep, libpulse],
+	dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libgenesis_component_dep, libgenesis_shell_dep, libpulse, networkmanager, modemmanager],
 	vala_gir: 'GenesisWidgets-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
-libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libpulse])
+libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libpulse, networkmanager, modemmanager])
 
 shared_module('genesis-shell-wayfire', ['src/plugins/genesis-shell/decoration.cpp', 'src/plugins/genesis-shell/genesis-shell.cpp',
 		'src/plugins/genesis-shell/monitor.cpp', 'src/plugins/genesis-shell/window.cpp'],
