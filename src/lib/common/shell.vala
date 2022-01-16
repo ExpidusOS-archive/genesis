@@ -38,6 +38,16 @@ namespace GenesisCommon {
 			*/
 		UNSUPPORTED_METHOD
 	}
+	
+	/**
+		* Different types of UI elements
+		*/
+	public enum UIElement {
+		NONE = 0,
+		POWER,
+		USER,
+		APPS
+	}
 
 	/**
 		* The Shell itself
@@ -91,6 +101,18 @@ namespace GenesisCommon {
 			*/
 		[DBus(visible = false)]
 		public abstract GLib.DBusConnection? dbus_connection { get; construct; }
+		
+		/**
+			* Triggers a particular UI element to show up
+			*
+			* @param el The UI element type
+			* @throws GLib.Error Error for DBus
+			* @return Returns true if the element was shown, false if not.
+			*/
+		public virtual bool show_ui(UIElement el) throws GLib.Error {
+			this.ui_element_shown(el);
+			return true;
+		}
 
 		/**
 			* Rescans modules and loads any new ones
@@ -254,6 +276,13 @@ namespace GenesisCommon {
 			this._devident = (DevidentClient.Context)GLib.Initable.@new(typeof (DevidentClient.Context), cancellable, null);
 			return true;
 		}
+		
+		/**
+			* Signaled when a UI element is shown
+			*
+			* @param el The UI element type
+			*/
+		public signal void ui_element_shown(UIElement el);
 
 		/**
 			* Signaled when the monitor overrides are loaded in
@@ -340,11 +369,15 @@ namespace GenesisCommon {
 		public abstract string[] windows { owned get; }
 		public abstract string active_window { owned get; }
 
+		public abstract bool show_ui(UIElement el) throws GLib.Error;
+
 		public abstract void add_monitor(string name, int x, int y, int width, int height) throws GLib.Error;
 		public abstract void remove_monitor(string name) throws GLib.Error;
 
 		public abstract void rescan_modules() throws GLib.Error;
 		public abstract bool load_module(string name) throws GLib.Error;
+
+		public signal void ui_element_shown(UIElement el);
 
 		public signal void monitor_added(string name);
 		public signal void monitor_removed(string name);

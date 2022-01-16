@@ -16,6 +16,8 @@ basic_command = [
 	'--pkg', 'polkit-gobject-1',
 	'--pkg', 'gtk-layer-shell-0',
 	'--pkg', 'libhandy-1',
+  '--pkg', 'libpulse',
+	'--pkg', 'libpulse-mainloop-glib',
 	'--vapidir=' + join_paths(meson.source_root(), 'vapi'),
 	'--vapidir=' + meson.project_build_root(),
 	'--importdir=' + join_paths(get_option('prefix'), get_option('datadir'), 'gtk-doc', 'html'),

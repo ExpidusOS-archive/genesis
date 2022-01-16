@@ -7,8 +7,8 @@ namespace PolkitAgent {
 		[CCode (has_construct_function = false)]
 		protected Listener ();
 		public virtual async bool initiate_authentication (string action_id, string message, string icon_name, Polkit.Details details, string cookie, GLib.List<Polkit.Identity> identities, GLib.Cancellable? cancellable) throws GLib.Error;
-		public void* register (PolkitAgent.RegisterFlags flags, Polkit.Subject subject, string object_path, GLib.Cancellable? cancellable = null) throws GLib.Error;
-		public void* register_with_options (PolkitAgent.RegisterFlags flags, Polkit.Subject subject, string object_path, GLib.Variant? options, GLib.Cancellable? cancellable = null) throws GLib.Error;
+		public void* register (PolkitAgent.RegisterFlags flags, Polkit.Subject subject, string? object_path, GLib.Cancellable? cancellable = null) throws GLib.Error;
+		public void* register_with_options (PolkitAgent.RegisterFlags flags, Polkit.Subject subject, string? object_path, GLib.Variant? options, GLib.Cancellable? cancellable = null) throws GLib.Error;
 		public static void unregister (void* registration_handle);
 	}
 	[CCode (cheader_filename = "polkitagent/polkitagent.h", type_id = "polkit_agent_session_get_type ()")]

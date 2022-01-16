@@ -79,7 +79,7 @@ namespace ExpidusDesktop {
 	public class StatusPanelLayout : GenesisCommon.PanelLayout {
 		private Gtk.Box _box;
 		private GenesisWidgets.SimpleClock _clock;
-		private GenesisWidgets.GlobalMenu _global_menu;
+		private GenesisWidgets.VolumePanelIcon _volume;
 		private GLib.Settings _settings;
 		
 		public override Gdk.Rectangle geometry {
@@ -99,16 +99,33 @@ namespace ExpidusDesktop {
 			Object(shell: shell, monitor_name: monitor_name);
 			
 			this._settings = new GLib.Settings("com.expidus.genesis.desktop");
-
 			this._box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
-			
-			this._global_menu = new GenesisWidgets.GlobalMenu(shell);
-			this._box.pack_start(this._global_menu, true, true, 0);
+
+			this.load_widgets.begin((obj, res) => this.load_widgets.end(res));
+		}
+		
+		private async void load_widgets() {	
+			var btn = new Gtk.Button();
+			btn.image = new Gtk.Image.from_icon_name("burst", Gtk.IconSize.LARGE_TOOLBAR);
+			btn.clicked.connect(() => {
+				try {
+					shell.show_ui(GenesisCommon.UIElement.APPS);
+				} catch (GLib.Error e) {}
+			});
+			this._box.pack_start(btn, false, false, 0);
 
 			this._clock = new GenesisWidgets.SimpleClock();
 			this._settings.bind("clock-format", this._clock, "format", GLib.SettingsBindFlags.GET);
 			this._clock.format = this._settings.get_string("clock-format");
 			this._box.pack_end(this._clock, false, false, 0);
+
+			this._volume = new GenesisWidgets.VolumePanelIcon();
+			this._volume.init.begin(null, (obj, res) => {
+				try {
+					this._volume.init.end(res);
+				} catch (GLib.Error e) {}
+			});
+			this._box.pack_end(this._volume, false, false, 0);
 		}
 		
 		public override void attach(Gtk.Container widget) {

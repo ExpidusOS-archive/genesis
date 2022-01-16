@@ -124,6 +124,12 @@ namespace GenesisComponent {
 			Object(dbus_connection: dbus_connection);
 		}
 
+		public override bool show_ui(GenesisCommon.UIElement el) throws GLib.Error {
+			this._client.show_ui(el);
+			this.ui_element_shown(el);
+			return true;
+		}
+
 		[DBus(visible = false)]
 		public override GenesisCommon.Layout? get_layout_from_name(string name) {
 			foreach (var value in this._module_layouts.get_values()) {
