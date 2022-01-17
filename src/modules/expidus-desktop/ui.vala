@@ -3,12 +3,32 @@ namespace ExpidusDesktop {
   public class UserDashboard : GenesisWidgets.LayerWindow {
     private PulseAudio.GLibMainLoop _pa_main_loop;
     private PulseAudio.Context _pa_ctx;
+    
+    private GWeather.Info _gw_info;
 
     [GtkChild]
     private unowned Gtk.Box volume_box;
     
     [GtkChild]
     private unowned Gtk.Scale volume_slider;
+    
+    [GtkChild]
+    private unowned Gtk.Stack weather_stack;
+    
+    [GtkChild]
+    private unowned GWeather.LocationEntry weather_search;
+    
+    [GtkChild]
+    private unowned Gtk.Image weather_icon;
+    
+    [GtkChild]
+    private unowned Gtk.Label weather_location;
+    
+    [GtkChild]
+    private unowned Gtk.Label weather_temp;
+    
+    [GtkChild]
+    private unowned Gtk.Label weather_wind;
     
     public UserDashboard(GenesisComponent.Monitor monitor) {
       Object(application: monitor.shell.application, monitor_name: monitor.name, layer: GtkLayerShell.Layer.TOP);
@@ -23,7 +43,30 @@ namespace ExpidusDesktop {
 
     construct {
       this._pa_main_loop = new PulseAudio.GLibMainLoop(GLib.MainContext.@default());
+      this._gw_info = new GWeather.Info(this.weather_search.location);
+      this._gw_info.set_enabled_providers(GWeather.Provider.ALL);
+      this._gw_info.set_contact_info("inquiry@midstall.com");
+      this._gw_info.set_application_id("com.expidus.genesis");
 
+      this.weather_search.notify["location"].connect(() => {
+        if (this.weather_search.location != null) {
+          this._gw_info.location = this.weather_search.location;
+          this.weather_stack.set_visible_child_name("weather");
+          this._gw_info.update();
+        } else {
+          this.weather_stack.set_visible_child_name("placeholder");
+        }
+      });
+      
+      this._gw_info.updated.connect(() => {
+        if (this._gw_info.location != null) {
+          this.weather_icon.icon_name = this._gw_info.get_icon_name();
+          this.weather_location.label = this._gw_info.get_location_name();
+          this.weather_temp.label = this._gw_info.get_temp();
+          this.weather_wind.label = this._gw_info.get_wind();
+        }
+      });
+      
       GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.TOP, true);
       GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.BOTTOM, true);
       GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.RIGHT, true);
@@ -31,6 +74,8 @@ namespace ExpidusDesktop {
       GtkLayerShell.set_margin(this, GtkLayerShell.Edge.TOP, 8);
       GtkLayerShell.set_margin(this, GtkLayerShell.Edge.BOTTOM, 8);
       GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, 15);
+      
+      GtkLayerShell.set_keyboard_mode(this, GtkLayerShell.KeyboardMode.EXCLUSIVE);
 
       this.pulse_init.begin(null, (obj, res) => {
         try {

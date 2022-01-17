@@ -9,7 +9,7 @@ vapi_dir = meson.current_source_dir() / 'vapi'
 add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
 add_project_arguments(['--vapidir', vapi_dir / 'vala-extra-vapis'], language: 'vala')
 add_project_arguments(['--vapidir', '/usr/share/vala/vapi'], language: 'vala')
-add_project_arguments(['-DWLR_USE_UNSTABLE', '-DWAYFIRE_PLUGIN'], language: ['cpp', 'c'])
+add_project_arguments(['-DWLR_USE_UNSTABLE', '-DWAYFIRE_PLUGIN', '-DGWEATHER_I_KNOW_THIS_IS_UNSTABLE'], language: ['cpp', 'c'])
 
 gnome = import('gnome')
 
@@ -27,6 +27,7 @@ gtk4 = dependency('gtk4')
 dazzel = dependency('libdazzle-1.0')
 gio = [dependency('gio-2.0'), dependency('gio-unix-2.0')]
 libpeas = dependency('libpeas-1.0')
+gweather = dependency('gweather-3.0')
 libpulse = [dependency('libpulse'), dependency('libpulse-mainloop-glib')]
 devident_client = dependency('devident-client-1.0')
 networkmanager = dependency('libnm')
@@ -172,7 +173,7 @@ executable('xdg-desktop-portal-genesis', ['src/portal/main.vala', 'src/portal/se
 install_data('data/genesis.portal', install_dir: join_paths(datadir, 'xdg-desktop-portal', 'portals'))
 
 executable('genesis-shell', ['src/shell/desktop.vala', 'src/shell/panel.vala', 'src/shell/polkit.vala', 'src/shell/shell.vala'],
-	dependencies: [gio, gobject, polkit, libgenesis_component_dep, posix, dazzel, libgenesis_widgets_dep],
+	dependencies: [gio, gobject, polkit, libgenesis_component_dep, posix, dazzel, libgenesis_widgets_dep, gweather],
 	install: true)
 
 expidus_desktop_res = gnome.compile_resources('expidus-desktop-res', 'data/res/modules/expidus-desktop/res.gresource.xml',
@@ -182,7 +183,7 @@ expidus_desktop_res = gnome.compile_resources('expidus-desktop-res', 'data/res/m
 
 modules = {
 	'expidus-desktop': [['src/modules/expidus-desktop/apps.vala', 'src/modules/expidus-desktop/layout.vala',
-		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/ui.vala', expidus_desktop_res], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep]],
+		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/ui.vala', expidus_desktop_res], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep, gweather]],
 	'expidus-mobile': [['src/modules/expidus-mobile/layout.vala', 'src/modules/expidus-mobile/module.vala'], [libgenesis_shell_dep,
 		libgenesis_component_dep, libgenesis_widgets_dep, dazzel]]
 }

@@ -2,6 +2,8 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <requires lib="libgweather" version="3.0"/>
+  <requires lib="libhandy" version="1.0"/>
   <object class="GtkAdjustment" id="brightness_adj">
     <property name="upper">1</property>
     <property name="step-increment">0.20</property>
@@ -94,6 +96,10 @@
                 <property name="position">2</property>
               </packing>
             </child>
+            <style>
+              <class name="genesis-shell-user-dashboard-status-row"/>
+              <class name="genesis-shell-user-daashboard-row"/>
+            </style>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -139,6 +145,10 @@
                 <property name="position">1</property>
               </packing>
             </child>
+            <style>
+              <class name="genesis-shell-user-dashboard-volume-row"/>
+              <class name="genesis-shell-user-dashboard-row"/>
+            </style>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -183,11 +193,488 @@
                 <property name="position">1</property>
               </packing>
             </child>
+            <style>
+              <class name="genesis-shell-user-dashboard-brightness-row"/>
+              <class name="genesis-shell-user-dashboard-row"/>
+            </style>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="HdyExpanderRow" id="wifi_network_select">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="selectable">False</property>
+            <property name="title" translatable="yes">WiFi Networks</property>
+            <property name="subtitle" translatable="yes">Found 0</property>
+            <property name="icon-name">network-wireless</property>
+            <style>
+              <class name="genesis-shell-user-dashboard-wifi-row"/>
+              <class name="genesis-shell-user-dashboard-row"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="HdyExpanderRow" id="bluetooth_device_select">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="activatable">False</property>
+            <property name="title" translatable="yes">Bluetooth Devices</property>
+            <property name="subtitle" translatable="yes">Found 0</property>
+            <property name="icon-name">bluetooth</property>
+            <style>
+              <class name="genesis-shell-user-dashboard-bluetooth-row"/>
+              <class name="genesis-shell-user-dashboard-row"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="notifications">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLabel" id="notifications_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Recent Notifications</property>
+                <property name="justify">center</property>
+                <attributes>
+                  <attribute name="style" value="normal"/>
+                  <attribute name="weight" value="heavy"/>
+                </attributes>
+                <style>
+                  <class name="genesis-shell-user-dashboard-notifications-header"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkListBox" id="notifications_list">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child type="placeholder">
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">You have no recent notifications</property>
+                    <style>
+                      <class name="genesis-shell-user-dashboard-notifications-placeholder"/>
+                    </style>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-notifications-list"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <style>
+              <class name="genesis-shell-user-dashboard-notifications-row"/>
+              <class name="genesis-shell-user-dashboard-row"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="actions_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <child>
+              <object class="GtkButton" id="action_settings">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">systemsettings</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-action-settings"/>
+                  <class name="genesis-shell-user-dashboard-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="action_logout">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">system-log-out</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-action-logout"/>
+                  <class name="genesis-shell-user-dashboard-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="action_switch">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">system-switch-user</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-action-switch"/>
+                  <class name="genesis-shell-user-dashboard-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="action_poweroff">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">system-shutdown</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-action-poweroff"/>
+                  <class name="genesis-shell-user-dashboard-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="action_reboot">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">system-reboot</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-action-reboot"/>
+                  <class name="genesis-shell-user-dashboard-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <style>
+              <class name="genesis-shell-user-dashboard-actions-row"/>
+              <class name="genesis-shell-user-dashboard-row"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack-type">end</property>
+            <property name="position">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="calevents">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="HdyViewSwitcherTitle" id="calevents_title">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="stack">calevents_stack</property>
+                <property name="title" translatable="yes">Calendar / Events</property>
+                <style>
+                  <class name="genesis-shell-user-dashboard-calendar-title-row"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkStack" id="calevents_stack">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkCalendar" id="calendar">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="year">2022</property>
+                    <property name="day">17</property>
+                    <style>
+                      <class name="genesis-shell-user-dashboard-calendar"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="name">calendar</property>
+                    <property name="title" translatable="yes">Calendar</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkListBox" id="events">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child type="placeholder">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">You have no events</property>
+                        <style>
+                          <class name="genesis-shell-user-dashboard-calendar-events-placeholder"/>
+                        </style>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="genesis-shell-user-dashboard-calendar-events"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="name">events</property>
+                    <property name="title" translatable="yes">Events</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-calendar-row"/>
+                  <class name="genesis-shell-user-dashboard-row"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack-type">end</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <style>
+              <class name="genesis-shell-user-dashboard-calevents-row"/>
+              <class name="genesis-shell-user-dashboard-row"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack-type">end</property>
+            <property name="position">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStack" id="weather_stack">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkBox" id="weather_placeholder">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GWeatherLocationEntry" id="weather_search">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="primary-icon-name">edit-find-symbolic</property>
+                    <property name="primary-icon-activatable">False</property>
+                    <property name="primary-icon-sensitive">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="weather_placeholder_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Your weather is not set up, please put in your location.</property>
+                    <property name="justify">center</property>
+                    <property name="wrap">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">placeholder</property>
+                <property name="title" translatable="yes">Placeholder</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="weather_container">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkImage" id="weather_icon">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="pixel-size">90</property>
+                        <property name="icon-name">weather</property>
+                        <property name="icon_size">3</property>
+                        <style>
+                          <class name="genesis-shell-user-dashboard-weather-icon"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="valign">center</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="weather_location">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Location</property>
+                            <style>
+                              <class name="genesis-shell-user-dashboard-weather-location"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="weather_temp">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Temperature</property>
+                            <style>
+                              <class name="genesis-shell-user-dashboard-weather-temperature"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="weather_wind">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Feels Like</property>
+                            <style>
+                              <class name="genesis-shell-user-dashboard-weather-feels"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">weather</property>
+                <property name="title" translatable="yes">Weather</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <style>
+              <class name="genesis-shell-user-dashboard-weather-row"/>
+              <class name="genesis-shell-user-dashboard-row"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="pack-type">end</property>
+            <property name="position">8</property>
           </packing>
         </child>
         <style>

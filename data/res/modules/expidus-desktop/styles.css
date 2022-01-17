@@ -9,10 +9,20 @@
   margin-right: 15px;
 }
 
+.genesis-shell-user-dashboard-status-indicator, .genesis-shell-user-dashboard-action {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
 .genesis-shell-user-dashboard-volume-icon, .genesis-shell-user-dashboard-brightness-icon {
   margin-right: 5px;
 }
 
 .genesis-shell-user-dashboard-volume-slider, .genesis-shell-user-dashboard-brightness-slider {
   margin-left: 5px;
+}
+
+.genesis-shell-user-dashboard-row {
+  margin-top: 5px;
+  margin-bottom: 5px;
 }

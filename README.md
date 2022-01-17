@@ -17,6 +17,7 @@ display backend work between instances.
 * [devident](https://github.com/ExpidusOS/libdevident)
 * NetworkManager
 * ModemManager
+* libgweather 3.0
 * accountsservice
 * libadwaita 1.0
 * Libhandy 1.0

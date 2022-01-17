@@ -48,6 +48,8 @@ namespace ExpidusDesktop {
 			var shell = this.get_shell();
 			
 			GLib.resources_register(get_resource());
+			
+			typeof (GWeather.LocationEntry).name();
 
 			var provider = new Gtk.CssProvider();
 			
