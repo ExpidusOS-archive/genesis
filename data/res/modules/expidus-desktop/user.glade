@@ -633,7 +633,7 @@
                           <object class="GtkLabel" id="weather_wind">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Feels Like</property>
+                            <property name="label" translatable="yes">Wind</property>
                             <style>
                               <class name="genesis-shell-user-dashboard-weather-feels"/>
                             </style>
