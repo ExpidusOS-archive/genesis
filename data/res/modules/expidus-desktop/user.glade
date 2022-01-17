@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkAdjustment" id="brightness_adj">
+    <property name="upper">1</property>
+    <property name="step-increment">0.20</property>
+    <property name="page-increment">2</property>
+  </object>
+  <object class="GtkAdjustment" id="volume_adj">
+    <property name="upper">1</property>
+    <property name="step-increment">0.20</property>
+    <property name="page-increment">2</property>
+  </object>
+  <template class="ExpidusDesktopUserDashboard" parent="GenesisWidgetsLayerWindow">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkBox" id="main_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkBox" id="status_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <child>
+              <object class="GtkButton" id="status_wifi_btn">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="always-show-image">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">network-wireless</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-status-wifi"/>
+                  <class name="genesis-shell-user-dashboard-status-indicator"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="status_bluetooth">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">bluetooth</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-status-bluetooth"/>
+                  <class name="genesis-shell-user-dashboard-status-indicator"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="status_location">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">location-services-active-symbolic</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-status-location"/>
+                  <class name="genesis-shell-user-dashboard-status-indicator"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="volume_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkImage" id="volume_icon">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="icon-name">audio-volume-high</property>
+                <style>
+                  <class name="genesis-shell-user-dashboard-volume-icon"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScale" id="volume_slider">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="adjustment">volume_adj</property>
+                <property name="round-digits">1</property>
+                <property name="draw-value">False</property>
+                <signal name="value-changed" handler="volume_changed" swapped="no"/>
+                <style>
+                  <class name="genesis-shell-user-dashboard-volume-slider"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="pack-type">end</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="brightness_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkImage" id="brightness_icon">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="icon-name">weather-clear</property>
+                <style>
+                  <class name="genesis-shell-user-dashboard-brightness-icon"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScale" id="brightness_slider">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="adjustment">brightness_adj</property>
+                <property name="draw-value">False</property>
+                <signal name="value-changed" handler="brightness_changed" swapped="no"/>
+                <style>
+                  <class name="genesis-shell-user-dashboard-brightness-slider"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="pack-type">end</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <style>
+          <class name="genesis-shell-user-dashboard"/>
+        </style>
+      </object>
+    </child>
+  </template>
+</interface>

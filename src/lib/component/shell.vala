@@ -13,6 +13,7 @@ namespace GenesisComponent {
 		private GLib.HashTable<string, Monitor> _monitors;
 		private GLib.HashTable<string, GenesisCommon.Layout> _module_layouts;
 		private GLib.HashTable<string, Window> _windows;
+		private GLib.HashTable<string, GenesisCommon.UILayout> _ui_layouts;
 		private string _active_window;
 		private uint _obj_id;
 
@@ -72,6 +73,7 @@ namespace GenesisComponent {
 			this._monitors = new GLib.HashTable<string, Monitor>(GLib.str_hash, GLib.str_equal);
 			this._module_layouts = new GLib.HashTable<string, GenesisCommon.Layout>(GLib.str_hash, GLib.str_equal);
 			this._windows = new GLib.HashTable<string, Window>(GLib.str_hash, GLib.str_equal);
+			this._ui_layouts = new GLib.HashTable<string, GenesisCommon.UILayout>(GLib.str_hash, GLib.str_equal);
 
 			this._engine = new Peas.Engine();
 			this._engine.enable_loader("lua5.1");
@@ -116,18 +118,53 @@ namespace GenesisComponent {
 			});
 		}
 
-		public Shell() {
-			Object();
+		public Shell(Gtk.Application? application = null) {
+			Object(application: application);
 		}
 
-		public Shell.with_dbus_connection(GLib.DBusConnection dbus_connection) {
-			Object(dbus_connection: dbus_connection);
+		public Shell.with_dbus_connection(GLib.DBusConnection dbus_connection, Gtk.Application? application = null) {
+			Object(dbus_connection: dbus_connection, application: application);
+		}
+		
+		public override bool is_showing_ui(string monitor_name, GenesisCommon.UIElement el) throws GLib.Error {
+			if (this._ui_layouts.contains(monitor_name)) return this._ui_layouts.get(monitor_name).ui_element == el;
+			return false;
 		}
 
-		public override bool show_ui(GenesisCommon.UIElement el) throws GLib.Error {
-			this._client.show_ui(el);
-			this.ui_element_shown(el);
-			return true;
+		public override bool show_ui(string monitor_name, GenesisCommon.UIElement el) throws GLib.Error {
+			bool should_create = true;
+			if (this._ui_layouts.contains(monitor_name)) should_create = this._ui_layouts.get(monitor_name).ui_element != el;
+			
+			if (should_create) {
+				var monitor = (Monitor)this.find_monitor(monitor_name);
+				if (monitor != null) {
+					var layout = monitor.find_layout_provides(GenesisCommon.LayoutFlags.UI_ELEMENT);
+					if (layout != null) {
+						var ui = layout.get_ui_layout(monitor, el);
+						if (ui != null) {
+							ui.destroy.connect(() => this._ui_layouts.remove(monitor_name));
+							this._ui_layouts.set(monitor_name, ui);
+							this.ui_element_shown(monitor_name, el);
+							return true;
+						}
+					}
+				}
+			}
+
+			var r = this._client.show_ui(monitor_name, el);
+			this.ui_element_shown(monitor_name, el);
+			return r;
+		}
+
+		public override bool close_ui(string monitor_name, GenesisCommon.UIElement el) throws GLib.Error {
+			if (this._ui_layouts.contains(monitor_name)) {
+				var ui = this._ui_layouts.get(monitor_name);
+				if (ui.ui_element == el) {
+					ui.destroy();
+					return true;
+				}				
+			}
+			return false;
 		}
 
 		[DBus(visible = false)]
@@ -338,6 +375,12 @@ namespace GenesisComponent {
 			this._client.window_changed.connect((name) => {
 				this._active_window = name;
 				this.window_changed(name);
+			});
+			
+			this._client.ui_element_shown.connect((monitor_name, el) => {
+				try {
+					this.show_ui(monitor_name, el);
+				} catch (GLib.Error e) {}
 			});
 
 			foreach (var monitor_name in this.monitors) this.load_monitor(monitor_name);

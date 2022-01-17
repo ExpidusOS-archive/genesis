@@ -1,0 +1,18 @@
+.genesis-shell-applications-button, .genesis-shell-applications-button:hover {
+  background-image: none;
+}
+
+.genesis-shell-user-dashboard {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+.genesis-shell-user-dashboard-volume-icon, .genesis-shell-user-dashboard-brightness-icon {
+  margin-right: 5px;
+}
+
+.genesis-shell-user-dashboard-volume-slider, .genesis-shell-user-dashboard-brightness-slider {
+  margin-left: 5px;
+}

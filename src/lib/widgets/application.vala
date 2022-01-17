@@ -29,6 +29,10 @@ namespace GenesisWidgets {
 				this._shell_instance_type = value;
 			}
 		}
+		
+		public Application(GenesisCommon.Shell? shell = null) {
+			Object(shell: shell);
+		}
 
 		public override void startup() {
 			base.startup();
@@ -36,10 +40,10 @@ namespace GenesisWidgets {
 			if (this.shell == null) {
 				switch (this.shell_instance_type) {
 					case GenesisCommon.ShellInstanceType.WM:
-						this.shell = new GenesisShell.Shell.with_dbus_connection(this.get_dbus_connection());
+						this.shell = new GenesisShell.Shell.with_dbus_connection(this.get_dbus_connection(), this);
 						break;
 					case GenesisCommon.ShellInstanceType.COMPONENT:
-						this.shell = new GenesisComponent.Shell.with_dbus_connection(this.get_dbus_connection());
+						this.shell = new GenesisComponent.Shell.with_dbus_connection(this.get_dbus_connection(), this);
 						break;
 					default:
 						GLib.debug("Not creating a shell instance");

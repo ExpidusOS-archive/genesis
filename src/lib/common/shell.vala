@@ -36,7 +36,8 @@ namespace GenesisCommon {
 		/**
 			* The method called is not defined, implemented, or valid
 			*/
-		UNSUPPORTED_METHOD
+		UNSUPPORTED_METHOD,
+		INVALID_GAMMA
 	}
 	
 	/**
@@ -95,6 +96,9 @@ namespace GenesisCommon {
 			* Type of the shell instance
 			*/
 		public abstract ShellInstanceType instance_type { get; }
+		
+		[DBus(visible = false)]
+		public Gtk.Application? application { get; construct; }
 
 		/**
 			* DBus connection that is used
@@ -103,15 +107,53 @@ namespace GenesisCommon {
 		public abstract GLib.DBusConnection? dbus_connection { get; construct; }
 		
 		/**
+			* Toggles the UI element
+			*
+			* @param monitor_name The name of the monitor to show on
+			* @param el The UI element type
+			* @throws GLib.Error Error for DBus
+			* @return Returns true if the element was toggled
+			*/
+		public virtual bool toggle_ui(string monitor_name, GenesisCommon.UIElement el) throws GLib.Error {
+			if (this.is_showing_ui(monitor_name, el)) return this.close_ui(monitor_name, el);
+			else return this.show_ui(monitor_name, el);
+		}
+		
+		/**
+			* Returns whether or not the UI element is showing
+			*
+			* @param monitor_name The name of the monitor to show on
+			* @param el The UI element type
+			* @throws GLib.Error Error for DBus
+			* @return Returns true if the element is showing.
+			*/
+		public virtual bool is_showing_ui(string monitor_name, GenesisCommon.UIElement el) throws GLib.Error {
+			return false;
+		}
+		
+		/**
 			* Triggers a particular UI element to show up
 			*
+			* @param monitor_name The name of the monitor to show on
 			* @param el The UI element type
 			* @throws GLib.Error Error for DBus
 			* @return Returns true if the element was shown, false if not.
 			*/
-		public virtual bool show_ui(UIElement el) throws GLib.Error {
-			this.ui_element_shown(el);
-			return true;
+		public virtual bool show_ui(string monitor_name, UIElement el) throws GLib.Error {
+			this.ui_element_shown(monitor_name, el);
+			return false;
+		}
+		
+		/**
+			* Triggers a particular UI element to close
+			*
+			* @param monitor_name The name of the monitor to show on
+			* @param el The UI element type
+			* @throws GLib.Error Error for DBus
+			* @return Returns true if the element was closed, false if not.
+			*/
+		public virtual bool close_ui(string monitor_name, UIElement el) throws GLib.Error {
+			return false;
 		}
 
 		/**
@@ -280,9 +322,10 @@ namespace GenesisCommon {
 		/**
 			* Signaled when a UI element is shown
 			*
+			* @param monitor_name The name of the monitor to show on
 			* @param el The UI element type
 			*/
-		public signal void ui_element_shown(UIElement el);
+		public signal void ui_element_shown(string monitor_name, UIElement el);
 
 		/**
 			* Signaled when the monitor overrides are loaded in
@@ -369,7 +412,7 @@ namespace GenesisCommon {
 		public abstract string[] windows { owned get; }
 		public abstract string active_window { owned get; }
 
-		public abstract bool show_ui(UIElement el) throws GLib.Error;
+		public abstract bool show_ui(string monitor_name, UIElement el) throws GLib.Error;
 
 		public abstract void add_monitor(string name, int x, int y, int width, int height) throws GLib.Error;
 		public abstract void remove_monitor(string name) throws GLib.Error;
@@ -377,7 +420,7 @@ namespace GenesisCommon {
 		public abstract void rescan_modules() throws GLib.Error;
 		public abstract bool load_module(string name) throws GLib.Error;
 
-		public signal void ui_element_shown(UIElement el);
+		public signal void ui_element_shown(string monitor_name, UIElement el);
 
 		public signal void monitor_added(string name);
 		public signal void monitor_removed(string name);

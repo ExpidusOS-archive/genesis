@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/com/expidus/genesis/module/expidus-desktop">
+    <file>user.glade</file>
+    <file>styles.css</file>
+  </gresource>
+</gresources>

@@ -1,4 +1,6 @@
 namespace ExpidusDesktop {
+	public extern GLib.Resource get_resource();
+
 	public class ShellModule : GenesisShell.Module, Peas.Activatable {
 		private GenesisShell.Shell _shell;
 
@@ -44,6 +46,18 @@ namespace ExpidusDesktop {
 
 		public void activate() {
 			var shell = this.get_shell();
+			
+			GLib.resources_register(get_resource());
+
+			var provider = new Gtk.CssProvider();
+			
+			try {
+				var bytes = get_resource().lookup_data("/com/expidus/genesis/module/expidus-desktop/styles.css", GLib.ResourceLookupFlags.NONE);
+				provider.load_from_buffer(bytes.get_data());
+			} catch (GLib.Error e) {
+				GLib.warning("Failed to load CSS (%s:%d): %s", e.domain.to_string(), e.code, e.message);
+			}
+			Gtk.StyleContext.add_provider_for_screen(Gdk.Display.get_default().get_default_screen(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 			try {
 				shell.define_layout(this, new ComponentLayout());

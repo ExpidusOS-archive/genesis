@@ -154,6 +154,9 @@ namespace GenesisCommon {
 			if (this.physical_width == 0 || this.physical_height == 0) dpi = 96;
 			return (int)((i / 96) * dpi);
 		}
+		
+		public abstract void set_gamma(uint16 size, uint16[] red, uint16[] green, uint16[] blue) throws GLib.Error;
+		public abstract void get_gamma(out uint16 size, out uint16[] red, out uint16[] green, out uint16[] blue) throws GLib.Error;
 
 		/**
 			* Signaled when a layout is attached to the monitor
@@ -199,6 +202,8 @@ namespace GenesisCommon {
 		public abstract string[] layout_overrides { owned get; set; }
 
 		public abstract void get_geometry(out int x, out int y, out int width, out int height) throws GLib.Error;
+		public abstract void set_gamma(uint16 size, uint16[] red, uint16[] green, uint16[] blue) throws GLib.Error;
+		public abstract void get_gamma(out uint16 size, out uint16[] red, out uint16[] green, out uint16[] blue) throws GLib.Error;
 
 		public signal void layout_attached(string name);
 		public signal void layout_detached(string name);

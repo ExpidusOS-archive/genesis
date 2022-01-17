@@ -195,12 +195,12 @@ namespace GenesisShell {
 			});
 		}
 
-		public Shell() {
-			Object();
+		public Shell(Gtk.Application? application = null) {
+			Object(application: application);
 		}
 
-		public Shell.with_dbus_connection(GLib.DBusConnection dbus_connection) {
-			Object(dbus_connection: dbus_connection);
+		public Shell.with_dbus_connection(GLib.DBusConnection dbus_connection, Gtk.Application? application = null) {
+			Object(dbus_connection: dbus_connection, application: application);
 		}
 
 		~Shell() {

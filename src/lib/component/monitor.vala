@@ -54,6 +54,14 @@ namespace GenesisComponent {
 			this._name = name;
 		}
 
+		public override void set_gamma(uint16 size, uint16[] red, uint16[] green, uint16[] blue) throws GLib.Error {
+			this._client.set_gamma(size, red, green, blue);
+		}
+
+		public override void get_gamma(out uint16 size, out uint16[] red, out uint16[] green, out uint16[] blue) throws GLib.Error {
+			this._client.get_gamma(out size, out red, out green, out blue);
+		}
+
 		public override bool init(GenesisCommon.Shell shell) throws GLib.Error {
 			if (base.init(shell)) {
 				this._client = shell.dbus_connection.get_proxy_sync("com.expidus.genesis.Shell", "/com/expidus/genesis/shell/monitor/%s".printf(GenesisCommon.Monitor.fix_name(this.name)));

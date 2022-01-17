@@ -15,6 +15,8 @@ display backend work between instances.
 * gtk+3.0
 * gtk-layer-shell
 * [devident](https://github.com/ExpidusOS/libdevident)
+* NetworkManager
+* ModemManager
 * accountsservice
 * libadwaita 1.0
 * Libhandy 1.0

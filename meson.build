@@ -175,9 +175,16 @@ executable('genesis-shell', ['src/shell/desktop.vala', 'src/shell/panel.vala', '
 	dependencies: [gio, gobject, polkit, libgenesis_component_dep, posix, dazzel, libgenesis_widgets_dep],
 	install: true)
 
+expidus_desktop_res = gnome.compile_resources('expidus-desktop-res', 'data/res/modules/expidus-desktop/res.gresource.xml',
+	source_dir: 'data/res/modules/expidus-desktop',
+	export: true,
+	c_name: 'expidus_desktop')
+
 modules = {
-	'expidus-desktop': [['src/modules/expidus-desktop/layout.vala', 'src/modules/expidus-desktop/module.vala'], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep]],
-	'expidus-mobile': [['src/modules/expidus-mobile/layout.vala', 'src/modules/expidus-mobile/module.vala'], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep, dazzel]]
+	'expidus-desktop': [['src/modules/expidus-desktop/apps.vala', 'src/modules/expidus-desktop/layout.vala',
+		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/ui.vala', expidus_desktop_res], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep]],
+	'expidus-mobile': [['src/modules/expidus-mobile/layout.vala', 'src/modules/expidus-mobile/module.vala'], [libgenesis_shell_dep,
+		libgenesis_component_dep, libgenesis_widgets_dep, dazzel]]
 }
 
 foreach name, c : modules

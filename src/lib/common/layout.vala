@@ -21,7 +21,11 @@ namespace GenesisCommon {
 		/**
 			* Layout provides the polkit dialog
 			*/
-		POLKIT_DIALOG
+		POLKIT_DIALOG,
+		/**
+			* Handles common UI elements
+			*/
+		UI_ELEMENT
 	}
 
 	/**
@@ -287,6 +291,39 @@ namespace GenesisCommon {
 			*/
 		public signal void done();
 	}
+	
+	public abstract class UILayout : BasicLayout {
+		public UIElement ui_element {
+			get; construct;
+		}
+
+		/**
+			* The monitor the element is attached to
+			*/
+		public override Monitor? monitor {
+			owned get {
+				return this.shell.find_monitor(this.monitor_name);
+			}
+		}
+
+		/**
+			* Name of the monitor the UI layout is attached to
+			*/
+		public string monitor_name {
+			get; 
+			construct;
+		}
+
+		/**
+			* The shell instance for the UI layout
+			*/
+		public Shell shell {
+			get;
+			construct;
+		}
+
+		public signal void destroy();
+	}
 
 	/**
 		* Class for creating layouts
@@ -358,6 +395,17 @@ namespace GenesisCommon {
 			* @return The desktop layout for the monitor
 			*/
 		public virtual DesktopLayout? get_desktop_layout(Monitor monitor) {
+			return null;
+		}
+		
+		/**
+			* Gets an instance of ''GenesisCommon.UILayout'' for the monitor
+			*
+			* @param monitor The monitor to use
+			* @param el The UI element type
+			* @return The UI layout for the monitor
+			*/
+		public virtual UILayout? get_ui_layout(Monitor monitor, UIElement el) {
 			return null;
 		}
 
