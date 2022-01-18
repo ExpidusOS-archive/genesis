@@ -1,4 +1,53 @@
 namespace GenesisWidgets {
+  [GtkTemplate(ui = "/com/expidus/genesis/libwidgets/net.glade")]
+  public class WiFiNetworkItem : Gtk.ListBoxRow {
+    [GtkChild]
+    private unowned Gtk.Image signal_strength_icon;
+
+    [GtkChild]
+    private unowned Gtk.Image security_icon;
+
+    [GtkChild]
+    private unowned Gtk.Label network_name;
+
+    [GtkChild]
+    private unowned Gtk.Image connected_icon;
+    
+    public NM.AccessPoint access_point { get; construct; }
+    public bool is_connected { get; construct; default = false; }
+    
+    public string access_point_name {
+      owned get {
+        var arr = this.access_point.get_ssid();
+        if (arr != null) {
+          var sb = new GLib.StringBuilder.sized(arr.length);
+          foreach (var ch in arr.get_data()) sb.append_c((char)ch);
+          return sb.str;
+        }
+        return this.access_point.get_bssid();
+      }
+    }
+    
+    public WiFiNetworkItem(NM.AccessPoint ap, bool connected = false) {
+      Object(access_point: ap, is_connected: connected);
+    }
+    
+    construct {
+      this.show_all();
+      
+      if (this.is_connected) this.connected_icon.show_all();
+      else this.connected_icon.hide();
+      
+      if (this.access_point.flags == NM.80211ApFlags.NONE) {
+        this.security_icon.hide();
+      } else {
+        this.security_icon.show_all();
+      }
+      
+      this.network_name.label = this.access_point_name;
+    }
+  }
+
   public class NetworkPanelIcon : Gtk.Box, GLib.AsyncInitable {
     private NM.Client _client;
     private MM.Manager? _mm;

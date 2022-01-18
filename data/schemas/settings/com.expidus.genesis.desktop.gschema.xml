@@ -15,7 +15,7 @@
             </description>
         </key>
         <key name="wallpaper" type="s">
-            <default>'/usr/share/backgrounds/expidus/default.png'</default>
+            <default>'/usr/share/backgrounds/expidus/default.jpg'</default>
             <summary>Wallpaper Path</summary>
             <description>
                 The path to use when looking for wallpaper.

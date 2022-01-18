@@ -14,6 +14,11 @@
     <property name="step-increment">0.20</property>
     <property name="page-increment">2</property>
   </object>
+  <object class="GtkAdjustment" id="wifi_networks_vp_adj">
+    <property name="upper">1000</property>
+    <property name="step-increment">2</property>
+    <property name="page-increment">30</property>
+  </object>
   <template class="ExpidusDesktopUserDashboard" parent="GenesisWidgetsLayerWindow">
     <property name="can-focus">False</property>
     <child>
@@ -205,41 +210,78 @@
           </packing>
         </child>
         <child>
-          <object class="HdyExpanderRow" id="wifi_network_select">
+          <object class="GtkListBox">
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="selectable">False</property>
-            <property name="title" translatable="yes">WiFi Networks</property>
-            <property name="subtitle" translatable="yes">Found 0</property>
-            <property name="icon-name">network-wireless</property>
-            <style>
-              <class name="genesis-shell-user-dashboard-wifi-row"/>
-              <class name="genesis-shell-user-dashboard-row"/>
-            </style>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="HdyExpanderRow" id="wifi_network_select">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="activatable">False</property>
+                <property name="selectable">False</property>
+                <property name="title" translatable="yes">WiFi Networks</property>
+                <property name="subtitle" translatable="yes">Found 0</property>
+                <property name="icon-name">network-wireless</property>
+                <child>
+                  <object class="GtkListBoxRow">
+                    <property name="can-focus">True</property>
+                    <child>
+                      <object class="GtkScrolledWindow">
+                        <property name="height-request">125</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="vadjustment">wifi_networks_vp_adj</property>
+                        <property name="hscrollbar-policy">never</property>
+                        <property name="vscrollbar-policy">always</property>
+                        <property name="propagate-natural-height">True</property>
+                        <child>
+                          <object class="GtkViewport">
+                            <property name="height-request">250</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="vexpand">True</property>
+                            <property name="vadjustment">wifi_networks_vp_adj</property>
+                            <property name="shadow-type">none</property>
+                            <child>
+                              <object class="GtkListBox" id="wifi_networks_list">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="vexpand">True</property>
+                                <signal name="row-activated" handler="wifi_network_selected" swapped="no"/>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-wifi-row"/>
+                  <class name="genesis-shell-user-dashboard-row"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="HdyExpanderRow" id="bluetooth_device_select">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="activatable">False</property>
+                <property name="selectable">False</property>
+                <property name="title" translatable="yes">Bluetooth Devices</property>
+                <property name="subtitle" translatable="yes">Found 0</property>
+                <property name="icon-name">bluetooth</property>
+                <style>
+                  <class name="genesis-shell-user-dashboard-bluetooth-row"/>
+                  <class name="genesis-shell-user-dashboard-row"/>
+                </style>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="HdyExpanderRow" id="bluetooth_device_select">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="activatable">False</property>
-            <property name="title" translatable="yes">Bluetooth Devices</property>
-            <property name="subtitle" translatable="yes">Found 0</property>
-            <property name="icon-name">bluetooth</property>
-            <style>
-              <class name="genesis-shell-user-dashboard-bluetooth-row"/>
-              <class name="genesis-shell-user-dashboard-row"/>
-            </style>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">4</property>
           </packing>
         </child>
         <child>

@@ -150,10 +150,15 @@ libgenesis_shell = shared_library('genesis-shell', libgenesis_shell_files,
 	install_dir: [true, true, true, true])
 libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependencies: [gobject, gtk, libgenesis_common_dep])
 
+libgenesis_widgets_res = gnome.compile_resources('genesis-widgets-res', 'data/res/lib/widgets/res.gresource.xml',
+	source_dir: 'data/res/lib/widgets',
+	export: true,
+	c_name: 'genesis_widgets')
+
 libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/widgets/clock.vala', 'src/lib/widgets/global-menu.vala',
 		'src/lib/widgets/init.vala', 'src/lib/widgets/net.vala', 'src/lib/widgets/volume.vala', 'src/lib/widgets/wallpaper.vala',
 		'src/lib/widgets/widget.vala', 'src/lib/widgets/window.vala')
-libgenesis_widgets = shared_library('genesis-widgets', libgenesis_widgets_files,
+libgenesis_widgets = shared_library('genesis-widgets', libgenesis_widgets_files, libgenesis_widgets_res,
 	dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libgenesis_component_dep, libgenesis_shell_dep, libpulse, networkmanager, modemmanager],
 	vala_gir: 'GenesisWidgets-1.0.gir',
 	install: true,
