@@ -5,6 +5,8 @@ desktop environment. It is designed to be modular, the core of the shell is desi
 between any display technology with little hassle. However, Genesis's component side depend on Wayland. This will be patched in the future to allow any
 display backend work between instances.
 
+Wallpaper free from **[unsplash.com](https://unsplash.com)**.
+
 ## Dependencies
 * `valac` (build)
 * `valadoc` (build)

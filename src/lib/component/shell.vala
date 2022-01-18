@@ -143,7 +143,7 @@ namespace GenesisComponent {
 						var ui = layout.get_ui_layout(monitor, el);
 						if (ui != null) {
 							ui.destroy.connect(() => this._ui_layouts.remove(monitor_name));
-							this._ui_layouts.set(monitor_name, ui);
+							this._ui_layouts.set(monitor_name, (owned)ui);
 							this.ui_element_shown(monitor_name, el);
 							return true;
 						}

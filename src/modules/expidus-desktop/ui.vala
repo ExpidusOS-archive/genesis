@@ -103,6 +103,11 @@ namespace ExpidusDesktop {
         this._pa_ctx.disconnect();
         this._pa_ctx = null;
       }
+      
+      if (this._timeout != null) {
+        this._timeout.destroy();
+        this._timeout = null;
+      }
     }
 
     construct {
