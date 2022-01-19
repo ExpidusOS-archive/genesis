@@ -7,6 +7,13 @@
         <value nick="tiled" value="4"/>
     </enum>
     <schema path="/com/expidus/genesis/desktop/" id="com.expidus.genesis.desktop">
+        <key name="weather-locations" type="a(uv)">
+            <default>[]</default>
+            <summary>Weather Locations</summary>
+            <description>
+                GWeather serialized variant for the location for the weather
+            </description>
+        </key>
         <key name="clock-format" type="s">
             <default>'%I:%M %p'</default>
             <summary>Clock Format</summary>

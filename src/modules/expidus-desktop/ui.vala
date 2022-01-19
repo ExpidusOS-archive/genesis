@@ -113,6 +113,8 @@ namespace ExpidusDesktop {
     }
 
     construct {
+      var settings = new GLib.Settings("com.expidus.genesis.desktop");
+
       this._pa_main_loop = new PulseAudio.GLibMainLoop(GLib.MainContext.@default());
       this._gw_info = new GWeather.Info(this.weather_search.location);
       this._gw_info.set_enabled_providers(GWeather.Provider.ALL);
@@ -121,6 +123,8 @@ namespace ExpidusDesktop {
 
       this.weather_search.notify["location"].connect(() => {
         if (this.weather_search.location != null) {
+          var v = this.weather_search.location.serialize();
+          settings.set_value("weather-locations", new GLib.Variant.array(v.get_type(), { v }));
           this._gw_info.location = this.weather_search.location;
           this.weather_stack.set_visible_child_name("weather");
           this._gw_info.update();
@@ -147,6 +151,12 @@ namespace ExpidusDesktop {
       GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, 15);
       
       GtkLayerShell.set_keyboard_mode(this, GtkLayerShell.KeyboardMode.EXCLUSIVE);
+      
+      if (settings.get_value("weather-locations").n_children() > 0) {
+        var loc = GWeather.Location.get_world().deserialize(settings.get_value("weather-locations").get_child_value(0));
+        this.weather_search.location = loc;
+        this._gw_info.location = loc;
+      }
 
       this._timeout = new GLib.TimeoutSource.seconds(5);
       this._timeout.set_callback(() => {
