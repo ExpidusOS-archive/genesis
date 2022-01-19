@@ -159,11 +159,11 @@ libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/wi
 		'src/lib/widgets/init.vala', 'src/lib/widgets/net.vala', 'src/lib/widgets/volume.vala', 'src/lib/widgets/wallpaper.vala',
 		'src/lib/widgets/widget.vala', 'src/lib/widgets/window.vala')
 libgenesis_widgets = shared_library('genesis-widgets', libgenesis_widgets_files, libgenesis_widgets_res,
-	dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libgenesis_component_dep, libgenesis_shell_dep, libpulse, networkmanager, modemmanager],
+	dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libgenesis_component_dep, libgenesis_shell_dep, libpulse, networkmanager, modemmanager, devident_client],
 	vala_gir: 'GenesisWidgets-1.0.gir',
 	install: true,
 	install_dir: [true, true, true, true])
-libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libpulse, networkmanager, modemmanager])
+libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libpulse, networkmanager, modemmanager, devident_client])
 
 shared_module('genesis-shell-wayfire', ['src/plugins/genesis-shell/decoration.cpp', 'src/plugins/genesis-shell/genesis-shell.cpp',
 		'src/plugins/genesis-shell/monitor.cpp', 'src/plugins/genesis-shell/window.cpp'],

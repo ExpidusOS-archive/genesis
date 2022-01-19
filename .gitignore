@@ -20,3 +20,5 @@ build.vala
 *.glade~
 !src/**/*.h
 !src/**/*genesis-shell*
+leak.txt
+vgcore.*

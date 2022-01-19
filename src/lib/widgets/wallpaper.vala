@@ -63,10 +63,19 @@ namespace GenesisWidgets {
 		private ulong _image_id;
 		private ulong _style_id;
 		private bool _is_loaded;
+		
+		public DevidentClient.Context devident { get; construct; }
 
 		public override string image {
 			owned get {
-				return this.get_settings().get_string("wallpaper");
+				var extra = "desktop";
+
+				try {
+					var dev = this.devident.get_default_device();
+					if (dev.device_type == DevidentCommon.DeviceType.PHONE || dev.device_type == DevidentCommon.DeviceType.TABLET) extra = "mobile";
+				} catch (GLib.Error e) {}
+				
+				return this.get_settings().get_string("wallpaper").replace("{system}", GenesisCommon.DATADIR + "/backgrounds/expidus/" + extra);
 			}
 			set construct {
 				if (value != null) this.get_settings().set_string("wallpaper", value);
@@ -80,6 +89,10 @@ namespace GenesisWidgets {
 			set construct {
 				if (this._is_loaded) this.get_settings().set_enum("wallpaper-style", value);
 			}
+		}
+		
+		public WallpaperSettings(DevidentClient.Context devident) {
+			Object(devident: devident);
 		}
 
 		~WallpaperSettings() {

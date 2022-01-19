@@ -59,7 +59,7 @@ namespace ExpidusDesktop {
 		}
 
 		construct {
-			this._wallpaper = new GenesisWidgets.WallpaperSettings();
+			this._wallpaper = new GenesisWidgets.WallpaperSettings(this.shell.devident);
 			this._wallpaper.notify["image"].connect(() => this.queue_draw());
 			this._wallpaper.notify["style"].connect(() => this.queue_draw());
 		}
