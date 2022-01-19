@@ -32,11 +32,12 @@
             <property name="can-focus">False</property>
             <property name="halign">center</property>
             <child>
-              <object class="GtkButton" id="status_wifi_btn">
+              <object class="GtkToggleButton" id="status_wifi_btn">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="always-show-image">True</property>
+                <signal name="toggled" handler="do_toggle_wifi" swapped="no"/>
                 <child>
                   <object class="GtkImage">
                     <property name="visible">True</property>
@@ -56,10 +57,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="status_bluetooth">
+              <object class="GtkToggleButton" id="status_bluetooth_btn">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <signal name="clicked" handler="do_toggle_bluetooth" swapped="no"/>
                 <child>
                   <object class="GtkImage">
                     <property name="visible">True</property>
@@ -79,10 +81,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="status_location">
+              <object class="GtkToggleButton" id="status_location_btn">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <signal name="clicked" handler="do_toggle_location" swapped="no"/>
                 <child>
                   <object class="GtkImage">
                     <property name="visible">True</property>
@@ -99,6 +102,30 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToggleButton" id="status_dnd_btn">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="do_toggle_dnd" swapped="no"/>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">notification-disabled-symbolic</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-status-dnd"/>
+                  <class name="genesis-shell-user-dashboard-status-indicator"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <style>
@@ -213,6 +240,7 @@
           <object class="GtkListBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="activate-on-single-click">False</property>
             <child>
               <object class="HdyExpanderRow" id="wifi_network_select">
                 <property name="visible">True</property>
@@ -277,6 +305,253 @@
                 </style>
               </object>
             </child>
+            <child>
+              <object class="GtkListBoxRow" id="battery_status">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="activatable">False</property>
+                <property name="selectable">False</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkImage" id="battery_icon">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="pixel-size">45</property>
+                        <property name="icon-name">battery</property>
+                        <property name="icon_size">3</property>
+                        <style>
+                          <class name="genesis-shell-user-dashboard-battery-icon"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="battery_label_percent">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">Battery 100% charged</property>
+                            <style>
+                              <class name="title"/>
+                              <class name="genesis-shell-user-dashboard-battery-percent"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="battery_charge_time">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">0 minutes until full</property>
+                            <style>
+                              <class name="subtitle"/>
+                              <class name="genesis-shell-user-dashboard-battery-time"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <style>
+                          <class name="genesis-shell-user-dashboard-battery-container"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-battery-row"/>
+                  <class name="genesis-shell-user-dashboard-row"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkListBoxRow" id="music_controls">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="activatable">False</property>
+                <property name="selectable">False</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="pixel-size">45</property>
+                        <property name="icon-name">multimedia-volume-control</property>
+                        <property name="icon_size">3</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">Now playing...</property>
+                            <style>
+                              <class name="genesis-shell-user-dashboard-music-controls-title"/>
+                              <class name="title"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">00:00 / 00:00</property>
+                            <style>
+                              <class name="genesis-shell-user-dashboard-music-controls-time"/>
+                              <class name="subtitle"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <child>
+                              <object class="GtkButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="icon-name">gtk-media-next-rtl</property>
+                                  </object>
+                                </child>
+                                <style>
+                                  <class name="genesis-shell-user-dashboard-music-controls-button"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="icon-name">gtk-media-pause</property>
+                                  </object>
+                                </child>
+                                <style>
+                                  <class name="genesis-shell-user-dashboard-music-controls-button"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="icon-name">gtk-media-next-ltr</property>
+                                  </object>
+                                </child>
+                                <style>
+                                  <class name="genesis-shell-user-dashboard-music-controls-button"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <style>
+                              <class name="genesis-shell-user-dashboard-music-controls-buttons"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <style>
+                          <class name="genesis-shell-user-dashboard-music-controls-container"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <style>
+                  <class name="genesis-shell-user-dashboard-music-controls-row"/>
+                  <class name="genesis-shell-user-dashboard-row"/>
+                </style>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -293,11 +568,13 @@
               <object class="GtkLabel" id="notifications_label">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="halign">start</property>
                 <property name="label" translatable="yes">Recent Notifications</property>
-                <property name="justify">center</property>
+                <property name="justify">fill</property>
                 <attributes>
                   <attribute name="style" value="normal"/>
                   <attribute name="weight" value="heavy"/>
+                  <attribute name="scale" value="1.5"/>
                 </attributes>
                 <style>
                   <class name="genesis-shell-user-dashboard-notifications-header"/>
@@ -317,7 +594,9 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="halign">start</property>
                     <property name="label" translatable="yes">You have no recent notifications</property>
+                    <property name="justify">fill</property>
                     <style>
                       <class name="genesis-shell-user-dashboard-notifications-placeholder"/>
                     </style>

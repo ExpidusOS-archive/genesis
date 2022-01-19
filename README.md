@@ -25,7 +25,7 @@ Wallpaper free from **[unsplash.com](https://unsplash.com)**.
 * Libhandy 1.0
 * Polkit Agent
 * libpeas
-* libdazzle
+* UPower
 
 **Note**: as of 2021-12-23, Genesis Shell requires the [ExpidusOS fork of Wayfire](https://github.com/ExpidusOS/wayfire) until pull request [1392](https://github.com/WayfireWM/wayfire/pull/1392) is merged.
 

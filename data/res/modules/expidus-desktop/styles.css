@@ -9,7 +9,7 @@
   margin-right: 15px;
 }
 
-.genesis-shell-user-dashboard-status-indicator, .genesis-shell-user-dashboard-action {
+.genesis-shell-user-dashboard-status-indicator, .genesis-shell-user-dashboard-action, .genesis-shell-user-dashboard-music-controls-button {
   margin-left: 5px;
   margin-right: 5px;
 }
@@ -20,6 +20,22 @@
 
 .genesis-shell-user-dashboard-volume-slider, .genesis-shell-user-dashboard-brightness-slider {
   margin-left: 5px;
+}
+
+.genesis-shell-user-dashboard-battery-row, .genesis-shell-user-dashboard-music-controls-row {
+  margin-left: 7px;
+}
+
+.genesis-shell-user-dashboard-battery-container, .genesis-shell-user-dashboard-music-controls-container {
+  margin-left: 5px;
+}
+
+.genesis-shell-user-dashboard-notifications-placeholder, .genesis-shell-user-dashboard-notifications-header {
+  margin-left: 15px;
+}
+
+.genesis-shell-user-dashboard-music-controls-button:first-child {
+  margin-left: 0px;
 }
 
 .genesis-shell-user-dashboard-row {

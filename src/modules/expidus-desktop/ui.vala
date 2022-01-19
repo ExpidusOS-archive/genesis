@@ -60,6 +60,12 @@ namespace ExpidusDesktop {
     private GLib.TimeoutSource _timeout;
     
     private GWeather.Info _gw_info;
+    
+    [GtkChild]
+    private unowned Gtk.ToggleButton status_wifi_btn;
+    
+    [GtkChild]
+    private unowned Gtk.ToggleButton status_bluetooth_btn;
 
     [GtkChild]
     private unowned Gtk.Box volume_box;
@@ -178,10 +184,16 @@ namespace ExpidusDesktop {
           if (!this.net_init.end(res)) {
             this.wifi_network_select.hide();
             this.bluetooth_device_select.hide();
+            this.status_wifi_btn.hide();
+            this.status_bluetooth_btn.hide();
+          } else {
+            this.status_wifi_btn.set_active(this._nm_client.wireless_enabled);
           }
         } catch (GLib.Error e) {
           this.wifi_network_select.hide();
           this.bluetooth_device_select.hide();
+          this.status_wifi_btn.hide();
+          this.status_bluetooth_btn.hide();
         }
       });
     }
@@ -315,20 +327,31 @@ namespace ExpidusDesktop {
 
     private void net_update() {
       var wifi = this.find_device(NM.DeviceType.WIFI) as NM.DeviceWifi;
+      var bt = this.find_device(NM.DeviceType.BT) as NM.DeviceBt;
 
       if (wifi != null && this._nm_client.wireless_hardware_enabled) {
-        if (wifi.get_last_scan() == -1 || wifi.get_last_scan() >= 60000) {
-          wifi.request_scan_async.begin(null, (obj, res) => {
-            try {
-              wifi.request_scan_async.end(res);
-              this.net_after_scan(wifi);
-            } catch (GLib.Error e) {}
-          });
+        if (this._nm_client.wireless_enabled) {
+          if (wifi.get_last_scan() == -1 || wifi.get_last_scan() >= 60000) {
+            wifi.request_scan_async.begin(null, (obj, res) => {
+              try {
+                wifi.request_scan_async.end(res);
+                this.net_after_scan(wifi);
+              } catch (GLib.Error e) {}
+            });
+          } else {
+            this.net_after_scan(wifi);
+          }
         } else {
-          this.net_after_scan(wifi);
+          this.wifi_network_select.subtitle = "WiFi Off";
         }
       } else {
         this.wifi_network_select.hide();
+        this.status_wifi_btn.hide();
+      }
+
+      if (bt == null) {
+        this.bluetooth_device_select.hide();
+        this.status_bluetooth_btn.hide();
       }
     }
 
@@ -340,6 +363,26 @@ namespace ExpidusDesktop {
 			min_height = nat_height = this.monitor.geometry.height - ((GenesisWidgets.Application)this.application).shell.find_monitor(this.monitor_name).dpi(5)
         - ((GenesisWidgets.Application)this.application).shell.find_monitor(this.monitor_name).dpi(35);
 		}
+    
+    [GtkCallback]
+    private void do_toggle_wifi() {
+      this._nm_client.wireless_enabled = this.status_wifi_btn.get_active();
+      
+      if (this._nm_client.wireless_enabled) {
+        this.net_update();
+      } else {
+        this.wifi_network_select.subtitle = "WiFi Off"; 
+      }
+    }
+    
+    [GtkCallback]
+    private void do_toggle_bluetooth() {}
+
+    [GtkCallback]
+    private void do_toggle_location() {}
+    
+    [GtkCallback]
+    private void do_toggle_dnd() {}
 
     [GtkCallback]
     private void volume_changed() {
