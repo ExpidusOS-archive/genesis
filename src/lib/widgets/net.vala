@@ -2,9 +2,6 @@ namespace GenesisWidgets {
   [GtkTemplate(ui = "/com/expidus/genesis/libwidgets/net.glade")]
   public class WiFiNetworkItem : Gtk.ListBoxRow {
     [GtkChild]
-    private unowned Gtk.Image signal_strength_icon;
-
-    [GtkChild]
     private unowned Gtk.Image security_icon;
 
     [GtkChild]

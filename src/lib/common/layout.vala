@@ -321,8 +321,6 @@ namespace GenesisCommon {
 			get;
 			construct;
 		}
-
-		public signal void destroy();
 	}
 
 	/**

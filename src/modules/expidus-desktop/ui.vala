@@ -99,12 +99,14 @@ namespace ExpidusDesktop {
     }
     
     ~UserDashboard() {
+      // TODO: figure out why destructor isn't called
       if (this._pa_ctx != null) {
         this._pa_ctx.disconnect();
         this._pa_ctx = null;
       }
       
       if (this._timeout != null) {
+        GLib.Source.remove(this._timeout.get_id());
         this._timeout.destroy();
         this._timeout = null;
       }

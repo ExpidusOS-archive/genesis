@@ -234,6 +234,7 @@ namespace ExpidusDesktop {
 					this._win = new UserDashboard((GenesisComponent.Monitor)monitor);
 					break;
 				default:
+					this._win = null;
 					break;
 			}
 
@@ -243,7 +244,7 @@ namespace ExpidusDesktop {
 		~UILayout() {
 			if (this._win != null) {
 				this._win.hide();
-				this._win.unref();
+				// TODO: figure out why resources are still being used
 				this._win = null;
 			}
 		}

@@ -142,7 +142,6 @@ namespace GenesisComponent {
 					if (layout != null) {
 						var ui = layout.get_ui_layout(monitor, el);
 						if (ui != null) {
-							ui.destroy.connect(() => this._ui_layouts.remove(monitor_name));
 							this._ui_layouts.set(monitor_name, (owned)ui);
 							this.ui_element_shown(monitor_name, el);
 							return true;
@@ -158,11 +157,8 @@ namespace GenesisComponent {
 
 		public override bool close_ui(string monitor_name, GenesisCommon.UIElement el) throws GLib.Error {
 			if (this._ui_layouts.contains(monitor_name)) {
-				var ui = this._ui_layouts.get(monitor_name);
-				if (ui.ui_element == el) {
-					ui.destroy();
-					return true;
-				}				
+				this._ui_layouts.remove(monitor_name);
+				return true;
 			}
 			return false;
 		}
