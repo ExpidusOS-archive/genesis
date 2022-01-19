@@ -58,6 +58,9 @@ namespace ExpidusDesktop {
     private PulseAudio.Context _pa_ctx;
     private NM.Client _nm_client;
     private GLib.TimeoutSource _timeout;
+    private Up.Client _up_client;
+    private Playerctl.PlayerManager _player_manager;
+    private Playerctl.Player? _player;
     
     private GWeather.Info _gw_info;
     
@@ -81,6 +84,30 @@ namespace ExpidusDesktop {
     
     [GtkChild]
     private unowned Hdy.ExpanderRow bluetooth_device_select;
+    
+    [GtkChild]
+    private unowned Gtk.ListBoxRow battery_status;
+    
+    [GtkChild]
+    private unowned Gtk.Image battery_icon;
+    
+    [GtkChild]
+    private unowned Gtk.Label battery_label_percent;
+    
+    [GtkChild]
+    private unowned Gtk.Label battery_charge_time;
+    
+    [GtkChild]
+    private unowned Gtk.ListBoxRow music_controls;
+
+    [GtkChild]
+    private unowned Gtk.Label music_title;
+
+    [GtkChild]
+    private unowned Gtk.Label music_subtitle;
+    
+    [GtkChild]
+    private unowned Gtk.Image music_play_icon;
     
     [GtkChild]
     private unowned Gtk.Stack weather_stack;
@@ -163,10 +190,49 @@ namespace ExpidusDesktop {
         this.weather_search.location = loc;
         this._gw_info.location = loc;
       }
+      
+      try {
+        this._up_client = new Up.Client.full(null);
+        this.battery_update();
+      } catch (GLib.Error e) {
+        this.battery_status.hide();
+      }
+      
+      try {
+        this._player_manager = new Playerctl.PlayerManager();
 
-      this._timeout = new GLib.TimeoutSource.seconds(5);
+        this._player_manager.name_appeared.connect((name) => {
+          if (this._player == null) {
+            try {
+              this._player = new Playerctl.Player.from_name(name.copy());
+              this._player_manager.manage_player(this._player);
+            } catch (GLib.Error e) {}
+          }
+        });
+        this._player_manager.name_vanished.connect((name) => {
+          if (this._player != null && this._player.player_name == name.name && this._player.source == name.source) {
+            this._player = null;
+          }
+        });
+
+        var name = this._player_manager.player_names.nth_data(0);
+        if (name != null) {
+          try {
+            this._player = new Playerctl.Player.from_name(name.copy());
+            this._player_manager.manage_player(this._player);
+          } catch (GLib.Error e) {}
+        }
+
+        this.player_update();
+      } catch (GLib.Error e) {
+        this.music_controls.hide();
+      }
+
+      this._timeout = new GLib.TimeoutSource.seconds(1);
       this._timeout.set_callback(() => {
         if (this._nm_client != null) this.net_update();
+        if (this._player_manager != null) this.player_update();
+        if (this._up_client != null) this.battery_update();
         return true;
       });
       this._timeout.attach(GLib.MainContext.@default());
@@ -354,6 +420,70 @@ namespace ExpidusDesktop {
         this.status_bluetooth_btn.hide();
       }
     }
+    
+    private void player_update() {
+      try {
+        if (this._player != null && this._player.playback_status != Playerctl.PlaybackStatus.STOPPED) {
+          this.music_controls.show_all();
+          
+          this.music_title.label = this._player.get_title();
+
+          if (this._player.can_seek) {
+            var seconds = this._player.get_position();
+            this.music_subtitle.label = "%0.2d:%0.2d".printf((int)((seconds / 60) % 60), (int)(seconds % 60));
+          } else if (this._player.get_album() != null) {
+            this.music_subtitle.label = this._player.get_album();
+          }
+          
+          if (this._player.playback_status == Playerctl.PlaybackStatus.PLAYING) {
+            this.music_play_icon.icon_name = "gtk-media-pause";
+          } else {
+            this.music_play_icon.icon_name = "gtk-media-play";
+          }
+        } else {
+          this.music_controls.hide();
+        }
+      } catch (GLib.Error e) {
+        this.music_controls.hide();
+      }
+    }
+
+    private void battery_update() {
+      if (this._up_client != null) {
+        foreach (var dev in this._up_client.get_devices2()) {
+          if (dev.kind == Up.DeviceKind.BATTERY) {
+            var per = ((dev.energy - dev.energy_empty) / dev.energy_full) * 100;
+            var icon_level = "%0.3d".printf((int)(10 * GLib.Math.round(per / 10.0)));
+            var icon_suffix = "";
+            
+            this.battery_label_percent.label = "Battery is %0.0f%% full".printf(per);
+            
+            switch (dev.state) {
+              case Up.DeviceState.CHARGING:
+                icon_suffix = "-charging";
+                var minutes = dev.time_to_full / 60;
+                this.battery_charge_time.label = "%d:%0.2d until charged".printf((int)(minutes / 60), (int)(minutes % 60));
+                break;
+              case Up.DeviceState.DISCHARGING:
+                var minutes = dev.time_to_empty / 60;
+                this.battery_charge_time.label = "%d:%0.2d remaining".printf((int)(minutes / 60), (int)(minutes % 60));
+                break;
+              case Up.DeviceState.FULLY_CHARGED:
+                this.battery_charge_time.label = "Fully charged";
+                break;
+              case Up.DeviceState.EMPTY:
+                this.battery_charge_time.label = "Battery is empty";
+                break;
+              default:
+                break;
+            }
+
+            this.battery_icon.icon_name = "battery-%s%s".printf(icon_level, icon_suffix);
+            break;
+          }
+        }
+      }
+    }
 
 		public override void get_preferred_width(out int min_width, out int nat_width) {
 			min_width = nat_width = ((GenesisWidgets.Application)this.application).shell.find_monitor(this.monitor_name).dpi(350);
@@ -519,6 +649,39 @@ namespace ExpidusDesktop {
           }
         }
       }
+    }
+    
+    [GtkCallback]
+    private void do_prev_song() {
+      try {
+        if (this._player != null && this._player.can_go_previous) {
+          this._player.previous();
+        }
+      } catch (GLib.Error e) {}
+    }
+    
+    [GtkCallback]
+    private void do_pause_song() {
+      try {
+        if (this._player != null && (this._player.can_pause || this._player.can_play)) {
+          this._player.play_pause();
+          
+          if (this._player.playback_status == Playerctl.PlaybackStatus.PLAYING) {
+            this.music_play_icon.icon_name = "gtk-media-pause";
+          } else {
+            this.music_play_icon.icon_name = "gtk-media-play";
+          }
+        }
+      } catch (GLib.Error e) {}
+    }
+    
+    [GtkCallback]
+    private void do_next_song() {
+      try {
+        if (this._player != null && this._player.can_go_next) {
+          this._player.next();
+        }
+      } catch (GLib.Error e) {}
     }
   }
 }

@@ -421,11 +421,13 @@
                         <property name="hexpand">True</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="music_title">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
                             <property name="label" translatable="yes">Now playing...</property>
+                            <property name="ellipsize">end</property>
+                            <property name="single-line-mode">True</property>
                             <style>
                               <class name="genesis-shell-user-dashboard-music-controls-title"/>
                               <class name="title"/>
@@ -438,7 +440,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="music_subtitle">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
@@ -463,6 +465,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
+                                <signal name="clicked" handler="do_prev_song" swapped="no"/>
                                 <child>
                                   <object class="GtkImage">
                                     <property name="visible">True</property>
@@ -485,8 +488,9 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
+                                <signal name="clicked" handler="do_pause_song" swapped="no"/>
                                 <child>
-                                  <object class="GtkImage">
+                                  <object class="GtkImage" id="music_play_icon">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="icon-name">gtk-media-pause</property>
@@ -507,6 +511,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
+                                <signal name="clicked" handler="do_next_song" swapped="no"/>
                                 <child>
                                   <object class="GtkImage">
                                     <property name="visible">True</property>

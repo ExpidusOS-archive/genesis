@@ -39,6 +39,7 @@ wlroots = dependency('wlroots')
 giomm = dependency('giomm-2.4')
 posix = [meson.get_compiler('vala').find_library('posix'), meson.get_compiler('vala').find_library('linux')]
 math = meson.get_compiler('c').find_library('m')
+playerctl = dependency('playerctl')
 wayland_client = meson.get_compiler('c').find_library('wayland-client')
 
 add_project_arguments('-DPOLKIT_AGENT_I_KNOW_API_IS_SUBJECT_TO_CHANGE', language: 'c')
@@ -188,7 +189,7 @@ expidus_desktop_res = gnome.compile_resources('expidus-desktop-res', 'data/res/m
 
 modules = {
 	'expidus-desktop': [['src/modules/expidus-desktop/apps.vala', 'src/modules/expidus-desktop/layout.vala',
-		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/ui.vala', expidus_desktop_res], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep, gweather]],
+		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/ui.vala', expidus_desktop_res], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep, gweather, playerctl, upower]],
 	'expidus-mobile': [['src/modules/expidus-mobile/layout.vala', 'src/modules/expidus-mobile/module.vala'], [libgenesis_shell_dep,
 		libgenesis_component_dep, libgenesis_widgets_dep]]
 }
