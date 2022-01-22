@@ -34,10 +34,10 @@ Wallpaper free from **[unsplash.com](https://unsplash.com)**.
 * XDG Desktop Portal
 * Panel
 * Desktop
+* Power menu
 
 ## Needed Features & Components
 * Notifications
 * Lock Screen
 * LightDM Greeter
 * Application launcher
-* Power menu

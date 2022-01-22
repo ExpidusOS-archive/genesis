@@ -56,13 +56,14 @@ namespace ExpidusDesktop {
   public class UserDashboard : GenesisWidgets.LayerWindow {
     private PulseAudio.GLibMainLoop _pa_main_loop;
     private PulseAudio.Context _pa_ctx;
+    private GWeather.Info _gw_info;
     private NM.Client _nm_client;
     private GLib.TimeoutSource _timeout;
     private Up.Client _up_client;
     private Playerctl.PlayerManager _player_manager;
     private Playerctl.Player? _player;
-    
-    private GWeather.Info _gw_info;
+    private GenesisLogind.Manager _login_manager;
+    private GenesisBluetooth.Manager _bt_manager;
     
     [GtkChild]
     private unowned Gtk.ToggleButton status_wifi_btn;
@@ -192,6 +193,10 @@ namespace ExpidusDesktop {
       }
       
       try {
+        this._login_manager = new GenesisLogind.Manager();
+      } catch (GLib.Error e) {}
+      
+      try {
         this._up_client = new Up.Client.full(null);
         this.battery_update();
       } catch (GLib.Error e) {
@@ -227,12 +232,26 @@ namespace ExpidusDesktop {
       } catch (GLib.Error e) {
         this.music_controls.hide();
       }
+      
+      try {
+        this._bt_manager = new GenesisBluetooth.Manager();
+        var adapter = this._bt_manager.adapters.nth_data(0);
+        if (adapter != null) {
+          this.status_bluetooth_btn.set_active(adapter.powered);
+        }
+
+        this.bt_update();
+      } catch (GLib.Error e) {
+        this.bluetooth_device_select.hide();
+        this.status_bluetooth_btn.hide();
+      }
 
       this._timeout = new GLib.TimeoutSource.seconds(1);
       this._timeout.set_callback(() => {
         if (this._nm_client != null) this.net_update();
         if (this._player_manager != null) this.player_update();
         if (this._up_client != null) this.battery_update();
+        if (this._bt_manager != null) this.bt_update();
         return true;
       });
       this._timeout.attach(GLib.MainContext.@default());
@@ -249,19 +268,37 @@ namespace ExpidusDesktop {
         try {
           if (!this.net_init.end(res)) {
             this.wifi_network_select.hide();
-            this.bluetooth_device_select.hide();
             this.status_wifi_btn.hide();
-            this.status_bluetooth_btn.hide();
           } else {
             this.status_wifi_btn.set_active(this._nm_client.wireless_enabled);
           }
         } catch (GLib.Error e) {
           this.wifi_network_select.hide();
-          this.bluetooth_device_select.hide();
           this.status_wifi_btn.hide();
-          this.status_bluetooth_btn.hide();
         }
       });
+    }
+    
+    private void bt_update() {
+      try {
+        if (this._bt_manager != null) {
+          this.bluetooth_device_select.show();
+          this.status_bluetooth_btn.show();
+
+          var adapter = this._bt_manager.adapters.nth_data(0);
+          if (adapter != null) {
+            var conn = this._bt_manager.find_connected(adapter);
+            if (conn != null) {
+              this.bluetooth_device_select.subtitle = "Connected to %s".printf(conn.name);
+            } else {
+              this.bluetooth_device_select.subtitle = "Found %u devices".printf(this._bt_manager.devices.length());
+            }
+          } else {
+            this.bluetooth_device_select.hide();
+            this.status_bluetooth_btn.hide();
+          }
+        }
+      } catch (GLib.Error e) {}
     }
     
     private async bool pulse_init(GLib.Cancellable? cancellable = null) throws GLib.Error {
@@ -393,7 +430,6 @@ namespace ExpidusDesktop {
 
     private void net_update() {
       var wifi = this.find_device(NM.DeviceType.WIFI) as NM.DeviceWifi;
-      var bt = this.find_device(NM.DeviceType.BT) as NM.DeviceBt;
 
       if (wifi != null && this._nm_client.wireless_hardware_enabled) {
         if (this._nm_client.wireless_enabled) {
@@ -413,11 +449,6 @@ namespace ExpidusDesktop {
       } else {
         this.wifi_network_select.hide();
         this.status_wifi_btn.hide();
-      }
-
-      if (bt == null) {
-        this.bluetooth_device_select.hide();
-        this.status_bluetooth_btn.hide();
       }
     }
     
@@ -506,7 +537,19 @@ namespace ExpidusDesktop {
     }
     
     [GtkCallback]
-    private void do_toggle_bluetooth() {}
+    private void do_toggle_bluetooth() {
+      if (this._bt_manager != null) {
+        var adapter = this._bt_manager.adapters.nth_data(0);
+        if (adapter != null) {
+          adapter.powered = this.status_bluetooth_btn.get_active();
+          if (adapter.powered) {
+            this.bt_update();
+          } else {
+            this.bluetooth_device_select.subtitle = "Bluetooth Off";
+          }
+        }
+      }
+    }
 
     [GtkCallback]
     private void do_toggle_location() {}
@@ -682,6 +725,43 @@ namespace ExpidusDesktop {
           this._player.next();
         }
       } catch (GLib.Error e) {}
+    }
+    
+    [GtkCallback]
+    private void do_settings() {}
+    
+    [GtkCallback]
+    private void do_logout() { 
+      try {
+        GLib.Bus.get_sync(GLib.BusType.SYSTEM, null).call_sync("org.freedesktop.login1", "/org/freedesktop/login1/session/auto", "org.freedesktop.login1.Session", "Terminate", null, null, GLib.DBusCallFlags.NONE, 0, null);
+      } catch (GLib.Error e) {
+        // TODO: send shutdown command to shell
+      }
+    }
+
+    [GtkCallback]
+    private void do_switch_user() {
+      try {
+        GLib.Bus.get_sync(GLib.BusType.SYSTEM, null).call_sync("org.freedesktop.login1", "/org/freedesktop/login1/seat/auto", "org.freedesktop.login1.Seat", "SwitchTo", new GLib.Variant("(u)", 1), null, GLib.DBusCallFlags.NONE, 0, null);
+      } catch (GLib.Error e) {}
+    }
+
+    [GtkCallback]
+    private void do_poweroff() {
+      try {
+        if (this._login_manager != null && this._login_manager.can_power_off) this._login_manager.poweroff(false);
+      } catch (GLib.Error e) {
+        GLib.warning("Failed to shutdown (%s:%d): %s", e.domain.to_string(), e.code, e.message);
+      }
+    }
+
+    [GtkCallback]
+    private void do_reboot() {
+      try {
+        if (this._login_manager != null && this._login_manager.can_reboot) this._login_manager.reboot(false);
+      } catch (GLib.Error e) {
+        GLib.warning("Failed to reboot (%s:%d): %s", e.domain.to_string(), e.code, e.message);
+      }
     }
   }
 }

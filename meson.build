@@ -126,6 +126,14 @@ build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
 build_conf = configure_file(input: 'src/build.vala.in', output: 'build.vala',
 	configuration: conf_data)
 
+libgenesis_bluetooth_files = files('src/lib/bluetooth/iface.vala', 'src/lib/bluetooth/manager.vala')
+libgenesis_bluetooth = shared_library('genesis-bluetooth', libgenesis_bluetooth_files,
+	dependencies: [gobject, gio],
+	vala_gir: 'GenesisBluetooth-1.0.gir',
+	install: true,
+	install_dir: [true, true, true, true])
+libgenesis_bluetooth_dep = declare_dependency(link_with: libgenesis_bluetooth, dependencies: [gobject, gio])
+
 libgenesis_common_files = files('src/lib/common/layout.vala', 'src/lib/common/module.vala', 'src/lib/common/monitor.vala', 'src/lib/common/shell.vala', 'src/lib/common/window.vala')
 libgenesis_common = shared_library('genesis-common', libgenesis_common_files, build_conf,
 	dependencies: [gobject, gio, gtk, libpeas, polkit, devident_client, math],
@@ -141,6 +149,14 @@ libgenesis_component = shared_library('genesis-component', libgenesis_component_
 	install: true,
 	install_dir: [true, true, true, true])
 libgenesis_component_dep = declare_dependency(link_with: libgenesis_component, dependencies: [gobject, gtk, libgenesis_common_dep])
+
+libgenesis_logind_files = files('src/lib/logind/manager.vala')
+libgenesis_logind = shared_library('genesis-logind', libgenesis_logind_files,
+	dependencies: [gobject, gio],
+	vala_gir: 'GenesisLogind-1.0.gir',
+	install: true,
+	install_dir: [true, true, true, true])
+libgenesis_logind_dep = declare_dependency(link_with: libgenesis_logind, dependencies: [gobject, gio])
 
 libgenesis_shell_files = files('src/lib/shell/layout.vala', 'src/lib/shell/module.vala',
 	'src/lib/shell/monitor.vala', 'src/lib/shell/shell.vala', 'src/lib/shell/window.vala')
@@ -189,7 +205,8 @@ expidus_desktop_res = gnome.compile_resources('expidus-desktop-res', 'data/res/m
 
 modules = {
 	'expidus-desktop': [['src/modules/expidus-desktop/apps.vala', 'src/modules/expidus-desktop/layout.vala',
-		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/ui.vala', expidus_desktop_res], [libgenesis_shell_dep, libgenesis_component_dep, libgenesis_widgets_dep, gweather, playerctl, upower]],
+		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/ui.vala', expidus_desktop_res], [libgenesis_shell_dep,
+		libgenesis_component_dep, libgenesis_widgets_dep, gweather, playerctl, upower, libgenesis_logind_dep, libgenesis_bluetooth_dep]],
 	'expidus-mobile': [['src/modules/expidus-mobile/layout.vala', 'src/modules/expidus-mobile/module.vala'], [libgenesis_shell_dep,
 		libgenesis_component_dep, libgenesis_widgets_dep]]
 }

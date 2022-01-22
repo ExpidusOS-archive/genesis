@@ -31,5 +31,6 @@ libgenesis_docs = custom_target(
 	'library documentation',
 	command: [basic_command, '-o', '@OUTPUT@', '@INPUT@'],
 	build_by_default: true,
-	input: libgenesis_common_files + libgenesis_component_files + libgenesis_shell_files + libgenesis_widgets_files + files(join_paths(meson.project_build_root(), 'build.vala')),
+	input: libgenesis_bluetooth_files + libgenesis_common_files + libgenesis_component_files
+		+ libgenesis_logind_files + libgenesis_shell_files + libgenesis_widgets_files + files(join_paths(meson.project_build_root(), 'build.vala')),
 	output: 'libgenesis')
