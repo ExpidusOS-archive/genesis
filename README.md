@@ -35,9 +35,9 @@ Wallpaper free from **[unsplash.com](https://unsplash.com)**.
 * Panel
 * Desktop
 * Power menu
+* Application launcher
 
 ## Needed Features & Components
 * Notifications
 * Lock Screen
 * LightDM Greeter
-* Application launcher

@@ -290,8 +290,10 @@ namespace ExpidusDesktop {
             var conn = this._bt_manager.find_connected(adapter);
             if (conn != null) {
               this.bluetooth_device_select.subtitle = "Connected to %s".printf(conn.name);
-            } else {
+            } else if (adapter.powered) {
               this.bluetooth_device_select.subtitle = "Found %u devices".printf(this._bt_manager.devices.length());
+            } else {
+              this.bluetooth_device_select.subtitle = "Bluetooth Off";
             }
           } else {
             this.bluetooth_device_select.hide();

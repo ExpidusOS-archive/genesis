@@ -172,7 +172,7 @@ libgenesis_widgets_res = gnome.compile_resources('genesis-widgets-res', 'data/re
 	export: true,
 	c_name: 'genesis_widgets')
 
-libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/widgets/clock.vala', 'src/lib/widgets/global-menu.vala',
+libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/widgets/apps.vala', 'src/lib/widgets/clock.vala', 'src/lib/widgets/global-menu.vala',
 		'src/lib/widgets/init.vala', 'src/lib/widgets/net.vala', 'src/lib/widgets/volume.vala', 'src/lib/widgets/wallpaper.vala',
 		'src/lib/widgets/widget.vala', 'src/lib/widgets/window.vala')
 libgenesis_widgets = shared_library('genesis-widgets', libgenesis_widgets_files, libgenesis_widgets_res,
@@ -205,7 +205,7 @@ expidus_desktop_res = gnome.compile_resources('expidus-desktop-res', 'data/res/m
 
 modules = {
 	'expidus-desktop': [['src/modules/expidus-desktop/apps.vala', 'src/modules/expidus-desktop/layout.vala',
-		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/ui.vala', expidus_desktop_res], [libgenesis_shell_dep,
+		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/user.vala', expidus_desktop_res], [libgenesis_shell_dep,
 		libgenesis_component_dep, libgenesis_widgets_dep, gweather, playerctl, upower, libgenesis_logind_dep, libgenesis_bluetooth_dep]],
 	'expidus-mobile': [['src/modules/expidus-mobile/layout.vala', 'src/modules/expidus-mobile/module.vala'], [libgenesis_shell_dep,
 		libgenesis_component_dep, libgenesis_widgets_dep]]

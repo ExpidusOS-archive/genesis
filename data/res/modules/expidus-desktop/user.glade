@@ -4,6 +4,11 @@
   <requires lib="gtk+" version="3.24"/>
   <requires lib="libgweather" version="3.0"/>
   <requires lib="libhandy" version="1.0"/>
+  <object class="GtkAdjustment" id="bluetooth_devices_vp_adj">
+    <property name="upper">1000</property>
+    <property name="step-increment">2</property>
+    <property name="page-increment">30</property>
+  </object>
   <object class="GtkAdjustment" id="brightness_adj">
     <property name="upper">1</property>
     <property name="step-increment">0.20</property>
@@ -299,6 +304,34 @@
                 <property name="title" translatable="yes">Bluetooth Devices</property>
                 <property name="subtitle" translatable="yes">Found 0</property>
                 <property name="icon-name">bluetooth</property>
+                <child>
+                  <object class="GtkListBoxRow">
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkScrolledWindow">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="vadjustment">bluetooth_devices_vp_adj</property>
+                        <property name="hscrollbar-policy">never</property>
+                        <property name="vscrollbar-policy">always</property>
+                        <child>
+                          <object class="GtkViewport">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="vadjustment">bluetooth_devices_vp_adj</property>
+                            <property name="shadow-type">none</property>
+                            <child>
+                              <object class="GtkListBox" id="bluetooth_devices_list">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
                 <style>
                   <class name="genesis-shell-user-dashboard-bluetooth-row"/>
                   <class name="genesis-shell-user-dashboard-row"/>
