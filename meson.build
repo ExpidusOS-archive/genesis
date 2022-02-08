@@ -125,6 +125,11 @@ build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
 	configuration: conf_data)
 build_conf = configure_file(input: 'src/build.vala.in', output: 'build.vala',
 	configuration: conf_data)
+configure_file(input: 'data/genesis-shell-helper.sh.in', output: 'genesis-shell',
+	configuration: conf_data,
+	install: true,
+	install_dir: bindir,
+	install_mode: 'rwxr--r--')
 
 libgenesis_bluetooth_files = files('src/lib/bluetooth/iface.vala', 'src/lib/bluetooth/manager.vala')
 libgenesis_bluetooth = shared_library('genesis-bluetooth', libgenesis_bluetooth_files,
@@ -194,9 +199,10 @@ executable('xdg-desktop-portal-genesis', ['src/portal/main.vala', 'src/portal/se
 	install_dir: libexecdir)
 install_data('data/genesis.portal', install_dir: join_paths(datadir, 'xdg-desktop-portal', 'portals'))
 
-executable('genesis-shell', ['src/shell/desktop.vala', 'src/shell/panel.vala', 'src/shell/polkit.vala', 'src/shell/shell.vala'],
+executable('genesis-shell-exec', ['src/shell/desktop.vala', 'src/shell/panel.vala', 'src/shell/polkit.vala', 'src/shell/shell.vala'],
 	dependencies: [gio, gobject, polkit, libgenesis_component_dep, posix, libgenesis_widgets_dep, gweather],
-	install: true)
+	install: true,
+	install_dir: libexecdir)
 
 expidus_desktop_res = gnome.compile_resources('expidus-desktop-res', 'data/res/modules/expidus-desktop/res.gresource.xml',
 	source_dir: 'data/res/modules/expidus-desktop',
