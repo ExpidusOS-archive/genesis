@@ -2,6 +2,11 @@
   background-image: none;
 }
 
+.genesis-shell-panel-item {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
 .genesis-shell-user-dashboard {
   margin-top: 15px;
   margin-bottom: 15px;
