@@ -198,6 +198,7 @@ namespace ExpidusDesktop {
       
       try {
         this._up_client = new Up.Client.full(null);
+        this.battery_status.show_all();
         this.battery_update();
       } catch (GLib.Error e) {
         this.battery_status.hide();
@@ -483,6 +484,7 @@ namespace ExpidusDesktop {
 
     private void battery_update() {
       if (this._up_client != null) {
+        var found = false;
         foreach (var dev in this._up_client.get_devices2()) {
           if (dev.kind == Up.DeviceKind.BATTERY) {
             var per = ((dev.energy - dev.energy_empty) / dev.energy_full) * 100;
@@ -512,9 +514,13 @@ namespace ExpidusDesktop {
             }
 
             this.battery_icon.icon_name = "battery-%s%s".printf(icon_level, icon_suffix);
+            found = true;
             break;
           }
         }
+
+        if (found) this.battery_status.show_all();
+        else this.battery_status.hide();
       }
     }
 
