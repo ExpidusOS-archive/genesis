@@ -19,6 +19,16 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="volume_adj">
+    <property name="upper">1</property>
+    <property name="step-increment">0.20</property>
+    <property name="page-increment">2</property>
+  </object>
+  <object class="GtkAdjustment" id="wifi_networks_vp_adj">
+    <property name="upper">1000</property>
+    <property name="step-increment">2</property>
+    <property name="page-increment">30</property>
+  </object>
   <template class="ExpidusDesktopUserDashboard" parent="GenesisWidgetsLayerWindow">
     <property name="can-focus">False</property>
     <child>
@@ -48,6 +58,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">WiFi</property>
                         <property name="always-show-image">True</property>
                         <signal name="toggled" handler="do_toggle_wifi" swapped="no"/>
                         <child>
@@ -73,6 +84,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Bluetooth</property>
                         <signal name="clicked" handler="do_toggle_bluetooth" swapped="no"/>
                         <child>
                           <object class="GtkImage">
@@ -97,6 +109,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Location</property>
                         <signal name="clicked" handler="do_toggle_location" swapped="no"/>
                         <child>
                           <object class="GtkImage">
@@ -121,6 +134,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Do Not Disturb</property>
                         <signal name="clicked" handler="do_toggle_dnd" swapped="no"/>
                         <child>
                           <object class="GtkImage">
@@ -197,54 +211,6 @@
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkBox" id="brightness_box">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkImage" id="brightness_icon">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="icon-name">weather-clear</property>
-                        <style>
-                          <class name="genesis-shell-user-dashboard-brightness-icon"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkScale" id="brightness_slider">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="adjustment">brightness_adj</property>
-                        <property name="draw-value">False</property>
-                        <signal name="value-changed" handler="brightness_changed" swapped="no"/>
-                        <style>
-                          <class name="genesis-shell-user-dashboard-brightness-slider"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="pack-type">end</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <style>
-                      <class name="genesis-shell-user-dashboard-brightness-row"/>
-                      <class name="genesis-shell-user-dashboard-row"/>
-                    </style>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
@@ -641,6 +607,9 @@
                             <property name="halign">start</property>
                             <property name="label" translatable="yes">You have no recent notifications</property>
                             <property name="justify">fill</property>
+                            <attributes>
+                              <attribute name="style" value="italic"/>
+                            </attributes>
                             <style>
                               <class name="genesis-shell-user-dashboard-notifications-placeholder"/>
                             </style>
@@ -923,6 +892,9 @@
                             <property name="label" translatable="yes">Your weather is not set up, please put in your location.</property>
                             <property name="justify">center</property>
                             <property name="wrap">True</property>
+                            <attributes>
+                              <attribute name="style" value="italic"/>
+                            </attributes>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -1058,14 +1030,4 @@
       </object>
     </child>
   </template>
-  <object class="GtkAdjustment" id="volume_adj">
-    <property name="upper">1</property>
-    <property name="step-increment">0.20</property>
-    <property name="page-increment">2</property>
-  </object>
-  <object class="GtkAdjustment" id="wifi_networks_vp_adj">
-    <property name="upper">1000</property>
-    <property name="step-increment">2</property>
-    <property name="page-increment">30</property>
-  </object>
 </interface>
