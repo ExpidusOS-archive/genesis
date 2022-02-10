@@ -18,7 +18,7 @@ namespace ExpidusDesktop {
 
       GtkLayerShell.set_margin(this, GtkLayerShell.Edge.TOP, 8);
       GtkLayerShell.set_margin(this, GtkLayerShell.Edge.BOTTOM, 8);
-      GtkLayerShell.set_margin(this, GtkLayerShell.Edge.LEFT, 15);
+      GtkLayerShell.set_margin(this, GtkLayerShell.Edge.LEFT, 8);
 
       GtkLayerShell.set_keyboard_mode(this, GtkLayerShell.KeyboardMode.EXCLUSIVE);
 

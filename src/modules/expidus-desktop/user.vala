@@ -182,7 +182,7 @@ namespace ExpidusDesktop {
 
       GtkLayerShell.set_margin(this, GtkLayerShell.Edge.TOP, 8);
       GtkLayerShell.set_margin(this, GtkLayerShell.Edge.BOTTOM, 8);
-      GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, 15);
+      GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, 8);
       
       GtkLayerShell.set_keyboard_mode(this, GtkLayerShell.KeyboardMode.EXCLUSIVE);
       
@@ -569,9 +569,6 @@ namespace ExpidusDesktop {
     private void volume_changed() {
       this.pulse_set();
     }
-    
-    [GtkCallback]
-    private void brightness_changed() {}
     
     [GtkCallback]
     private void wifi_network_selected(Gtk.ListBoxRow? row) {
