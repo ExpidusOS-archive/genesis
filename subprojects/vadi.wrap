@@ -1,4 +1,2 @@
-[wrap-git]
-directory=vadi
-url=https://github.com/ExpidusOS/Vadi.git
-revision=main
+[wrap-redirect]
+filename = libdevident/subprojects/vadi.wrap
