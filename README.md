@@ -1,5 +1,7 @@
 # Genesis
 
+**NOTE**: This branch is the WIP refactored version.
+
 Genesis Shell is a modular Wayland compositor based on Wayfire. The name "Genesis" was chosen as the shell is designed to be a "next-generation"
 desktop environment. It is designed to be modular, the core of the shell is designed to not rely on any display backends. This means Genesis can be ported
 between any display technology with little hassle. However, Genesis's component side depend on Wayland. This will be patched in the future to allow any
