@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<gresources>
-    <gresource prefix="/com/expidus/genesis/libwidgets">
-        <file>apps.glade</file>
-        <file>net.glade</file>
-    </gresource>
-</gresources>
