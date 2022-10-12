@@ -150,7 +150,10 @@ namespace GenesisShell {
     public abstract bool is_mode_available(MonitorMode mode) throws GLib.DBusError, GLib.IOError;
   }
 
-  public abstract class Monitor : GLib.Object {
+  public abstract class Monitor : GLib.Object, GLib.Initable {
+    private bool _is_init;
+    internal DBusMonitor dbus { get; }
+
     /**
      * The context of the shell the monitor is a part of
      */
@@ -264,6 +267,14 @@ namespace GenesisShell {
      * determine whether or not the monitor can run at that mode.
      */
     public abstract bool is_mode_available(MonitorMode mode);
+
+    public virtual bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
+      if (this._is_init) return true;
+      this._is_init = true;
+
+      this._dbus = new DBusMonitor(this, this.context.dbus.connection, cancellable);
+      return true;
+    }
   }
 
   internal sealed class DBusMonitor : GLib.Object, IMonitorDBus, GLib.Initable {
