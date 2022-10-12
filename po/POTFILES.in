@@ -1,3 +1,4 @@
 core/lib/build.vala.in
 core/lib/context.vala
 core/lib/monitor.vala
+core/lib/plugin.vala

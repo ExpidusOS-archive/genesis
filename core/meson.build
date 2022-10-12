@@ -5,7 +5,7 @@ build_conf_core = configure_file(input: 'lib/build.vala.in', output: 'build.vala
   configuration: conf_data_core)
 
 libgenesis_core_docs_args = ['--package-name=libgenesis', '--package-version=@0@'.format(shortver)]
-libgenesis_core_rel_sources = ['lib/context.vala', 'lib/monitor.vala']
+libgenesis_core_rel_sources = ['lib/context.vala', 'lib/monitor.vala', 'lib/plugin.vala']
 libgenesis_core_sources = []
 
 foreach src : libgenesis_core_rel_sources
@@ -19,10 +19,10 @@ endif
 
 libgenesis_core_sources += [build_conf_core]
 
-libgenesis_core_deps = [gio, vadi]
+libgenesis_core_deps = [gio, vadi, libpeas, libdevident]
 libgenesis_core_shlib = shared_library('genesis', build_conf_core, libgenesis_core_rel_sources,
   c_args: ['-DG_LOG_DOMAIN="GenesisShell"', '-DGETTEXT_PACKAGE="genesis-shell"'],
-  vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"'],
+  vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"', '--define=TARGET_SYSTEM_@0@'.format(target_machine.system().to_upper())],
   vala_gir: 'Tokyo-@0@.gir'.format(shortver.split('-')[0]),
   dependencies: libgenesis_core_deps,
   version: shortver.split('-')[0],

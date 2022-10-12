@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: genesis-shell 0.2.0-alpha\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-12 13:38-0700\n"
-"PO-Revision-Date: 2022-10-12 13:38-0700\n"
+"POT-Creation-Date: 2022-10-12 16:29-0700\n"
+"PO-Revision-Date: 2022-10-12 16:29-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: en_US\n"
@@ -17,7 +17,40 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: core/lib/monitor.vala:53
+#: core/lib/context.vala:107 core/lib/context.vala:117
+#, c-format
+msgid "Failed to add plugin \"%s\": %s:%d: %s"
+msgstr "Failed to add plugin \"%s\": %s:%d: %s"
+
+#: core/lib/context.vala:126
+#, c-format
+msgid "Adding plugin \"%s\" %p"
+msgstr "Adding plugin \"%s\" %p"
+
+#: core/lib/context.vala:140
+#, c-format
+msgid ""
+"Failed to activate plugin \"%s\", class does not extend either "
+"GenesisShellAsyncPlugin or GenesisShellPlugin"
+msgstr ""
+"Failed to activate plugin \"%s\", class does not extend either "
+"GenesisShellAsyncPlugin or GenesisShellPlugin"
+
+#: core/lib/context.vala:153
+#, c-format
+msgid "Removing plugin \"%s\" %p"
+msgstr "Removing plugin \"%s\" %p"
+
+#: core/lib/context.vala:165
+#, c-format
+msgid ""
+"Failed to deactivate plugin \"%s\", class does not extend either "
+"GenesisShellAsyncPlugin or GenesisShellPlugin"
+msgstr ""
+"Failed to deactivate plugin \"%s\", class does not extend either "
+"GenesisShellAsyncPlugin or GenesisShellPlugin"
+
+#: core/lib/monitor.vala:54
 #, c-format
 msgid "%dx%d (%d) %f Hz"
 msgstr "%dx%d (%d) %f Hz"

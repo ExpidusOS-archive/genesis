@@ -49,8 +49,7 @@ libtokyo_gtk4 = dependency('tokyo-gtk4', disabler: not libtokyo.found(), require
 
 vadi = dependency('vadi-0.0', required: true)
 gio = dependency('gio-2.0', required: true)
-gmodule = dependency('gmodule-2.0', required: false)
-libpeas = dependency('libpeas-1.0', required: false)
+libpeas = dependency('libpeas-1.0', required: true)
 
 gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
   dependency('gtk-layer-shell-0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
@@ -68,18 +67,6 @@ conf_data.set('VERSION', longver)
 conf_data.set('LOCALDIR', join_paths(datadir, 'locale'))
 conf_data.set('BUILDDIR', meson.current_build_dir())
 conf_data.set('SOURCEDIR', meson.current_source_dir())
-
-vala_defines = []
-
-if libpeas.found()
-  vala_defines += ['--define=HAS_LIBPEAS']
-endif
-
-if gmodule.found()
-  vala_defines += ['--define=HAS_GMODULE']
-endif
-
-add_project_arguments(vala_defines, language: 'vala')
 
 subdir('po')
 subdir('core')
