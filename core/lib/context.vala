@@ -50,6 +50,7 @@ namespace GenesisShell {
     public GLib.HashTable<string, IPlugin> plugins { get; }
     public Peas.Engine plugin_engine { get; }
     public Peas.ExtensionSet plugin_set { get; }
+    public IMonitorProvider monitor_provider { get; }
 
     public async Context.async(ContextMode mode = ContextMode.COMPOSITOR, GLib.Cancellable? cancellable = null) throws GLib.Error {
       Object(mode: mode);
@@ -98,11 +99,12 @@ namespace GenesisShell {
 #endif
 
       this._plugin_set = new Peas.ExtensionSet(this.plugin_engine, typeof (IPlugin), "context", this);
+      this._monitor_provider = new MonitorProvider(this);
 
       this._plugin_set.extension_added.connect((info, obj) => {
-        this.plugin_added.begin(info, obj as IPlugin, null, (obj, res) => {
+        this.do_plugin_added.begin(info, obj as IPlugin, null, (obj, res) => {
           try {
-            this.plugin_added.end(res);
+            this.do_plugin_added.end(res);
           } catch (GLib.Error e) {
             GLib.error(N_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
           }
@@ -110,9 +112,9 @@ namespace GenesisShell {
       });
 
       this._plugin_set.extension_removed.connect((info, obj) => {
-        this.plugin_removed.begin(info, obj as IPlugin, null, (obj, res) => {
+        this.do_plugin_removed.begin(info, obj as IPlugin, null, (obj, res) => {
           try {
-            this.plugin_removed.end(res);
+            this.do_plugin_removed.end(res);
           } catch (GLib.Error e) {
             GLib.error(N_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
           }
@@ -121,7 +123,7 @@ namespace GenesisShell {
       return true;
     }
 
-    private async bool plugin_added(Peas.PluginInfo info, IPlugin? plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    private async bool do_plugin_added(Peas.PluginInfo info, IPlugin? plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
       if (plugin != null && !this.plugins.contains(info.get_module_name())) {
         GLib.debug(N_("Adding plugin \"%s\" %p"), info.get_name(), plugin);
 
@@ -139,6 +141,8 @@ namespace GenesisShell {
           } else {
             throw new ContextError.BAD_PLUGIN(N_("Failed to activate plugin \"%s\", class does not extend either GenesisShellAsyncPlugin or GenesisShellPlugin").printf(info.get_name()));
           }
+
+          this.plugin_added(info, plugin);
         } catch (GLib.Error e) {
           this._plugins.remove(info.get_module_name());
           throw e;
@@ -148,7 +152,7 @@ namespace GenesisShell {
       return false;
     }
 
-    private async bool plugin_removed(Peas.PluginInfo info, IPlugin? plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    private async bool do_plugin_removed(Peas.PluginInfo info, IPlugin? plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
       if (plugin != null && !this.plugins.contains(info.get_module_name())) {
         GLib.debug(N_("Removing plugin \"%s\" %p"), info.get_name(), plugin);
 
@@ -164,6 +168,8 @@ namespace GenesisShell {
           } else {
             throw new ContextError.BAD_PLUGIN(N_("Failed to deactivate plugin \"%s\", class does not extend either GenesisShellAsyncPlugin or GenesisShellPlugin").printf(info.get_name()));
           }
+
+          this.plugin_removed(info, plugin);
         } catch (GLib.Error e) {
           this._plugins.remove(info.get_module_name());
           throw e;
@@ -172,6 +178,9 @@ namespace GenesisShell {
       }
       return false;
     }
+
+    public signal void plugin_added(Peas.PluginInfo info, IPlugin plugin);
+    public signal void plugin_removed(Peas.PluginInfo info, IPlugin plugin);
   }
 
   internal sealed class DBusContext : GLib.Object, IContextDBus, GLib.Initable {

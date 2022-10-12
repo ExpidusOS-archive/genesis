@@ -5,7 +5,7 @@ build_conf_core = configure_file(input: 'lib/build.vala.in', output: 'build.vala
   configuration: conf_data_core)
 
 libgenesis_core_docs_args = ['--package-name=libgenesis', '--package-version=@0@'.format(shortver)]
-libgenesis_core_rel_sources = ['lib/context.vala', 'lib/monitor.vala', 'lib/plugin.vala']
+libgenesis_core_rel_sources = ['lib/context.vala', 'lib/monitor.vala', 'lib/plugin.vala', 'lib/provider/monitor.vala']
 libgenesis_core_sources = []
 
 foreach src : libgenesis_core_rel_sources
