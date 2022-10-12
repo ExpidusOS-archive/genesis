@@ -2,6 +2,7 @@ project('genesis-shell', 'vala', 'c', license: 'GPL-3.0-only', version: '0.2.0-a
 
 gnome = import('gnome')
 i18n = import('i18n')
+pkg = import('pkgconfig')
 
 prefix = get_option('prefix')
 bindir = prefix / get_option('bindir')
@@ -16,20 +17,29 @@ conf_data = configuration_data()
 i18n_args = ['--package-version=@0@'.format(longver), '--copyright-holder=Midstall Software']
 
 if git.found()
-	git_commit = run_command([git, 'rev-parse', '--short', 'HEAD'])
-	git_branch = run_command([git, 'rev-parse', '--abbrev-ref', 'HEAD'])
+  git_commit = run_command([git, 'rev-parse', '--short', 'HEAD'])
+  git_branch = run_command([git, 'rev-parse', '--abbrev-ref', 'HEAD'])
   git_config_username = run_command([git, 'config', '--get', 'user.name'])
 
-	if git_commit.returncode() == 0 and git_branch.returncode() == 0
+  if git_commit.returncode() == 0 and git_branch.returncode() == 0
     shortver = '@0@-@1@'.format(meson.project_version(), git_commit.stdout().strip())
-		longver = '@0@ (branch \'@1@\')'.format(shortver, git_branch.stdout().strip())
-	endif
+    longver = '@0@ (branch \'@1@\')'.format(shortver, git_branch.stdout().strip())
+  endif
 
   if git_config_username.returncode() == 0
     git_username = git_config_username.stdout().strip()
     conf_data.set('BUILD_USER', git_username)
   endif
 endif
+
+sdk = dependency('expidus-sdk', native: false, required: false, include_type: 'system', method: 'pkg-config')
+if sdk.found()
+  uncrustify = find_program('uncrustify', sdk.get_variable('bindir'))
+else
+  uncrustify = disabler()
+endif
+
+valadoc = find_program('valadoc', required: get_option('docs'), native: true)
 
 libdevident = dependency('devident', fallback: ['libdevident', 'libdevident_core'], required: true)
 
@@ -38,14 +48,15 @@ libtokyo_gtk3 = dependency('tokyo-gtk3', disabler: not libtokyo.found(), require
 libtokyo_gtk4 = dependency('tokyo-gtk4', disabler: not libtokyo.found(), required: false)
 
 vadi = dependency('vadi-0.0', required: true)
+gio = dependency('gio-2.0', required: true)
 gmodule = dependency('gmodule-2.0', required: false)
 libpeas = dependency('libpeas-1.0', required: false)
 
-gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found()),
-  dependency('gtk-layer-shell-0', disabler: not libtokyo_gtk3.found(), required: false),
+gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
+  dependency('gtk-layer-shell-0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
   libtokyo_gtk3]
 
-gtk4 = [dependency('gtk4', disabler: not libtokyo_gtk4.found()),
+gtk4 = [dependency('gtk4', disabler: not libtokyo_gtk4.found(), required: libtokyo_gtk4.found()),
   libtokyo_gtk4]
 
 conf_data.set('PREFIX', prefix)
@@ -71,3 +82,4 @@ endif
 add_project_arguments(vala_defines, language: 'vala')
 
 subdir('po')
+subdir('core')
