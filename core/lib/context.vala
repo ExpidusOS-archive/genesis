@@ -4,6 +4,8 @@ namespace GenesisShell {
   public interface IContextDBus : GLib.Object {
     public abstract ContextMode mode { get; }
     public abstract string[] plugin_names { owned get; }
+
+    public signal void shutdown();
   }
 #endif
 
@@ -80,7 +82,8 @@ namespace GenesisShell {
 
   [DBus(name = "com.expidus.genesis.ShellError")]
   public errordomain ContextError {
-    BAD_PLUGIN
+    BAD_PLUGIN,
+    BAD_LAUNCH
   }
 
   public sealed class Context : GLib.Object, GLib.AsyncInitable, GLib.Initable {
@@ -89,6 +92,7 @@ namespace GenesisShell {
     private IWorkspaceProvider _workspace_provider;
 
 #if HAS_DBUS
+    private uint _dbus_name_id;
     internal DBusContext dbus { get; }
 #endif
 
@@ -132,6 +136,15 @@ namespace GenesisShell {
     public Context(ContextMode mode = ContextMode.COMPOSITOR, GLib.Cancellable? cancellable = null) throws GLib.Error {
       Object(mode: mode);
       this.init(cancellable);
+    }
+
+    ~Context() {
+#if HAS_DBUS
+      if (this._dbus_name_id > 0) {
+        GLib.Bus.unown_name(this._dbus_name_id);
+        this._dbus_name_id = 0;
+      }
+#endif
     }
 
     construct {
@@ -211,6 +224,30 @@ namespace GenesisShell {
           }
         });
       });
+
+      GLib.debug(N_("Genesis Shell context %p is running in mode %s"), this, this.mode.to_nick());
+
+      switch (this.mode) {
+        case ContextMode.COMPOSITOR:
+#if ! HAS_DBUS
+          throw new ContextError.BAD_LAUNCH(N_("Compositor mode requires dbus support to be enabled"));
+#else
+          this._dbus_name_id = GLib.Bus.own_name_on_connection(this.dbus.connection, "com.expidus.genesis.Compositor", GLib.BusNameOwnerFlags.DO_NOT_QUEUE);
+          break;
+#endif
+        case ContextMode.GADGETS:
+#if ! HAS_DBUS
+          throw new ContextError.BAD_LAUNCH(N_("Gadgets mode requires dbus support to be enabled"));
+#else
+          this._dbus_name_id = GLib.Bus.own_name_on_connection(this.dbus.connection, "com.expidus.genesis.Gadgets", GLib.BusNameOwnerFlags.DO_NOT_QUEUE);
+          break;
+        case ContextMode.BIG_PICTURE:
+          this._dbus_name_id = GLib.Bus.own_name_on_connection(this.dbus.connection, "com.expidus.genesis.BigPicture", GLib.BusNameOwnerFlags.DO_NOT_QUEUE);
+          break;
+#endif
+        default:
+          break;
+      }
       return true;
     }
 
@@ -272,6 +309,8 @@ namespace GenesisShell {
 
     public signal void plugin_added(Peas.PluginInfo info, IPlugin plugin);
     public signal void plugin_removed(Peas.PluginInfo info, IPlugin plugin);
+
+    public signal void shutdown();
   }
 
 #if HAS_DBUS
@@ -307,6 +346,10 @@ namespace GenesisShell {
     internal DBusContext.make_sync_connection(Context context, GLib.Cancellable? cancellable = null) throws GLib.Error {
       Object(context: context, connection: GLib.Bus.get_sync(GLib.BusType.SESSION, cancellable));
       this.init(cancellable);
+    }
+
+    construct {
+      this.context.shutdown.connect(() => this.shutdown());
     }
 
     ~DBusContext() {

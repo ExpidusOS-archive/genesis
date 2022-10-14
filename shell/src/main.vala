@@ -8,7 +8,8 @@ private const GLib.OptionEntry[] options = {
 
 private async void run(string argv0, GenesisShell.ContextMode mode, GLib.MainLoop loop) {
   try {
-    yield new GenesisShell.Context.async(mode);
+    var ctx = yield new GenesisShell.Context.async(mode);
+    ctx.shutdown.connect(() => loop.quit());
   } catch (GLib.Error e) {
     stderr.printf(N_("%s: failed to start the shell: %s:%d: %s\n"), argv0, e.domain.to_string(), e.code, e.message);
     loop.quit();
@@ -49,6 +50,11 @@ public static int main(string[] args) {
       stderr.printf(N_("%s: invalid shell mode \"%s\"\n"), args[0], arg_shell_mode);
       return 1;
     }
+  }
+
+  if (mode == GenesisShell.ContextMode.OPTIONS) {
+    stderr.printf(N_("%s: cannot start the shell in options mode\n"), args[0]);
+    return 1;
   }
 
   var loop = new GLib.MainLoop();
