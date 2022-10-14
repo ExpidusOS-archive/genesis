@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: genesis-shell 0.2.0-alpha\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-14 12:54-0700\n"
-"PO-Revision-Date: 2022-10-14 12:54-0700\n"
+"POT-Creation-Date: 2022-10-14 14:23-0700\n"
+"PO-Revision-Date: 2022-10-14 14:23-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: en_US\n"
@@ -17,27 +17,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: core/lib/context.vala:109
+#: core/lib/context.vala:149
 #, c-format
 msgid "Plugin \"%s\" Options"
 msgstr "Plugin \"%s\" Options"
 
-#: core/lib/context.vala:109
+#: core/lib/context.vala:149
 #, c-format
 msgid "Show all options for the \"%s\" plugin"
 msgstr "Show all options for the \"%s\" plugin"
 
-#: core/lib/context.vala:156 core/lib/context.vala:166
+#: core/lib/context.vala:200 core/lib/context.vala:210
 #, c-format
 msgid "Failed to add plugin \"%s\": %s:%d: %s"
 msgstr "Failed to add plugin \"%s\": %s:%d: %s"
 
-#: core/lib/context.vala:175
+#: core/lib/context.vala:219
 #, c-format
 msgid "Adding plugin \"%s\" %p"
 msgstr "Adding plugin \"%s\" %p"
 
-#: core/lib/context.vala:189
+#: core/lib/context.vala:233
 #, c-format
 msgid ""
 "Failed to activate plugin \"%s\", class does not extend either "
@@ -46,12 +46,12 @@ msgstr ""
 "Failed to activate plugin \"%s\", class does not extend either "
 "GenesisShellAsyncPlugin or GenesisShellPlugin"
 
-#: core/lib/context.vala:204
+#: core/lib/context.vala:248
 #, c-format
 msgid "Removing plugin \"%s\" %p"
 msgstr "Removing plugin \"%s\" %p"
 
-#: core/lib/context.vala:216
+#: core/lib/context.vala:260
 #, c-format
 msgid ""
 "Failed to deactivate plugin \"%s\", class does not extend either "
@@ -60,19 +60,55 @@ msgstr ""
 "Failed to deactivate plugin \"%s\", class does not extend either "
 "GenesisShellAsyncPlugin or GenesisShellPlugin"
 
-#: core/lib/monitor.vala:59
+#: core/lib/monitor.vala:93
 #, c-format
 msgid "%dx%d (%d) %f Hz"
 msgstr "%dx%d (%d) %f Hz"
 
-#: core/lib/monitor.vala:476 core/lib/monitor.vala:483
-#: core/lib/monitor.vala:490
+#: core/lib/monitor.vala:531 core/lib/monitor.vala:538
+#: core/lib/monitor.vala:545
 #, c-format
 msgid "Invalid workspace %llu"
 msgstr "Invalid workspace %llu"
 
-#: core/lib/workspace.vala:161 core/lib/workspace.vala:168
-#: core/lib/workspace.vala:175
+#: core/lib/workspace.vala:183 core/lib/workspace.vala:190
+#: core/lib/workspace.vala:197
 #, c-format
 msgid "Invalid monitor %s"
 msgstr "Invalid monitor %s"
+
+#: shell/src/main.vala:5
+msgid "Print version string"
+msgstr "Print version string"
+
+#: shell/src/main.vala:6
+msgid "Mode to run in"
+msgstr "Mode to run in"
+
+#: shell/src/main.vala:13
+#, c-format
+msgid "%s: failed to start the shell: %s:%d: %s\n"
+msgstr "%s: failed to start the shell: %s:%d: %s\n"
+
+#: shell/src/main.vala:23
+msgid ""
+"- Genesis Shell - The next-generation desktop and mobile compositor and "
+"window manager."
+msgstr ""
+"- Genesis Shell - The next-generation desktop and mobile compositor and "
+"window manager."
+
+#: shell/src/main.vala:37
+#, c-format
+msgid "%s: failed to handle arguments: %s:%d: %s\n"
+msgstr "%s: failed to handle arguments: %s:%d: %s\n"
+
+#: shell/src/main.vala:42
+#, c-format
+msgid "Genesis Shell v%s\n"
+msgstr "Genesis Shell v%s\n"
+
+#: shell/src/main.vala:49
+#, c-format
+msgid "%s: invalid shell mode \"%s\"\n"
+msgstr "%s: invalid shell mode \"%s\"\n"

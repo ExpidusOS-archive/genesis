@@ -24,6 +24,7 @@ namespace GenesisShell {
     }
   }
 
+#if HAS_DBUS
   [DBus(name = "com.expidus.genesis.Workspace")]
   public interface IWorkspaceDBus : GLib.Object {
     public abstract string name { owned get; }
@@ -37,6 +38,7 @@ namespace GenesisShell {
     public signal void monitor_added(string id);
     public signal void monitor_removed(string id);
   }
+#endif
 
   [DBus(name = "com.expidus.genesis.WorkspaceError")]
   public errordomain WorkspaceError {
@@ -46,7 +48,10 @@ namespace GenesisShell {
   public abstract class Workspace : GLib.Object, GLib.Initable {
     private bool _is_init;
     private WindowManager? _window_manger;
+
+#if HAS_DBUS
     internal DBusWorkspace dbus { get; }
+#endif
 
     public Context context {
       get {
@@ -109,7 +114,9 @@ namespace GenesisShell {
       if (this._is_init) return true;
       this._is_init = true;
 
+#if HAS_DBUS
       this._dbus = new DBusWorkspace(this, this.context.dbus.connection, cancellable);
+#endif
       return true;
     }
 
@@ -117,6 +124,7 @@ namespace GenesisShell {
     public signal void monitor_removed(Monitor monitor);
   }
 
+#if HAS_DBUS
   internal class DBusWorkspace : GLib.Object, IWorkspaceDBus, GLib.Initable {
     private bool _is_init = false;
     private uint _obj_id;
@@ -199,4 +207,5 @@ namespace GenesisShell {
       return true;
     }
   }
+#endif
 }

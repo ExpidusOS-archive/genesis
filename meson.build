@@ -51,6 +51,8 @@ vadi = dependency('vadi-0.0', required: true)
 gio = dependency('gio-2.0', required: true)
 libpeas = dependency('libpeas-1.0', required: true)
 
+dbus = dependency('dbus-1', required: get_option('dbus').disable_auto_if(target_machine.system() != 'linux'))
+
 libintl = meson.get_compiler('c').find_library('intl', required: false)
 
 gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
@@ -72,3 +74,4 @@ conf_data.set('SOURCEDIR', meson.current_source_dir())
 
 subdir('po')
 subdir('core')
+subdir('shell')

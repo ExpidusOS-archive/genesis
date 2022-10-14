@@ -40,7 +40,41 @@ namespace GenesisShell {
     /**
      * Rotation of 180 degrees
      */
-    FLIPPED
+    FLIPPED;
+
+    public static bool try_parse_name(string name, out MonitorOrientation result = null) {
+      var enumc = (GLib.EnumClass)(typeof (MonitorOrientation).class_ref());
+      unowned var eval = enumc.get_value_by_name(name);
+
+      if (eval == null) {
+        result = MonitorOrientation.NORMAL;
+        return false;
+      }
+
+      result = (MonitorOrientation)eval.value;
+      return true;
+    }
+
+    public static bool try_parse_nick(string name, out MonitorOrientation result = null) {
+      var enumc = (GLib.EnumClass)(typeof (MonitorOrientation).class_ref());
+      unowned var eval = enumc.get_value_by_nick(name);
+      return_val_if_fail(eval != null, false);
+
+      if (eval == null) {
+        result = MonitorOrientation.NORMAL;
+        return false;
+      }
+
+      result = (MonitorOrientation)eval.value;
+      return true;
+    }
+
+    public string to_nick() {
+      var enumc = (GLib.EnumClass)(typeof (MonitorOrientation).class_ref());
+      var eval  = enumc.get_value(this);
+      return_val_if_fail(eval != null, null);
+      return eval.value_nick;
+    }
   }
 
   [DBus(name = "com.expidus.genesis.MonitorError")]
@@ -83,6 +117,7 @@ namespace GenesisShell {
     }
   }
 
+#if HAS_DBUS
   [DBus(name = "com.expidus.genesis.Monitor")]
   public interface IMonitorDBus : GLib.Object {
     /**
@@ -161,12 +196,16 @@ namespace GenesisShell {
     public signal void workspace_added(WorkspaceID id);
     public signal void workspace_removed(WorkspaceID id);
   }
+#endif
 
   public abstract class Monitor : GLib.Object, GLib.Initable {
     private bool _is_init;
     private GLib.List<Workspace> _workspaces;
     private WindowManager? _window_manger;
+    
+#if HAS_DBUS
     internal DBusMonitor dbus { get; }
+#endif
 
     /**
      * The context of the shell the monitor is a part of
@@ -330,11 +369,14 @@ namespace GenesisShell {
       if (this._is_init) return true;
       this._is_init = true;
 
+#if HAS_DBUS
       this._dbus = new DBusMonitor(this, this.context.dbus.connection, cancellable);
+#endif
       return true;
     }
   }
 
+#if HAS_DBUS
   internal sealed class DBusMonitor : GLib.Object, IMonitorDBus, GLib.Initable {
     private bool _is_init = false;
     private uint _obj_id;
@@ -505,4 +547,5 @@ namespace GenesisShell {
       return this.monitor.has_workspace(workspace);
     }
   }
+#endif
 }

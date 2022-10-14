@@ -7,3 +7,5 @@ core/lib/window.vala
 core/lib/workspace.vala
 core/lib/provider/monitor.vala
 core/lib/provider/workspace.vala
+
+shell/src/main.vala

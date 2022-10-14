@@ -1,9 +1,11 @@
 namespace GenesisShell {
+#if HAS_DBUS
   [DBus(name = "com.expidus.genesis.Shell")]
   public interface IContextDBus : GLib.Object {
     public abstract ContextMode mode { get; }
     public abstract string[] plugin_names { owned get; }
   }
+#endif
 
   [DBus(name = "com.expidus.genesis.ShellMode")]
   public enum ContextMode {
@@ -39,7 +41,41 @@ namespace GenesisShell {
      * This only used for loading the context enough for parsing
      * command line arguments.
      */
-    OPTIONS,
+    OPTIONS;
+
+    public static bool try_parse_name(string name, out ContextMode result = null) {
+      var enumc = (GLib.EnumClass)(typeof (ContextMode).class_ref());
+      unowned var eval = enumc.get_value_by_name(name);
+
+      if (eval == null) {
+        result = ContextMode.COMPOSITOR;
+        return false;
+      }
+
+      result = (ContextMode)eval.value;
+      return true;
+    }
+
+    public static bool try_parse_nick(string name, out ContextMode result = null) {
+      var enumc = (GLib.EnumClass)(typeof (ContextMode).class_ref());
+      unowned var eval = enumc.get_value_by_nick(name);
+      return_val_if_fail(eval != null, false);
+
+      if (eval == null) {
+        result = ContextMode.COMPOSITOR;
+        return false;
+      }
+
+      result = (ContextMode)eval.value;
+      return true;
+    }
+
+    public string to_nick() {
+      var enumc = (GLib.EnumClass)(typeof (ContextMode).class_ref());
+      var eval  = enumc.get_value(this);
+      return_val_if_fail(eval != null, null);
+      return eval.value_nick;
+    }
   }
 
   [DBus(name = "com.expidus.genesis.ShellError")]
@@ -52,7 +88,9 @@ namespace GenesisShell {
     private IMonitorProvider _monitor_provider;
     private IWorkspaceProvider _workspace_provider;
 
+#if HAS_DBUS
     internal DBusContext dbus { get; }
+#endif
 
     public ContextMode mode { get; construct; default = ContextMode.COMPOSITOR; }
     public Devident.Context devident { get; }
@@ -99,6 +137,8 @@ namespace GenesisShell {
     construct {
       GLib.Intl.bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
       GLib.Intl.bindtextdomain(GETTEXT_PACKAGE, LOCALDIR);
+
+      this._plugins = new GLib.HashTable<string, IPlugin>(GLib.str_hash, GLib.str_equal);
     }
 
     public GLib.OptionGroup? get_option_group_for_plugin(string plugin_name) {
@@ -114,7 +154,9 @@ namespace GenesisShell {
     private async bool init_async(int io_pri, GLib.Cancellable? cancellable = null) throws GLib.Error {
       if (this._is_init) return true;
 
+#if HAS_DBUS
       this._dbus = yield new DBusContext.make_async_connection(this, cancellable);
+#endif
       this.common_init();
       this._is_init = true;
       return true;
@@ -123,7 +165,9 @@ namespace GenesisShell {
     private bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
       if (this._is_init) return true;
 
+#if HAS_DBUS
       this._dbus = new DBusContext.make_sync_connection(this, cancellable);
+#endif
       this.common_init();
       this._is_init = true;
       return true;
@@ -230,6 +274,7 @@ namespace GenesisShell {
     public signal void plugin_removed(Peas.PluginInfo info, IPlugin plugin);
   }
 
+#if HAS_DBUS
   internal sealed class DBusContext : GLib.Object, IContextDBus, GLib.Initable {
     private bool _is_init = false;
     private uint _obj_id;
@@ -278,4 +323,5 @@ namespace GenesisShell {
       return true;
     }
   }
+#endif
 }
