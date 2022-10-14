@@ -152,6 +152,7 @@ namespace GenesisShell {
 
   public abstract class Monitor : GLib.Object, GLib.Initable {
     private bool _is_init;
+    private GLib.List<Workspace> _workspaces;
     internal DBusMonitor dbus { get; }
 
     /**
@@ -160,6 +161,15 @@ namespace GenesisShell {
     public Context context {
       get {
         return this.provider.context;
+      }
+    }
+
+    /**
+     * The workspaces attached to this monitor
+     */
+    public GLib.List<weak Workspace> workspaces {
+      owned get {
+        return this._workspaces.copy();
       }
     }
 
@@ -267,6 +277,29 @@ namespace GenesisShell {
      * determine whether or not the monitor can run at that mode.
      */
     public abstract bool is_mode_available(MonitorMode mode);
+
+    public void add_workspace(Workspace workspace) {
+      if (!this.has_workspace(workspace)) {
+        this._workspaces.append(workspace);
+        this.workspace_added(workspace);
+      }
+    }
+
+    public void remove_workspace(Workspace workspace) {
+      unowned var item = this._workspaces.find_custom(workspace, (a, b) => (int)(a.id > b.id) - (int)(a.id < b.id));
+      if (item != null) {
+        this._workspaces.remove_link(item);
+        this.workspace_removed(workspace);
+      }
+    }
+
+    public bool has_workspace(Workspace workspace) {
+      unowned var item = this._workspaces.find_custom(workspace, (a, b) => (int)(a.id > b.id) - (int)(a.id < b.id));
+      return item != null;
+    }
+
+    public signal void workspace_added(Workspace workspace);
+    public signal void workspace_removed(Workspace workspace);
 
     public virtual bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
       if (this._is_init) return true;

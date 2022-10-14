@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: genesis-shell 0.2.0-alpha\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-14 10:09-0700\n"
-"PO-Revision-Date: 2022-10-14 10:09-0700\n"
+"POT-Creation-Date: 2022-10-14 12:19-0700\n"
+"PO-Revision-Date: 2022-10-14 12:19-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: en_US\n"
@@ -64,3 +64,9 @@ msgstr ""
 #, c-format
 msgid "%dx%d (%d) %f Hz"
 msgstr "%dx%d (%d) %f Hz"
+
+#: core/lib/workspace.vala:148 core/lib/workspace.vala:155
+#: core/lib/workspace.vala:162
+#, c-format
+msgid "Invalid monitor %s"
+msgstr "Invalid monitor %s"

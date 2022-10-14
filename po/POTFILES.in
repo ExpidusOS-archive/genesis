@@ -2,3 +2,5 @@ core/lib/build.vala.in
 core/lib/context.vala
 core/lib/monitor.vala
 core/lib/plugin.vala
+core/lib/workspace.vala
+core/lib/provider/monitor.vala
