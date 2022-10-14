@@ -40,7 +40,8 @@
           expidus-sdk-pkg = expidus-sdk.packages.${system}.default;
         in with pkgs; rec {
           nativeBuildInputs = [ meson ninja pkg-config vala glib expidus-sdk-pkg ];
-          buildInputs = [ vadi-pkg libdevident-pkg libtokyo-pkg libpeas ];
+          buildInputs = [ vadi-pkg libdevident-pkg libtokyo-pkg libpeas ]
+            ++ pkgs.lib.optional pkgs.stdenv.isLinux [ gtk-layer-shell ];
           propagatedBuildInputs = buildInputs;
         });
     in
