@@ -19,7 +19,7 @@ endif
 
 libgenesis_core_sources += [build_conf_core]
 
-libgenesis_core_deps = [gio, vadi, libpeas, libdevident]
+libgenesis_core_deps = [gio, vadi, libpeas, libdevident, libintl]
 libgenesis_core_shlib = shared_library('genesis', build_conf_core, libgenesis_core_rel_sources,
   c_args: ['-DG_LOG_DOMAIN="GenesisShell"', '-DGETTEXT_PACKAGE="genesis-shell"'],
   vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"', '--define=TARGET_SYSTEM_@0@'.format(target_machine.system().to_upper())],

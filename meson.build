@@ -51,8 +51,10 @@ vadi = dependency('vadi-0.0', required: true)
 gio = dependency('gio-2.0', required: true)
 libpeas = dependency('libpeas-1.0', required: true)
 
+libintl = meson.get_compiler('c').find_library('intl', required: false)
+
 gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
-  dependency('gtk-layer-shell-0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
+  dependency('gtk-layer-shell-0', disabler: not libtokyo_gtk3.found(), required: false),
   libtokyo_gtk3]
 
 gtk4 = [dependency('gtk4', disabler: not libtokyo_gtk4.found(), required: libtokyo_gtk4.found()),

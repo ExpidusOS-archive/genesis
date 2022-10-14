@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1665179503,
-        "narHash": "sha256-1SFKyeiCFaBbg+w2UyRIx02fYhIJmXsH8C/EPvhUBQA=",
+        "lastModified": 1665765513,
+        "narHash": "sha256-5F3ucPRcP+CJphz+I8XMp3w3o1dBQNs+Na1VX67q/T8=",
         "ref": "refs/heads/master",
-        "rev": "18abf5135a33b339f85ff1cfccb95ed860fe0c8d",
-        "revCount": 2111,
+        "rev": "f2b778bb0ad0491205c2c55e746bcf3bf59bfdc4",
+        "revCount": 2115,
         "type": "git",
         "url": "https://gitlab.gnome.org/RossComputerGuy/gxml.git"
       },
@@ -55,11 +55,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1665764449,
-        "narHash": "sha256-jJdaKWnQIQXnQOStsrAzbL6W80VoIxb3LZ7nSclj7xc=",
+        "lastModified": 1665766092,
+        "narHash": "sha256-E8O9xtRzDGZW/dvOkImVVUOvduZkkIq2+KSfxpfn2GA=",
         "owner": "ExpidusOS",
         "repo": "libdevident",
-        "rev": "6b0aeb2dc810019765bb8a855c9ae647554c342b",
+        "rev": "f19236c0a6a25d80bdc4a6f38e8912a118477f9d",
         "type": "github"
       },
       "original": {
@@ -83,7 +83,7 @@
       },
       "locked": {
         "lastModified": 1,
-        "narHash": "sha256-L/wMy+D+M4/OOEMm07MZycJQOS+EArLqKzuLfc98d/Q=",
+        "narHash": "sha256-wdOy/YP7kuzR1w301Y9tDwgu3VK/wdYZu4h6lsmPmQk=",
         "path": "./subprojects/libtokyo",
         "type": "path"
       },
@@ -140,11 +140,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1663630541,
-        "narHash": "sha256-yHEZ9DjhYmw7UV8AsvFsUHdGDa8ivu5hWNFo6Xp7fGI=",
+        "lastModified": 1665765377,
+        "narHash": "sha256-F/+A23n3MZGk0/Uf4yWqn7nNNiFJTt9FIplGcYn4ajo=",
         "owner": "ExpidusOS",
         "repo": "Vadi",
-        "rev": "4864ab757b0355498e6f888b6499d3ec86d1c368",
+        "rev": "fbe39ef910dfdca2fddcccee115738885cd595e8",
         "type": "github"
       },
       "original": {
