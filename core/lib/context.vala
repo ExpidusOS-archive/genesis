@@ -32,6 +32,14 @@ namespace GenesisShell {
      * If there is a compositor running already, then this is used.
      */
     GADGETS,
+
+    /**
+     * Options
+     *
+     * This only used for loading the context enough for parsing
+     * command line arguments.
+     */
+    OPTIONS,
   }
 
   [DBus(name = "com.expidus.genesis.ShellError")]
@@ -65,6 +73,16 @@ namespace GenesisShell {
     construct {
       GLib.Intl.bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
       GLib.Intl.bindtextdomain(GETTEXT_PACKAGE, LOCALDIR);
+    }
+
+    public GLib.OptionGroup? get_option_group_for_plugin(string plugin_name) {
+      var plugin = this.plugins.get(plugin_name);
+      if (plugin == null) return null;
+
+      var plugin_info = this.plugin_engine.get_plugin_info(plugin_name);
+      var group = new GLib.OptionGroup(plugin_name, N_("Plugin \"%s\" Options").printf(plugin_info.get_name()), N_("Show all options for the \"%s\" plugin").printf(plugin_info.get_name()));
+      group.add_entries(plugin.get_options());
+      return group;
     }
 
     private async bool init_async(int io_pri, GLib.Cancellable? cancellable = null) throws GLib.Error {
