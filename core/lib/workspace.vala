@@ -1,6 +1,13 @@
 namespace GenesisShell {
   private static size_t next_workspace_id = 1;
 
+  public interface IWorkspaceProvider : GLib.Object {
+    public abstract Context context { get; construct; }
+
+    public abstract GLib.List<WorkspaceID?> get_workspace_ids();
+    public abstract unowned Workspace? get_workspace(WorkspaceID id);
+  }
+
   [CCode(type_signature = "x")]
   public struct WorkspaceID : size_t {
     public bool is_set() {
@@ -39,7 +46,13 @@ namespace GenesisShell {
     private bool _is_init;
     internal DBusWorkspace dbus { get; }
 
-    public Context context { get; construct; }
+    public Context context {
+      get {
+        return this.provider.context;
+      }
+    }
+
+    public IWorkspaceProvider provider { get; construct; }
     public string name { get; construct; }
     public WorkspaceID id { get; }
 

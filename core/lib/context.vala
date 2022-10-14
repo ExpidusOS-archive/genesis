@@ -49,16 +49,42 @@ namespace GenesisShell {
 
   public sealed class Context : GLib.Object, GLib.AsyncInitable, GLib.Initable {
     private bool _is_init = false;
+    private IMonitorProvider _monitor_provider;
+    private IWorkspaceProvider _workspace_provider;
 
     internal DBusContext dbus { get; }
 
     public ContextMode mode { get; construct; default = ContextMode.COMPOSITOR; }
     public Devident.Context devident { get; }
+    public Vdi.Container container { get; }
 
     public GLib.HashTable<string, IPlugin> plugins { get; }
     public Peas.Engine plugin_engine { get; }
     public Peas.ExtensionSet plugin_set { get; }
-    public IMonitorProvider monitor_provider { get; }
+    
+    public IMonitorProvider monitor_provider {
+      get {
+        if (this._monitor_provider == null) {
+          var provider = this.container.get(typeof (IMonitorProvider)) as IMonitorProvider;
+          if (provider == null) provider = new MonitorProvider(this);
+
+          this._monitor_provider = provider;
+        }
+        return this._monitor_provider;
+      }
+    }
+
+    public IWorkspaceProvider workspace_provider {
+      get {
+        if (this._workspace_provider == null) {
+          var provider = this.container.get(typeof (IWorkspaceProvider)) as IWorkspaceProvider;
+          if (provider == null) provider = new WorkspaceProvider(this);
+
+          this._workspace_provider = provider;
+        }
+        return this._workspace_provider;
+      }
+    }
 
     public async Context.async(ContextMode mode = ContextMode.COMPOSITOR, GLib.Cancellable? cancellable = null) throws GLib.Error {
       Object(mode: mode);
@@ -107,6 +133,10 @@ namespace GenesisShell {
       if (this._is_init) return true;
       
       this._devident = new Devident.Context();
+      this._container = new Vdi.Container();
+
+      this._monitor_provider = new MonitorProvider(this);
+      this._workspace_provider = new WorkspaceProvider(this);
 
       this._plugin_engine = new Peas.Engine();
       this._plugin_engine.add_search_path(LIBDIR + "/devident/plugins", DATADIR + "/devident/plugins");
@@ -117,7 +147,6 @@ namespace GenesisShell {
 #endif
 
       this._plugin_set = new Peas.ExtensionSet(this.plugin_engine, typeof (IPlugin), "context", this);
-      this._monitor_provider = new MonitorProvider(this);
 
       this._plugin_set.extension_added.connect((info, obj) => {
         this.do_plugin_added.begin(info, obj as IPlugin, null, (obj, res) => {
