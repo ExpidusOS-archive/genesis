@@ -6,6 +6,13 @@
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
+  inputs.libdevident = {
+    url = github:ExpidusOS/libdevident;
+    inputs.expidus-sdk.follows = "expidus-sdk";
+    inputs.nixpkgs.follows = "nixpkgs";
+    inputs.vadi.follows = "vadi";
+  };
+
   inputs.libtokyo = {
     url = path:./subprojects/libtokyo;
     inputs.expidus-sdk.follows = "expidus-sdk";
@@ -18,7 +25,7 @@
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, vadi, libtokyo, expidus-sdk }:
+  outputs = { self, nixpkgs, vadi, libdevident, libtokyo, expidus-sdk }:
     let
       supportedSystems = builtins.attrNames libtokyo.packages;
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
@@ -27,12 +34,14 @@
       packagesFor = forAllSystems (system:
         let
           pkgs = nixpkgsFor.${system};
+          libdevident-pkg = libdevident.packages.${system}.default;
           vadi-pkg = vadi.packages.${system}.default;
           libtokyo-pkg = libtokyo.packages.${system}.default;
           expidus-sdk-pkg = expidus-sdk.packages.${system}.default;
-        in with pkgs; {
+        in with pkgs; rec {
           nativeBuildInputs = [ meson ninja pkg-config vala glib expidus-sdk-pkg ];
-          buildInputs = [ vadi-pkg libtokyo-pkg ];
+          buildInputs = [ vadi-pkg libdevident-pkg libtokyo-pkg libpeas ];
+          propagatedBuildInputs = buildInputs;
         });
     in
     {
@@ -48,7 +57,7 @@
             outputs = [ "out" "devdoc" "dev" ];
 
             enableParallelBuilding = true;
-            inherit (packages) nativeBuildInputs buildInputs;
+            inherit (packages) nativeBuildInputs buildInputs propagatedBuildInputs;
 
             meta = with pkgs.lib; {
               homepage = "https://github.com/ExpidusOS/genesis";
