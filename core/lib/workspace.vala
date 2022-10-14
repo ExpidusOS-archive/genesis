@@ -4,6 +4,7 @@ namespace GenesisShell {
   public interface IWorkspaceProvider : GLib.Object {
     public abstract Context context { get; construct; }
 
+    public abstract Workspace? create_workspace(string name);
     public abstract GLib.List<WorkspaceID?> get_workspace_ids();
     public abstract unowned Workspace? get_workspace(WorkspaceID id);
   }
@@ -44,6 +45,7 @@ namespace GenesisShell {
 
   public abstract class Workspace : GLib.Object, GLib.Initable {
     private bool _is_init;
+    private WindowManager? _window_manger;
     internal DBusWorkspace dbus { get; }
 
     public Context context {
@@ -55,6 +57,18 @@ namespace GenesisShell {
     public IWorkspaceProvider provider { get; construct; }
     public string name { get; construct; }
     public WorkspaceID id { get; }
+
+    public WindowManager? window_manager {
+      get {
+        return this._window_manger;
+      }
+      set {
+        if (this._window_manger != null) this._window_manger.remove_workspace(this);
+
+        this._window_manger = value;
+        this._window_manger.add_workspace(this);
+      }
+    }
 
     public GLib.List<weak Monitor> monitors {
       owned get {

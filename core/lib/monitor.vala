@@ -165,6 +165,7 @@ namespace GenesisShell {
   public abstract class Monitor : GLib.Object, GLib.Initable {
     private bool _is_init;
     private GLib.List<Workspace> _workspaces;
+    private WindowManager? _window_manger;
     internal DBusMonitor dbus { get; }
 
     /**
@@ -173,6 +174,18 @@ namespace GenesisShell {
     public Context context {
       get {
         return this.provider.context;
+      }
+    }
+
+    public WindowManager? window_manager {
+      get {
+        return this._window_manger;
+      }
+      set {
+        if (this._window_manger != null) this._window_manger.remove_monitor(this);
+
+        this._window_manger = value;
+        this._window_manger.add_monitor(this);
       }
     }
 
