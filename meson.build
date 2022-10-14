@@ -47,6 +47,8 @@ libtokyo = dependency('tokyo', required: false)
 libtokyo_gtk3 = dependency('tokyo-gtk3', disabler: not libtokyo.found(), required: false)
 libtokyo_gtk4 = dependency('tokyo-gtk4', disabler: not libtokyo.found(), required: false)
 
+gtk_layer_shell = dependency('gtk-layer-shell-0', disabler: not libtokyo_gtk3.found(), required: false)
+
 vadi = dependency('vadi-0.0', required: true)
 gio = dependency('gio-2.0', required: true)
 libpeas = dependency('libpeas-1.0', required: true)
@@ -56,7 +58,6 @@ dbus = dependency('dbus-1', required: get_option('dbus').disable_auto_if(target_
 libintl = meson.get_compiler('c').find_library('intl', required: false)
 
 gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
-  dependency('gtk-layer-shell-0', disabler: not libtokyo_gtk3.found(), required: false),
   libtokyo_gtk3]
 
 gtk4 = [dependency('gtk4', disabler: not libtokyo_gtk4.found(), required: libtokyo_gtk4.found()),

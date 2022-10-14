@@ -210,7 +210,7 @@ namespace GenesisShell {
       this._workspace_provider = new WorkspaceProvider(this);
 
       this._plugin_engine = new Peas.Engine();
-      this._plugin_engine.add_search_path(LIBDIR + "/devident/plugins", DATADIR + "/devident/plugins");
+      this._plugin_engine.add_search_path(LIBDIR + "/genesis-shell/plugins", DATADIR + "/genesis-shell/plugins");
 
 #if TARGET_SYSTEM_WINDOWS
       var prefix = GLib.Win32.get_package_installation_directory_of_module(null);
