@@ -83,7 +83,7 @@
       },
       "locked": {
         "lastModified": 1,
-        "narHash": "sha256-wdOy/YP7kuzR1w301Y9tDwgu3VK/wdYZu4h6lsmPmQk=",
+        "narHash": "sha256-JXnacWem9fJyQ+w367IBVXctaXPoYIGyRLpdADxkujU=",
         "path": "./subprojects/libtokyo",
         "type": "path"
       },
