@@ -8,7 +8,7 @@ libgenesis_core_docs_devhelp = custom_target('core-docs-devhelp',
     '--vapidir', join_paths(meson.project_build_root(), 'subprojects', 'libdevident', 'core'),
     '--vapidir', join_paths(meson.project_build_root(), 'subprojects', 'gxml', 'gxml'),
     '--vapidir', join_paths(meson.project_build_root(), 'subprojects', 'vadi', 'lib'),
-    libgenesis_core_docs_args],
+    libgenesis_core_vala_args, libgenesis_core_docs_args],
   build_by_default: true)
 
 install_subdir(join_paths(meson.current_build_dir(), 'devhelp', 'libgenesis'), install_dir: join_paths(datadir, 'devhelp', 'books'))
