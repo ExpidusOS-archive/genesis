@@ -58,9 +58,7 @@ public static int main(string[] args) {
   }
 
   var loop = new GLib.MainLoop();
-  run.begin(args[0], mode, loop, (obj, res) => {
-    run.end(res);
-  });
+  run.begin(args[0], mode, loop, (obj, res) => run.end(res));
   loop.run();
   return 0;
 }
