@@ -57,6 +57,9 @@ namespace GenesisShell {
       return item != null;
     }
 
+    public abstract void manage(Window window);
+    public abstract void unmanage(Window window);
+
     public signal void monitor_added(Monitor monitor);
     public signal void monitor_removed(Monitor monitor);
 

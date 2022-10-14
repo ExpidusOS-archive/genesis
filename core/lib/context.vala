@@ -89,6 +89,7 @@ namespace GenesisShell {
   public sealed class Context : GLib.Object, GLib.AsyncInitable, GLib.Initable {
     private bool _is_init = false;
     private IMonitorProvider _monitor_provider;
+    private IWindowProvider _window_provider;
     private IWorkspaceProvider _workspace_provider;
 
 #if HAS_DBUS
@@ -113,6 +114,18 @@ namespace GenesisShell {
           this._monitor_provider = provider;
         }
         return this._monitor_provider;
+      }
+    }
+    
+    public IWindowProvider window_provider {
+      get {
+        if (this._window_provider == null) {
+          var provider = this.container.get(typeof (IWindowProvider)) as IWindowProvider;
+          if (provider == null) provider = new WindowProvider(this);
+
+          this._window_provider = provider;
+        }
+        return this._window_provider;
       }
     }
 
@@ -193,6 +206,7 @@ namespace GenesisShell {
       this._container = new Vdi.Container();
 
       this._monitor_provider = new MonitorProvider(this);
+      this._window_provider = new WindowProvider(this);
       this._workspace_provider = new WorkspaceProvider(this);
 
       this._plugin_engine = new Peas.Engine();

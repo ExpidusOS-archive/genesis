@@ -1,5 +1,5 @@
 namespace GenesisShell {
-  private static size_t next_workspace_id = 1;
+  private static WorkspaceID next_workspace_id = 1;
 
   public interface IWorkspaceProvider : GLib.Object {
     public abstract Context context { get; construct; }
