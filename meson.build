@@ -41,6 +41,7 @@ endif
 
 valadoc = find_program('valadoc', required: get_option('docs'), native: true)
 
+libmath = meson.get_compiler('c').find_library('m', required: false)
 libdevident = dependency('devident', fallback: ['libdevident', 'libdevident_core'], required: true)
 
 libtokyo = dependency('tokyo', required: false)
