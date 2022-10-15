@@ -135,7 +135,7 @@ namespace GenesisShell {
     private bool _is_init;
 
 #if HAS_DBUS
-    internal DBusLayerWindow dbus { get; }
+    internal DBusLayerWindow dbus_layer { get; }
 #endif
 
     public abstract Box margins { get; set; }
@@ -149,7 +149,7 @@ namespace GenesisShell {
       this._is_init = true;
 
 #if HAS_DBUS
-      this._dbus = new DBusLayerWindow(this, this.context.dbus.connection, cancellable);
+      this._dbus_layer = new DBusLayerWindow(this, this.context.dbus.connection, cancellable);
 #endif
       return true;
     }

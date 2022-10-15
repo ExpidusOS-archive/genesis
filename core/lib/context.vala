@@ -153,9 +153,11 @@ namespace GenesisShell {
 
     ~Context() {
 #if HAS_DBUS
-      if (this._dbus_name_id > 0) {
-        GLib.Bus.unown_name(this._dbus_name_id);
-        this._dbus_name_id = 0;
+      if (this.mode != ContextMode.OPTIONS) {
+        if (this._dbus_name_id > 0) {
+          GLib.Bus.unown_name(this._dbus_name_id);
+          this._dbus_name_id = 0;
+        }
       }
 #endif
     }
@@ -181,7 +183,9 @@ namespace GenesisShell {
       if (this._is_init) return true;
 
 #if HAS_DBUS
-      this._dbus = yield new DBusContext.make_async_connection(this, cancellable);
+      if (this.mode != ContextMode.OPTIONS) {
+        this._dbus = yield new DBusContext.make_async_connection(this, cancellable);
+      }
 #endif
       this.common_init();
       this._is_init = true;
@@ -192,7 +196,9 @@ namespace GenesisShell {
       if (this._is_init) return true;
 
 #if HAS_DBUS
-      this._dbus = new DBusContext.make_sync_connection(this, cancellable);
+      if (this.mode != ContextMode.OPTIONS) {
+        this._dbus = new DBusContext.make_sync_connection(this, cancellable);
+      }
 #endif
       this.common_init();
       this._is_init = true;
