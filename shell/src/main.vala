@@ -3,7 +3,8 @@ private static string? arg_shell_mode = null;
 
 private const GLib.OptionEntry[] options = {
   { "version", '\0', GLib.OptionFlags.NONE, GLib.OptionArg.NONE, ref arg_version, N_("Print version string"), null },
-  { "mode", 'm', GLib.OptionFlags.NONE, GLib.OptionArg.STRING, ref arg_shell_mode, N_("Mode to run in"), "MODE" }
+  { "mode", 'm', GLib.OptionFlags.NONE, GLib.OptionArg.STRING, ref arg_shell_mode, N_("Mode to run in"), "MODE" },
+  { null }
 };
 
 private async void run(string argv0, GenesisShell.ContextMode mode, GLib.MainLoop loop) {
