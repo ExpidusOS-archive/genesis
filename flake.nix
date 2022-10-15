@@ -14,7 +14,7 @@
   };
 
   inputs.libtokyo = {
-    url = path:subprojects/libtokyo;
+    url = path:./subprojects/libtokyo;
     inputs.expidus-sdk.follows = "expidus-sdk";
     inputs.nixpkgs.follows = "nixpkgs";
     inputs.vadi.follows = "vadi";
