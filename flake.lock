@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1665769793,
-        "narHash": "sha256-ba0eeo0rp38O6QivxIfsT21mqKVz9U3OrtePGTCJ6SY=",
+        "lastModified": 1665859560,
+        "narHash": "sha256-rr3TWYhWgX58osv+MCynVO0bRKoLzYCpWlKvJRxcXSU=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "3e27b1a74e981a624abcee80179ae9cf21a0daac",
+        "rev": "d2bb778f59088e7d04dfa63240cb0c34e59327e7",
         "type": "github"
       },
       "original": {
@@ -30,7 +30,7 @@
       "locked": {
         "lastModified": 1665765513,
         "narHash": "sha256-5F3ucPRcP+CJphz+I8XMp3w3o1dBQNs+Na1VX67q/T8=",
-        "ref": "refs/heads/master",
+        "ref": "master",
         "rev": "f2b778bb0ad0491205c2c55e746bcf3bf59bfdc4",
         "revCount": 2115,
         "type": "git",
@@ -55,11 +55,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1665814556,
-        "narHash": "sha256-7WmzFpYyYNObwgTznqLqXSWkWpxCyt+nnuvPW0ChhyE=",
+        "lastModified": 1665859755,
+        "narHash": "sha256-FQC1FYuibTybudx23+C6de4hPxpNwxc5r7V2zlSp+RY=",
         "owner": "ExpidusOS",
         "repo": "libdevident",
-        "rev": "a82d818ab17f423f76c90a8f51ddcab645632bfb",
+        "rev": "e9f51c20e8465404f7939946ba0d64e9328fd243",
         "type": "github"
       },
       "original": {
@@ -83,7 +83,7 @@
       },
       "locked": {
         "lastModified": 1,
-        "narHash": "sha256-JXnacWem9fJyQ+w367IBVXctaXPoYIGyRLpdADxkujU=",
+        "narHash": "sha256-uoD4Ueqmpx9iJOMWY7R7TOO/hu3kCajFAE3sKa8gE8A=",
         "path": "subprojects/libtokyo",
         "type": "path"
       },
