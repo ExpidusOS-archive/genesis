@@ -247,6 +247,10 @@ namespace GenesisShell {
 
       GLib.debug(N_("Genesis Shell context %p is running in mode %s"), this, this.mode.to_nick());
 
+      foreach (var info in this.plugin_engine.get_plugin_list()) {
+        this.plugin_engine.try_load_plugin(info);
+      }
+
       switch (this.mode) {
         case ContextMode.COMPOSITOR:
 #if ! HAS_DBUS
