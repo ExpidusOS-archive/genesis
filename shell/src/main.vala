@@ -35,6 +35,7 @@ public static int main(string[] args) {
     }
 
     opt_ctx.parse(ref args);
+    ctx.shutdown();
   } catch (GLib.Error e) {
     stderr.printf(N_("%s: failed to handle arguments: %s:%d: %s\n"), args[0], e.domain.to_string(), e.code, e.message);
     return 1;

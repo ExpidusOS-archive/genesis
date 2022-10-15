@@ -1,0 +1,4 @@
+[Plugin]
+Module=genesis-shell-gtk3
+Name=Genesis Shell Gtk3
+Description=Plugin for GTK 3 in Genesis Shell

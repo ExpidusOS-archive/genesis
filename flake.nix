@@ -14,7 +14,7 @@
   };
 
   inputs.libtokyo = {
-    url = path:./subprojects/libtokyo;
+    url = path:subprojects/libtokyo;
     inputs.expidus-sdk.follows = "expidus-sdk";
     inputs.nixpkgs.follows = "nixpkgs";
     inputs.vadi.follows = "vadi";
@@ -41,7 +41,7 @@
         in with pkgs; rec {
           nativeBuildInputs = [ meson ninja pkg-config vala glib expidus-sdk-pkg ];
           buildInputs = [ vadi-pkg libdevident-pkg libtokyo-pkg libpeas ]
-            ++ pkgs.lib.optional pkgs.stdenv.isLinux [ gtk-layer-shell ];
+            ++ pkgs.lib.optional pkgs.stdenv.isLinux gtk-layer-shell;
           propagatedBuildInputs = buildInputs;
         });
     in

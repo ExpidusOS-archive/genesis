@@ -91,6 +91,7 @@ namespace GenesisShell {
     private IMonitorProvider _monitor_provider;
     private IWindowProvider _window_provider;
     private IWorkspaceProvider _workspace_provider;
+    private bool _is_shutting_down = false;
 
 #if HAS_DBUS
     private uint _dbus_name_id;
@@ -215,8 +216,21 @@ namespace GenesisShell {
       this._window_provider = new WindowProvider(this);
       this._workspace_provider = new WorkspaceProvider(this);
 
-      this._plugin_engine = new Peas.Engine();
+      this._plugin_engine = new Peas.Engine.with_nonglobal_loaders();
       this._plugin_engine.add_search_path(LIBDIR + "/genesis-shell/plugins", DATADIR + "/genesis-shell/plugins");
+
+      var plugin_paths_env = GLib.Environment.get_variable("GENESIS_SHELL_PLUGINS_PATH");
+      if (plugin_paths_env != null) {
+        var entries = plugin_paths_env.split(":");
+        if ((entries.length % 2) != 0) throw new ContextError.BAD_LAUNCH(N_("Plugins path is not a multiple of 2"));
+
+        for (var i = 0; i < entries.length; i += 2) {
+          var lib = entries[i];
+          var data = entries[i + 1];
+          GLib.debug("Adding plugins path %d, lib: %s, data: %s", (int)(i / 2), lib, data);
+          this._plugin_engine.add_search_path(lib, data);
+        }
+      }
 
 #if TARGET_SYSTEM_WINDOWS
       var prefix = GLib.Win32.get_package_installation_directory_of_module(null);
@@ -224,6 +238,16 @@ namespace GenesisShell {
 #endif
 
       this._plugin_set = new Peas.ExtensionSet(this.plugin_engine, typeof (IPlugin), "context", this);
+
+      this.plugin_set.foreach((pset, info, extension) => {
+        this.do_plugin_added.begin(info, extension as IPlugin, null, (obj, res) => {
+          try {
+            this.do_plugin_added.end(res);
+          } catch (GLib.Error e) {
+            GLib.error(N_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
+          }
+        });
+      });
 
       this._plugin_set.extension_added.connect((info, obj) => {
         this.do_plugin_added.begin(info, obj as IPlugin, null, (obj, res) => {
@@ -248,7 +272,8 @@ namespace GenesisShell {
       GLib.debug(N_("Genesis Shell context %p is running in mode %s"), this, this.mode.to_nick());
 
       foreach (var info in this.plugin_engine.get_plugin_list()) {
-        this.plugin_engine.try_load_plugin(info);
+        GLib.debug(N_("Plugin %s found in engine, trying to load"), info.get_module_name());
+        if (!this.plugin_engine.try_load_plugin(info)) GLib.warning(N_("Plugin %s failed to load"), info.get_module_name());
       }
 
       switch (this.mode) {
@@ -276,8 +301,9 @@ namespace GenesisShell {
     }
 
     private async bool do_plugin_added(Peas.PluginInfo info, IPlugin? plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
+      GLib.debug(N_("Discovered plugin %s"), info.get_module_name());
       if (plugin != null && !this.plugins.contains(info.get_module_name())) {
-        GLib.debug(N_("Adding plugin \"%s\" %p"), info.get_name(), plugin);
+        GLib.debug(N_("Adding plugin \"%s\" %p"), info.get_module_name(), plugin);
 
         var async_plugin = plugin as AsyncPlugin;
         var sync_plugin = plugin as Plugin;
@@ -291,7 +317,7 @@ namespace GenesisShell {
           } else if (sync_plugin != null) {
             sync_plugin.activate(cancellable);
           } else {
-            throw new ContextError.BAD_PLUGIN(N_("Failed to activate plugin \"%s\", class does not extend either GenesisShellAsyncPlugin or GenesisShellPlugin").printf(info.get_name()));
+            throw new ContextError.BAD_PLUGIN(N_("Failed to activate plugin \"%s\", class does not extend either GenesisShellAsyncPlugin or GenesisShellPlugin").printf(info.get_module_name()));
           }
 
           this.plugin_added(info, plugin);
@@ -334,7 +360,18 @@ namespace GenesisShell {
     public signal void plugin_added(Peas.PluginInfo info, IPlugin plugin);
     public signal void plugin_removed(Peas.PluginInfo info, IPlugin plugin);
 
-    public signal void shutdown();
+    public virtual signal void shutdown() {
+      if (this._is_shutting_down) {
+        return;
+      }
+
+      this._is_shutting_down = true;
+
+      foreach (var info in this.plugin_engine.get_plugin_list()) {
+        GLib.debug(N_("Plugin %s found in engine, trying to unload"), info.get_module_name());
+        if (!this.plugin_engine.try_unload_plugin(info)) GLib.warning(N_("Plugin %s failed to unload"), info.get_module_name());
+      }
+    }
   }
 
 #if HAS_DBUS
