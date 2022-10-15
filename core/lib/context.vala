@@ -208,7 +208,7 @@ namespace GenesisShell {
     private bool common_init() throws GLib.Error {
       if (this._is_init) return true;
       
-      this._devident = new Devident.Context();
+      this._devident = Devident.Context.get_global();
       this._container = new Vdi.Container();
 
       this._monitor_provider = new MonitorProvider(this);
