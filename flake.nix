@@ -63,7 +63,7 @@
             meta = with pkgs.lib; {
               homepage = "https://github.com/ExpidusOS/genesis";
               license = with licenses; [ gpl3Only ];
-              maintainers = [ "Tristan Ross" ];
+              maintainers = with expidus-sdk.lib.maintainers [ TheComputerGuy ];
             };
           };
         });
