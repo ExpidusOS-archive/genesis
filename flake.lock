@@ -55,11 +55,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1665792250,
-        "narHash": "sha256-HG/U61eDvkdIZDj9foSBNsDKqxGOswv4UyIjePW2pHs=",
+        "lastModified": 1665814556,
+        "narHash": "sha256-7WmzFpYyYNObwgTznqLqXSWkWpxCyt+nnuvPW0ChhyE=",
         "owner": "ExpidusOS",
         "repo": "libdevident",
-        "rev": "7e101a63599377f91dd794e8d4680ef28a3fc361",
+        "rev": "a82d818ab17f423f76c90a8f51ddcab645632bfb",
         "type": "github"
       },
       "original": {
