@@ -7,98 +7,26 @@
         ]
       },
       "locked": {
-        "lastModified": 1665859560,
-        "narHash": "sha256-rr3TWYhWgX58osv+MCynVO0bRKoLzYCpWlKvJRxcXSU=",
+        "lastModified": 1665898324,
+        "narHash": "sha256-Q96DGcZsCnyhj7BW4jX2Ll4eInAKzhWQzZ9nhN9oork=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "d2bb778f59088e7d04dfa63240cb0c34e59327e7",
+        "rev": "ead98e726e68a2eaadf5ecc9719d1b634e76d958",
         "type": "github"
       },
       "original": {
         "owner": "ExpidusOS",
         "repo": "sdk",
         "type": "github"
-      }
-    },
-    "gxml": {
-      "inputs": {
-        "nixpkgs": [
-          "libdevident",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1665765513,
-        "narHash": "sha256-5F3ucPRcP+CJphz+I8XMp3w3o1dBQNs+Na1VX67q/T8=",
-        "ref": "master",
-        "rev": "f2b778bb0ad0491205c2c55e746bcf3bf59bfdc4",
-        "revCount": 2115,
-        "type": "git",
-        "url": "https://gitlab.gnome.org/RossComputerGuy/gxml.git"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://gitlab.gnome.org/RossComputerGuy/gxml.git"
-      }
-    },
-    "libdevident": {
-      "inputs": {
-        "expidus-sdk": [
-          "expidus-sdk"
-        ],
-        "gxml": "gxml",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "vadi": [
-          "vadi"
-        ]
-      },
-      "locked": {
-        "lastModified": 1665859755,
-        "narHash": "sha256-FQC1FYuibTybudx23+C6de4hPxpNwxc5r7V2zlSp+RY=",
-        "owner": "ExpidusOS",
-        "repo": "libdevident",
-        "rev": "e9f51c20e8465404f7939946ba0d64e9328fd243",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ExpidusOS",
-        "repo": "libdevident",
-        "type": "github"
-      }
-    },
-    "libtokyo": {
-      "inputs": {
-        "expidus-sdk": [
-          "expidus-sdk"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "ntk": "ntk",
-        "vadi": [
-          "vadi"
-        ]
-      },
-      "locked": {
-        "lastModified": 1,
-        "narHash": "sha256-uoD4Ueqmpx9iJOMWY7R7TOO/hu3kCajFAE3sKa8gE8A=",
-        "path": "subprojects/libtokyo",
-        "type": "path"
-      },
-      "original": {
-        "path": "subprojects/libtokyo",
-        "type": "path"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1665723124,
-        "narHash": "sha256-J1JY2cN0L+CNDSrGkNdbiTl2EFV8hpqqsDJFICsYSBw=",
+        "lastModified": 1665830552,
+        "narHash": "sha256-qel2bZ9TqfW8WzWCWdjuCy4bVFhhGsEeqFv/bj1ka2s=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "31d567846255e122846548255101980162bbf641",
+        "rev": "26b7e6ab6a864c3e7e077bcb27a49f0480b9894a",
         "type": "github"
       },
       "original": {
@@ -106,52 +34,10 @@
         "type": "indirect"
       }
     },
-    "ntk": {
-      "inputs": {
-        "nixpkgs": [
-          "libtokyo",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1,
-        "narHash": "sha256-Tuchj6WWEvJ4KIdHvy7umsBy2q915t8cUHE92GrxS6U=",
-        "path": "./subprojects/ntk",
-        "type": "path"
-      },
-      "original": {
-        "path": "./subprojects/ntk",
-        "type": "path"
-      }
-    },
     "root": {
       "inputs": {
         "expidus-sdk": "expidus-sdk",
-        "libdevident": "libdevident",
-        "libtokyo": "libtokyo",
-        "nixpkgs": "nixpkgs",
-        "vadi": "vadi"
-      }
-    },
-    "vadi": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1665765377,
-        "narHash": "sha256-F/+A23n3MZGk0/Uf4yWqn7nNNiFJTt9FIplGcYn4ajo=",
-        "owner": "ExpidusOS",
-        "repo": "Vadi",
-        "rev": "fbe39ef910dfdca2fddcccee115738885cd595e8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ExpidusOS",
-        "ref": "feat/nix",
-        "repo": "Vadi",
-        "type": "github"
+        "nixpkgs": "nixpkgs"
       }
     }
   },
