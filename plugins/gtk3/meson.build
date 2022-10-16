@@ -6,7 +6,7 @@ build_conf_plugin_gtk3 = configure_file(input: 'src/build.vala.in', output: 'bui
 configure_file(input: 'src/gtk3.plugin.in', output: 'genesis-shell-gtk3.plugin',
   configuration: conf_data_plugin_gtk3,
   install: true,
-  install_dir: join_paths(libdir, 'devident', 'plugins'))
+  install_dir: join_paths(libdir, 'genesis-shell', 'plugins'))
 
 plugin_gtk3_rel_sources = ['src/plugin.vala']
 plugin_gtk3_sources = []
