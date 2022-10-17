@@ -378,7 +378,7 @@ namespace GenesisShell {
   }
 
 #if HAS_DBUS
-  internal sealed class DBusContext : GLib.Object, IContextDBus, GLib.Initable {
+  private sealed class DBusContext : GLib.Object, IContextDBus, GLib.Initable {
     private bool _is_init = false;
     private uint _obj_id;
 

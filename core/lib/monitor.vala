@@ -377,7 +377,7 @@ namespace GenesisShell {
   }
 
 #if HAS_DBUS
-  internal sealed class DBusMonitor : GLib.Object, IMonitorDBus, GLib.Initable {
+  private sealed class DBusMonitor : GLib.Object, IMonitorDBus, GLib.Initable {
     private bool _is_init = false;
     private uint _obj_id;
 

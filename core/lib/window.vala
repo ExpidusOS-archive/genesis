@@ -156,7 +156,7 @@ namespace GenesisShell {
   }
 
 #if HAS_DBUS
-  internal sealed class DBusWindow : GLib.Object, IWindowDBus, GLib.Initable {
+  private sealed class DBusWindow : GLib.Object, IWindowDBus, GLib.Initable {
     private bool _is_init = false;
     private uint _obj_id;
 

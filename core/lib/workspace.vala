@@ -125,7 +125,7 @@ namespace GenesisShell {
   }
 
 #if HAS_DBUS
-  internal class DBusWorkspace : GLib.Object, IWorkspaceDBus, GLib.Initable {
+  private class DBusWorkspace : GLib.Object, IWorkspaceDBus, GLib.Initable {
     private bool _is_init = false;
     private uint _obj_id;
 
