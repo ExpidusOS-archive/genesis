@@ -216,7 +216,7 @@ namespace GenesisShell {
       this._window_provider = new WindowProvider(this);
       this._workspace_provider = new WorkspaceProvider(this);
 
-      this._plugin_engine = new Peas.Engine();
+      this._plugin_engine = new Peas.Engine.with_nonglobal_loaders();
       this._plugin_engine.add_search_path(LIBDIR + "/genesis-shell/plugins", DATADIR + "/genesis-shell/plugins");
 
       var plugin_paths_env = GLib.Environment.get_variable("GENESIS_SHELL_PLUGINS_PATH");

@@ -20,15 +20,11 @@ namespace GenesisShellGtk3 {
       this._display = null;
     }
   }
+}
 
-  [CCode(cname = "peas_register_types")]
-  public void register_types(Peas.ObjectModule module) {
-    string[] types = {
-      typeof (MonitorProvider).name(),
-      typeof (Monitor).name()
-    };
-    
-    GLib.debug(N_("Registering types: %s").printf(string.joinv(", ", types)));
-    module.register_extension_type(typeof (GenesisShell.IPlugin), typeof (GenesisShellGtk3.Plugin));
-  }
+[ModuleInit]
+public void peas_register_types(GLib.TypeModule module) {
+  var obj_module = module as Peas.ObjectModule;
+  assert(obj_module != null);
+  obj_module.register_extension_type(typeof (GenesisShell.IPlugin), typeof (GenesisShellGtk3.Plugin));
 }

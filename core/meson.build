@@ -41,6 +41,8 @@ libgenesis_core_shlib = shared_library('genesis', build_conf_core, libgenesis_co
   install_dir: [true, true, true, true])
 libgenesis_core = declare_dependency(link_with: libgenesis_core_shlib, dependencies: libgenesis_core_deps,
   compile_args: ['-I' + join_paths(meson.project_build_root(), 'core')])
+libgenesis_core_valadep = declare_dependency(dependencies: [libgenesis_core_deps, meson.get_compiler('vala').find_library('genesis', dirs: [meson.current_build_dir()])],
+  compile_args: ['-I' + join_paths(meson.project_build_root(), 'core')])
 pkg.generate(libgenesis_core_shlib,
   name: 'genesis-shell',
   requires: ['gio-2.0', 'vadi-0.0'],

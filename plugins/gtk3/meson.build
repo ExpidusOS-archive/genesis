@@ -27,7 +27,7 @@ shared_module('genesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sour
   vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"'],
   vala_gir: 'GenesisShellGtk3-@0@.gir'.format(shortver.split('-')[0]),
   name_suffix: 'so',
-  dependencies: [libgenesis_core, gtk3, gtk_layer_shell],
+  dependencies: [libgenesis_core_valadep, gtk3, gtk_layer_shell],
   install: true,
   install_dir: [join_paths(libdir, 'genesis-shell', 'plugins'), join_paths(datadir, 'include', 'genesis-shell', 'plugins'),
     join_paths(datadir, 'genesis-shell', 'plugins', 'vapi'), join_paths(datadir, 'genesis-shell', 'plugins', 'gir-1.0')])

@@ -1,15 +1,21 @@
 namespace GenesisShellGtk3 {
-  public sealed class MonitorProvider : GLib.Object, GenesisShell.IMonitorProvider, GLib.Initable {
+  public class MonitorProvider : GLib.Object, GenesisShell.IMonitorProvider, GLib.Initable {
     private GLib.HashTable<string, Monitor> _monitors;
     private ulong _monitor_added;
     private ulong _monitor_removed;
     private bool _is_init = false;
 
-    public GenesisShell.Context context { get; construct; }
+    public override GenesisShell.Context context {
+      get {
+        return this.plugin.context;
+      }
+      construct {}
+    }
+
     public Plugin plugin { get; construct; }
 
     internal MonitorProvider(Plugin plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
-      Object(context: plugin.context, plugin: plugin);
+      Object(plugin: plugin);
       this.init(cancellable);
     }
 
@@ -63,10 +69,6 @@ namespace GenesisShellGtk3 {
         this._monitors.set(name, obj);
         this.added(obj);
       }
-    }
-
-    public GenesisShell.Monitor? create_virtual_monitor() {
-      return null;
     }
 
     public unowned GenesisShell.Monitor? get_monitor(string id) {
