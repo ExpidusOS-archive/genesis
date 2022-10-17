@@ -3,57 +3,32 @@
 
   inputs.expidus-sdk = {
     url = github:ExpidusOS/sdk;
-    inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, expidus-sdk }:
-    let
-      supportedSystems = builtins.attrNames expidus-sdk.packages;
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-      nixpkgsFor = forAllSystems (system: import expidus-sdk { inherit system; });
-
-      packagesFor = forAllSystems (system:
-        let
-          pkgs = nixpkgsFor.${system};
-          expidus-sdk-pkg = expidus-sdk.packages.${system}.default;
-        in with pkgs; rec {
-          nativeBuildInputs = [ meson ninja pkg-config vala glib expidus-sdk-pkg ];
-          buildInputs = [ vadi libdevident libtokyo libpeas dbus ];
-            # FIXME: add vapi (++ pkgs.lib.optional pkgs.stdenv.isLinux gtk-layer-shell;)
-          propagatedBuildInputs = buildInputs;
-        });
-    in
+  outputs = { self, expidus-sdk }:
     {
-      packages = forAllSystems (system:
+      overlays.default = final: prev: {
+        genesis-shell = (prev.genesis-shell.overrideAttrs (old: {
+          version = self.rev or "dirty";
+          src = builtins.path { name = "genesis-shell"; path = prev.lib.cleanSource ./.; };
+        }));
+      };
+
+      packages = expidus-sdk.lib.forAllSystems (system:
         let
-          pkgs = nixpkgsFor.${system};
-          packages = packagesFor.${system};
-        in
-        {
-          default = pkgs.stdenv.mkDerivation rec {
-            name = "genesis-shell";
-            src = self;
-            outputs = [ "out" "devdoc" "dev" ];
-
-            enableParallelBuilding = true;
-            inherit (packages) nativeBuildInputs buildInputs propagatedBuildInputs;
-
-            meta = with pkgs.lib; {
-              homepage = "https://github.com/ExpidusOS/genesis";
-              license = with licenses; [ gpl3Only ];
-              maintainers = with expidus-sdk.lib.maintainers; [ TheComputerGuy ];
-            };
-          };
+          pkgs = expidus-sdk.lib.nixpkgsFor.${system};
+        in {
+          default = (self.overlays.default pkgs pkgs).genesis-shell;
         });
 
-      devShells = forAllSystems (system:
+      devShells = expidus-sdk.lib.forAllSystems (system:
         let
-          pkgs = nixpkgsFor.${system};
-          packages = packagesFor.${system};
+          pkgs = expidus-sdk.lib.nixpkgsFor.${system};
+          pkg = self.packages.${system}.default;
         in
         {
           default = pkgs.mkShell {
-            packages = packages.nativeBuildInputs ++ packages.buildInputs;
+            packages = pkg.nativeBuildInputs ++ pkg.buildInputs;
           };
         });
     };
