@@ -4,7 +4,7 @@ namespace GenesisShell {
     public abstract Vdi.Container container { get; }
 
     public virtual GLib.OptionEntry[] get_options() {
-      return {};
+      return { { null } };
     }
   }
 

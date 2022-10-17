@@ -5,6 +5,7 @@ namespace GenesisShellGtk3 {
     }
 
     public override void activate(GLib.Cancellable? cancellable = null) throws GLib.Error {
+      GLib.debug("Plugin is active");
     }
 
     public override void deactivate(GLib.Cancellable? cancellable = null) throws GLib.Error {
@@ -13,7 +14,6 @@ namespace GenesisShellGtk3 {
 
   [CCode(cname = "peas_register_types")]
   internal void register_types(Peas.ObjectModule module) {
-    GLib.debug("Registering type");
-    module.register_extension_type(typeof (GenesisShell.Plugin), typeof (Plugin));
+    module.register_extension_type(typeof (GenesisShell.IPlugin), typeof (GenesisShellGtk3.Plugin));
   }
 }

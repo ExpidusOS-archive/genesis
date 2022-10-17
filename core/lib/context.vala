@@ -216,7 +216,7 @@ namespace GenesisShell {
       this._window_provider = new WindowProvider(this);
       this._workspace_provider = new WorkspaceProvider(this);
 
-      this._plugin_engine = new Peas.Engine.with_nonglobal_loaders();
+      this._plugin_engine = new Peas.Engine();
       this._plugin_engine.add_search_path(LIBDIR + "/genesis-shell/plugins", DATADIR + "/genesis-shell/plugins");
 
       var plugin_paths_env = GLib.Environment.get_variable("GENESIS_SHELL_PLUGINS_PATH");
@@ -237,7 +237,7 @@ namespace GenesisShell {
       this._plugin_engine.add_search_path(GLib.Path.build_filename(prefix, "lib", "devident", "plugins"), GLib.Path.build_filename(prefix, "share", "devident", "plugins"));
 #endif
 
-      this._plugin_set = new Peas.ExtensionSet(this.plugin_engine, typeof (IPlugin), "context", this);
+      this._plugin_set = new Peas.ExtensionSet(this._plugin_engine, typeof (IPlugin), "context", this);
 
       this.plugin_set.foreach((pset, info, extension) => {
         this.do_plugin_added.begin(info, extension as IPlugin, null, (obj, res) => {
@@ -270,6 +270,8 @@ namespace GenesisShell {
       });
 
       GLib.debug(N_("Genesis Shell context %p is running in mode %s"), this, this.mode.to_nick());
+
+      this.plugin_engine.rescan_plugins();
 
       foreach (var info in this.plugin_engine.get_plugin_list()) {
         GLib.debug(N_("Plugin %s found in engine, trying to load"), info.get_module_name());
@@ -331,6 +333,7 @@ namespace GenesisShell {
     }
 
     private async bool do_plugin_removed(Peas.PluginInfo info, IPlugin? plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
+      GLib.debug(N_("Discovered plugin %s"), info.get_module_name());
       if (plugin != null && !this.plugins.contains(info.get_module_name())) {
         GLib.debug(N_("Removing plugin \"%s\" %p"), info.get_name(), plugin);
 
