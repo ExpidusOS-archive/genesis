@@ -2,12 +2,14 @@ namespace GenesisShell {
   public interface IMonitorProvider : GLib.Object {
     public abstract Context context { get; construct; }
 
-    public abstract Monitor? create_virtual_monitor();
+    public virtual Monitor? create_virtual_monitor() {
+      return null;
+    }
 
     public abstract unowned Monitor? get_monitor(string id);
     public abstract GLib.List<string> get_monitor_ids();
 
-    public unowned Monitor? get_primary_monitor() {
+    public virtual unowned Monitor? get_primary_monitor() {
       foreach (var id in this.get_monitor_ids()) {
         unowned var monitor = this.get_monitor(id);
         if (monitor == null) continue;
@@ -340,7 +342,16 @@ namespace GenesisShell {
      * This performs a check against what the monitor supports to
      * determine whether or not the monitor can run at that mode.
      */
-    public abstract bool is_mode_available(MonitorMode mode);
+    public virtual bool is_mode_available(MonitorMode mode) {
+      var modes = this.list_modes();
+      foreach (var avail_mode in modes) {
+        if (avail_mode.width == mode.width
+          && avail_mode.height == mode.height
+          && avail_mode.depth == mode.depth
+          && avail_mode.rate == mode.rate) return true;
+      }
+      return false;
+    }
 
     public void add_workspace(Workspace workspace) {
       if (!this.has_workspace(workspace)) {

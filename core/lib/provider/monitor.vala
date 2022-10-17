@@ -87,7 +87,7 @@ namespace GenesisShell {
       return list;
     }
 
-    public unowned Monitor? get_primary_monitor() {
+    public override unowned Monitor? get_primary_monitor() {
       foreach (var plugin in this.context.plugins.get_values()) {
         var monitor_provider = plugin.container.get(typeof (IMonitorProvider)) as IMonitorProvider;
         if (monitor_provider == null) continue;
