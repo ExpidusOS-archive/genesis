@@ -44,9 +44,9 @@ valadoc = find_program('valadoc', required: get_option('docs'), native: true)
 libmath = meson.get_compiler('c').find_library('m', required: false)
 libdevident = dependency('devident', fallback: ['libdevident', 'libdevident_core'], required: true)
 
-libtokyo = dependency('tokyo', required: false)
-libtokyo_gtk3 = dependency('tokyo-gtk3', disabler: not libtokyo.found(), required: false)
-libtokyo_gtk4 = dependency('tokyo-gtk4', disabler: not libtokyo.found(), required: false)
+libtokyo = dependency('tokyo', fallback: ['libtokyo', 'libtokyo_core_dep'], required: false)
+libtokyo_gtk3 = dependency('tokyo-gtk3', fallback: ['libtokyo', 'libtokyo_gtk3_dep'], disabler: not libtokyo.found(), required: false)
+libtokyo_gtk4 = dependency('tokyo-gtk4', fallback: ['libtokyo', 'libtokyo_gtk4_dep'], disabler: not libtokyo.found(), required: false)
 
 gtk_layer_shell = dependency('gtk-layer-shell-0', disabler: not libtokyo_gtk3.found(), required: false)
 
