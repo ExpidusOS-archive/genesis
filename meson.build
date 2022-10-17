@@ -16,6 +16,8 @@ git = find_program('git', native: true, required: false)
 conf_data = configuration_data()
 i18n_args = ['--package-version=@0@'.format(longver), '--copyright-holder=Midstall Software']
 
+add_project_arguments(['--hide-internal'], language: 'vala')
+
 if git.found()
   git_commit = run_command([git, 'rev-parse', '--short', 'HEAD'])
   git_branch = run_command([git, 'rev-parse', '--abbrev-ref', 'HEAD'])
