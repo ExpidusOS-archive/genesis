@@ -16,7 +16,10 @@ git = find_program('git', native: true, required: false)
 conf_data = configuration_data()
 i18n_args = ['--package-version=@0@'.format(longver), '--copyright-holder=Midstall Software']
 
-add_project_arguments(['--hide-internal'], language: 'vala')
+add_project_arguments([
+  '--hide-internal',
+  '--vapidir', join_paths(meson.project_source_root(), 'vapi')
+], language: 'vala')
 
 if git.found()
   git_commit = run_command([git, 'rev-parse', '--short', 'HEAD'])
@@ -41,6 +44,9 @@ else
   uncrustify = disabler()
 endif
 
+enable_wayland = get_option('wayland').disable_auto_if(target_machine.system() != 'linux')
+enable_x11 = get_option('x11').disable_auto_if(target_machine.system() != 'linux')
+
 valadoc = find_program('valadoc', required: get_option('docs'), native: true)
 
 libmath = meson.get_compiler('c').find_library('m', required: false)
@@ -50,7 +56,32 @@ libtokyo = dependency('tokyo', fallback: ['libtokyo', 'libtokyo_core_dep'], requ
 libtokyo_gtk3 = dependency('tokyo-gtk3', fallback: ['libtokyo', 'libtokyo_gtk3_dep'], disabler: not libtokyo.found(), required: false)
 libtokyo_gtk4 = dependency('tokyo-gtk4', fallback: ['libtokyo', 'libtokyo_gtk4_dep'], disabler: not libtokyo.found(), required: false)
 
-gtk_layer_shell = dependency('gtk-layer-shell-0', disabler: not libtokyo_gtk3.found(), required: false)
+gtk3_wayland = dependency('gtk+-wayland-3.0', disabler: not libtokyo_gtk3.found(), required: enable_wayland)
+gtk3_x11 = dependency('gtk+-x11-3.0', disabler: not libtokyo_gtk3.found(), required: enable_x11)
+gtk_layer_shell = dependency('gtk-layer-shell-0', disabler: not gtk3_wayland.found(), required: false)
+
+if gtk3_wayland.found()
+  add_project_arguments(['--define=HAS_GTK3_WAYLAND'], language: 'vala')
+endif
+
+if gtk3_x11.found()
+  add_project_arguments(['--define=HAS_GTK3_X11'], language: 'vala')
+endif
+
+if gtk_layer_shell.found()
+  add_project_arguments(['--define=HAS_GTK_LAYER_SHELL'], language: 'vala')
+endif
+
+gtk4_wayland = dependency('gtk4-wayland', disabler: not libtokyo_gtk4.found(), required: enable_wayland)
+gtk4_x11 = dependency('gtk4-x11', disabler: not libtokyo_gtk4.found(), required: enable_x11)
+
+if gtk4_wayland.found()
+  add_project_arguments(['--define=HAS_GTK4_WAYLAND'], language: 'vala')
+endif
+
+if gtk4_x11.found()
+  add_project_arguments(['--define=HAS_GTK4_X11'], language: 'vala')
+endif
 
 vadi = dependency('vadi-0.0', required: true)
 gio = dependency('gio-2.0', required: true)
@@ -61,10 +92,10 @@ dbus = dependency('dbus-1', required: get_option('dbus').disable_auto_if(target_
 libintl = meson.get_compiler('c').find_library('intl', required: false)
 
 gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
-  libtokyo_gtk3]
+  libtokyo_gtk3, gtk3_x11, gtk3_wayland, gtk_layer_shell]
 
 gtk4 = [dependency('gtk4', disabler: not libtokyo_gtk4.found(), required: libtokyo_gtk4.found()),
-  libtokyo_gtk4]
+  libtokyo_gtk4, gtk4_wayland, gtk4_x11]
 
 conf_data.set('PREFIX', prefix)
 conf_data.set('BINDIR', bindir)
@@ -80,3 +111,5 @@ subdir('po')
 subdir('core')
 subdir('shell')
 subdir('plugins')
+
+gnome.post_install(glib_compile_schemas: true)

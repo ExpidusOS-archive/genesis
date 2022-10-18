@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="com.expidus.genesis" path="/com/expidus/genesis/" gettext-domain="genesis-shell">
+    <key name="plugin-blacklist" type="as">
+      <default>[]</default>
+      <summary>Blacklist Plugins</summary>
+      <description>
+        Disable all plugins by their module name in this list.
+      </description>
+    </key>
+  </schema>
+</schemalist>

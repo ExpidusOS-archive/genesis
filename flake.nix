@@ -11,6 +11,8 @@
         genesis-shell = (prev.genesis-shell.overrideAttrs (old: {
           version = self.rev or "dirty";
           src = builtins.path { name = "genesis-shell"; path = prev.lib.cleanSource ./.; };
+          nativeBuildInputs = old.nativeBuildInputs ++ [ prev.wrapGAppsHook ];
+          buildInputs = old.buildInputs ++ [ prev.gsettings-desktop-schemas ];
         }));
       };
 

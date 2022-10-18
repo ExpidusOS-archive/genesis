@@ -100,6 +100,8 @@ namespace GenesisShell {
     internal DBusContext dbus { get; }
 #endif
 
+    internal GLib.Settings settings { get; }
+
     public ContextMode mode { get; construct; default = ContextMode.COMPOSITOR; }
     public Devident.Context devident { get; }
     public Vdi.Container container { get; }
@@ -170,6 +172,7 @@ namespace GenesisShell {
       GLib.Intl.bindtextdomain(GETTEXT_PACKAGE, LOCALDIR);
 
       this._plugins = new GLib.HashTable<string, IPlugin>(GLib.str_hash, GLib.str_equal);
+      this._settings = new GLib.Settings("com.expidus.genesis");
     }
 
     public GLib.OptionGroup? get_option_group_for_plugin(string plugin_name) {
@@ -381,6 +384,41 @@ namespace GenesisShell {
 
     private async bool do_plugin_added(Peas.PluginInfo info, IPlugin? plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
       GLib.debug(N_("Discovered plugin %s"), info.get_module_name());
+
+      if (info.get_module_name() in this.settings.get_strv("plugin-blacklist")) {
+        GLib.debug(N_("Plugin \"%s\" is disabled"), info.get_module_name());
+        return true;
+      }
+
+      var context_modes = info.get_external_data("ContextModes");
+      if (context_modes != null) {
+        ContextMode[] wants_context_modes = {};
+        foreach (var cmode in context_modes.split(";")) {
+          if (cmode.length == 0) break;
+
+          var rmode = ContextMode.COMPOSITOR;
+          if (!ContextMode.try_parse_nick(cmode, out rmode)) continue;
+
+          wants_context_modes += rmode;
+        }
+
+        if (!(this.mode in wants_context_modes)) {
+          GLib.debug(N_("Skipping plugin \"%s\", not in correct plugin mode"), info.get_module_name());
+          return true;
+        }
+      }
+
+      var conflicts = info.get_external_data("Conflicts");
+      if (conflicts != null) {
+        foreach (var conf in conflicts.split(";")) {
+          if (conf.length == 0) break;
+          if (conf in this.plugin_engine.loaded_plugins) {
+            GLib.debug(N_("Skipping plugin \"%s\", avoiding confliction with \"%s\""), info.get_module_name(), conf);
+            return true;
+          }
+        }
+      }
+
       if (plugin != null && !this.plugins.contains(info.get_module_name())) {
         GLib.debug(N_("Adding plugin \"%s\" %p"), info.get_module_name(), plugin);
 

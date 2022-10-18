@@ -1,3 +1,4 @@
+core/data/com.expidus.genesis.gschema.xml
 core/lib/build.vala.in
 core/lib/context.vala
 core/lib/math.vala
