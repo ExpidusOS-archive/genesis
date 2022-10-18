@@ -2,3 +2,6 @@
 Module=genesis-shell-gtk3
 Name=Genesis Shell Gtk3
 Description=Plugin for GTK 3 in Genesis Shell
+Website=https://expidusos.com
+Copyright=Copyright Midstall Software, 2022
+Version=@VERSION@

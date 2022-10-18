@@ -7,50 +7,102 @@ msgid ""
 msgstr ""
 "Project-Id-Version: genesis-shell 0.2.0-alpha\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-14 15:51-0700\n"
-"PO-Revision-Date: 2022-10-14 15:51-0700\n"
+"POT-Creation-Date: 2022-10-18 13:33-0700\n"
+"PO-Revision-Date: 2022-10-18 13:33-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: core/lib/context.vala:162
+#: core/lib/context.vala:180
 #, c-format
 msgid "Plugin \"%s\" Options"
 msgstr "Plugin \"%s\" Options"
 
-#: core/lib/context.vala:162
+#: core/lib/context.vala:180
 #, c-format
 msgid "Show all options for the \"%s\" plugin"
 msgstr "Show all options for the \"%s\" plugin"
 
-#: core/lib/context.vala:213 core/lib/context.vala:223
+#: core/lib/context.vala:191 core/lib/context.vala:224
+msgid "Not initialized"
+msgstr "Not initialized"
+
+#: core/lib/context.vala:192 core/lib/context.vala:225
+msgid "Target mode and current mode both match"
+msgstr "Target mode and current mode both match"
+
+#: core/lib/context.vala:193 core/lib/context.vala:226
+#, c-format
+msgid "Cannot upgrade from a %s to %s mode"
+msgstr "Cannot upgrade from a %s to %s mode"
+
+#: core/lib/context.vala:195 core/lib/context.vala:228
+#, c-format
+msgid "Reloading Genesis Shell from mode %s to mode %s"
+msgstr "Reloading Genesis Shell from mode %s to mode %s"
+
+#: core/lib/context.vala:204 core/lib/context.vala:338
+#, c-format
+msgid "Failed to remove plugin \"%s\": %s:%d: %s"
+msgstr "Failed to remove plugin \"%s\": %s:%d: %s"
+
+#: core/lib/context.vala:280 core/lib/context.vala:328
 #, c-format
 msgid "Failed to add plugin \"%s\": %s:%d: %s"
 msgstr "Failed to add plugin \"%s\": %s:%d: %s"
 
-#: core/lib/context.vala:228
+#: core/lib/context.vala:306
+msgid "Plugins path is not a multiple of 2"
+msgstr "Plugins path is not a multiple of 2"
+
+#: core/lib/context.vala:343
+#, c-format
+msgid "Monitor \"%s\" has been added"
+msgstr "Monitor \"%s\" has been added"
+
+#: core/lib/context.vala:344
+#, c-format
+msgid "Monitor \"%s\" has been removed"
+msgstr "Monitor \"%s\" has been removed"
+
+#: core/lib/context.vala:347
 #, c-format
 msgid "Genesis Shell context %p is running in mode %s"
 msgstr "Genesis Shell context %p is running in mode %s"
 
-#: core/lib/context.vala:233
+#: core/lib/context.vala:353
+#, c-format
+msgid "Plugin %s found in engine, trying to load"
+msgstr "Plugin %s found in engine, trying to load"
+
+#: core/lib/context.vala:354
+#, c-format
+msgid "Plugin %s failed to load"
+msgstr "Plugin %s failed to load"
+
+#: core/lib/context.vala:361
 msgid "Compositor mode requires dbus support to be enabled"
 msgstr "Compositor mode requires dbus support to be enabled"
 
-#: core/lib/context.vala:240
+#: core/lib/context.vala:368
 msgid "Gadgets mode requires dbus support to be enabled"
 msgstr "Gadgets mode requires dbus support to be enabled"
 
-#: core/lib/context.vala:256
+#: core/lib/context.vala:383 core/lib/context.vala:413
+#, c-format
+msgid "Discovered plugin %s"
+msgstr "Discovered plugin %s"
+
+#: core/lib/context.vala:385
 #, c-format
 msgid "Adding plugin \"%s\" %p"
 msgstr "Adding plugin \"%s\" %p"
 
-#: core/lib/context.vala:270
+#: core/lib/context.vala:399
 #, c-format
 msgid ""
 "Failed to activate plugin \"%s\", class does not extend either "
@@ -59,12 +111,12 @@ msgstr ""
 "Failed to activate plugin \"%s\", class does not extend either "
 "GenesisShellAsyncPlugin or GenesisShellPlugin"
 
-#: core/lib/context.vala:285
+#: core/lib/context.vala:415
 #, c-format
 msgid "Removing plugin \"%s\" %p"
 msgstr "Removing plugin \"%s\" %p"
 
-#: core/lib/context.vala:297
+#: core/lib/context.vala:429
 #, c-format
 msgid ""
 "Failed to deactivate plugin \"%s\", class does not extend either "
@@ -73,13 +125,28 @@ msgstr ""
 "Failed to deactivate plugin \"%s\", class does not extend either "
 "GenesisShellAsyncPlugin or GenesisShellPlugin"
 
-#: core/lib/monitor.vala:93
+#: core/lib/context.vala:439
+#, c-format
+msgid "Plugin \"%s\" is already added"
+msgstr "Plugin \"%s\" is already added"
+
+#: core/lib/context.vala:455
+#, c-format
+msgid "Plugin %s found in engine, trying to unload"
+msgstr "Plugin %s found in engine, trying to unload"
+
+#: core/lib/context.vala:456
+#, c-format
+msgid "Plugin %s failed to unload"
+msgstr "Plugin %s failed to unload"
+
+#: core/lib/monitor.vala:95
 #, c-format
 msgid "%dx%d (%d) %f Hz"
 msgstr "%dx%d (%d) %f Hz"
 
-#: core/lib/monitor.vala:531 core/lib/monitor.vala:538
-#: core/lib/monitor.vala:545
+#: core/lib/monitor.vala:542 core/lib/monitor.vala:549
+#: core/lib/monitor.vala:556
 #, c-format
 msgid "Invalid workspace %llu"
 msgstr "Invalid workspace %llu"
@@ -90,6 +157,35 @@ msgstr "Invalid workspace %llu"
 msgid "Invalid monitor %s"
 msgstr "Invalid monitor %s"
 
+#: plugins/gtk3/src/monitor.vala:31
+msgid "Unuspported feature on monitor: set is-primary"
+msgstr "Unuspported feature on monitor: set is-primary"
+
+#: plugins/gtk3/src/monitor.vala:40
+msgid "Unuspported feature on monitor: set mirroring"
+msgstr "Unuspported feature on monitor: set mirroring"
+
+#: plugins/gtk3/src/monitor.vala:57
+msgid "Unuspported feature on monitor: set mode"
+msgstr "Unuspported feature on monitor: set mode"
+
+#: plugins/gtk3/src/monitor.vala:66
+msgid "Unuspported feature on monitor: set orientation"
+msgstr "Unuspported feature on monitor: set orientation"
+
+#: plugins/gtk3/src/monitor.vala:87
+msgid "Unuspported feature on monitor: set x"
+msgstr "Unuspported feature on monitor: set x"
+
+#: plugins/gtk3/src/monitor.vala:96
+msgid "Unuspported feature on monitor: set y"
+msgstr "Unuspported feature on monitor: set y"
+
+#: plugins/gtk3/src/provider/monitor.vala:40
+#, c-format
+msgid "Failed to add monitor \"%s\": %s:%d: %s"
+msgstr "Failed to add monitor \"%s\": %s:%d: %s"
+
 #: shell/src/main.vala:5
 msgid "Print version string"
 msgstr "Print version string"
@@ -98,12 +194,7 @@ msgstr "Print version string"
 msgid "Mode to run in"
 msgstr "Mode to run in"
 
-#: shell/src/main.vala:14
-#, c-format
-msgid "%s: failed to start the shell: %s:%d: %s\n"
-msgstr "%s: failed to start the shell: %s:%d: %s\n"
-
-#: shell/src/main.vala:24
+#: shell/src/main.vala:15
 msgid ""
 "- Genesis Shell - The next-generation desktop and mobile compositor and "
 "window manager."
@@ -111,22 +202,36 @@ msgstr ""
 "- Genesis Shell - The next-generation desktop and mobile compositor and "
 "window manager."
 
-#: shell/src/main.vala:38
-#, c-format
-msgid "%s: failed to handle arguments: %s:%d: %s\n"
-msgstr "%s: failed to handle arguments: %s:%d: %s\n"
-
-#: shell/src/main.vala:43
+#: shell/src/main.vala:30
 #, c-format
 msgid "Genesis Shell v%s\n"
 msgstr "Genesis Shell v%s\n"
 
-#: shell/src/main.vala:50
+#: shell/src/main.vala:38
+#, c-format
+msgid "Plugin \"%s\" (%s, %s)"
+msgstr "Plugin \"%s\" (%s, %s)"
+
+#: shell/src/main.vala:38
+msgid "no version"
+msgstr "no version"
+
+#: shell/src/main.vala:46
 #, c-format
 msgid "%s: invalid shell mode \"%s\"\n"
 msgstr "%s: invalid shell mode \"%s\"\n"
 
-#: shell/src/main.vala:56
+#: shell/src/main.vala:52
 #, c-format
 msgid "%s: cannot start the shell in options mode\n"
 msgstr "%s: cannot start the shell in options mode\n"
+
+#: shell/src/main.vala:62
+#, c-format
+msgid "%s: failed to start the shell: %s:%d: %s\n"
+msgstr "%s: failed to start the shell: %s:%d: %s\n"
+
+#: shell/src/main.vala:69
+#, c-format
+msgid "%s: failed to handle arguments: %s:%d: %s\n"
+msgstr "%s: failed to handle arguments: %s:%d: %s\n"

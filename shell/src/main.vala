@@ -28,6 +28,15 @@ public static int main(string[] args) {
 
     if (arg_version) {
       stdout.printf(N_("Genesis Shell v%s\n"), GenesisShell.VERSION);
+      stdout.printf("\n");
+
+      foreach (var plugin_id in ctx.plugins.get_keys()) {
+        var plugin_info = ctx.plugin_engine.get_plugin_info(plugin_id);
+        if (plugin_info == null) continue;
+
+        var version = plugin_info.get_version();
+        stdout.printf(N_("Plugin \"%s\" (%s, %s)"), plugin_info.get_module_name(), plugin_id, version == null ? N_("no version") : version);
+      }
       return 0;
     }
 

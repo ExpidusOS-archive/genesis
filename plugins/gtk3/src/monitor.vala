@@ -49,7 +49,7 @@ namespace GenesisShellGtk3 {
           this.gdk_monitor.geometry.x,
           this.gdk_monitor.geometry.y,
           visual.get_depth(),
-          this.gdk_monitor.refresh_rate
+          this.gdk_monitor.refresh_rate / 1000
         );
         return this._mode;
       }
@@ -118,17 +118,14 @@ namespace GenesisShellGtk3 {
           this.gdk_monitor.geometry.x,
           this.gdk_monitor.geometry.y,
           depth,
-          this.gdk_monitor.refresh_rate
+          this.gdk_monitor.refresh_rate / 1000
         ));
       }
       return list;
     }
 
     internal static string name_for(Gdk.Monitor monitor) {
-      string name = "";
-      if (monitor.get_manufacturer() != null) name += monitor.get_manufacturer();
-      if (monitor.get_model() != null) name += (name.length > 0 ? name + ", " : name) + monitor.get_model();
-      return name;
+      return monitor.get_model();
     }
   }
 }

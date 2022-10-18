@@ -7,6 +7,13 @@ core/lib/window-manager.vala
 core/lib/window.vala
 core/lib/workspace.vala
 core/lib/provider/monitor.vala
+core/lib/provider/window.vala
 core/lib/provider/workspace.vala
 
+plugins/gtk3/src/build.vala.in
+plugins/gtk3/src/monitor.vala
+plugins/gtk3/src/plugin.vala
+plugins/gtk3/src/provider/monitor.vala
+
+shell/src/build.vala.in
 shell/src/main.vala

@@ -339,22 +339,12 @@ namespace GenesisShell {
             }
           });
         });
+
+        this._monitor_provider.added.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been added").printf(monitor.id)));
+        this._monitor_provider.removed.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been removed").printf(monitor.id)));
       }
 
-      this._monitor_provider.added.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been added").printf(monitor.id)));
-      this._monitor_provider.removed.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been removed").printf(monitor.id)));
-
       GLib.debug(N_("Genesis Shell context %p is running in mode %s"), this, this.mode.to_nick());
-
-      this.plugin_set.foreach((pset, info, extension) => {
-        this.do_plugin_added.begin(info, extension as IPlugin, null, (obj, res) => {
-          try {
-            this.do_plugin_added.end(res);
-          } catch (GLib.Error e) {
-            GLib.error(N_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
-          }
-        });
-      });
 
       this.plugin_engine.rescan_plugins();
 
