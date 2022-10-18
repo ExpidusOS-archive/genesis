@@ -127,7 +127,7 @@ namespace GenesisShellGtk3 {
     internal static string name_for(Gdk.Monitor monitor) {
       string name = "";
       if (monitor.get_manufacturer() != null) name += monitor.get_manufacturer();
-      if (monitor.get_model() != null) name += (name.length > 0 ? name + " " : name) + monitor.get_model();
+      if (monitor.get_model() != null) name += (name.length > 0 ? name + ", " : name) + monitor.get_model();
       return name;
     }
   }

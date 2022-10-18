@@ -216,6 +216,9 @@ namespace GenesisShell {
       this._window_provider = new WindowProvider(this);
       this._workspace_provider = new WorkspaceProvider(this);
 
+      this._monitor_provider.added.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been added").printf(monitor.id)));
+      this._monitor_provider.removed.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been removed").printf(monitor.id)));
+
       this._plugin_engine = new Peas.Engine.with_nonglobal_loaders();
       this._plugin_engine.add_search_path(LIBDIR + "/genesis-shell/plugins", DATADIR + "/genesis-shell/plugins");
 

@@ -522,7 +522,7 @@ namespace GenesisShell {
       if (this._is_init) return true;
       this._is_init = true;
 
-      this._obj_id = this.connection.register_object("/com/expidus/genesis/monitor/%s".printf(this.monitor.id), (IMonitorDBus)this);
+      this._obj_id = this.connection.register_object("/com/expidus/genesis/monitor/%s".printf(this.monitor.id.replace(" ", "").replace(",", "")), (IMonitorDBus)this);
       return true;
     }
 
