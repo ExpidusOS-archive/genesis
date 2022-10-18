@@ -1,5 +1,5 @@
 namespace GenesisShellGtk3 {
-  public sealed class Desktop : Hdy.Window {
+  public sealed class Desktop : TokyoGtk.Window {
     private ulong _x_id;
     private ulong _y_id;
     private ulong _mode_id;
@@ -82,6 +82,7 @@ namespace GenesisShellGtk3 {
       this.update_position();
 
       this.show_all();
+      this.header.hide();
     }
 
     private void update_position() {
