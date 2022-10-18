@@ -83,7 +83,8 @@ namespace GenesisShell {
   [DBus(name = "com.expidus.genesis.ShellError")]
   public errordomain ContextError {
     BAD_PLUGIN,
-    BAD_LAUNCH
+    BAD_LAUNCH,
+    INVALID_MODE
   }
 
   public sealed class Context : GLib.Object, GLib.AsyncInitable, GLib.Initable {
@@ -92,6 +93,7 @@ namespace GenesisShell {
     private IWindowProvider _window_provider;
     private IWorkspaceProvider _workspace_provider;
     private bool _is_shutting_down = false;
+    private bool _is_reloading = false;
 
 #if HAS_DBUS
     private uint _dbus_name_id;
@@ -180,7 +182,67 @@ namespace GenesisShell {
       return group;
     }
 
-    private async bool init_async(int io_pri, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    /**
+     * Reloads the shell and upgrades the context mode.
+     *
+     * This only works going from the options mode and so can only be called once.
+     */
+    public bool reload(ContextMode mode, GLib.Cancellable? cancellable = null) throws GLib.Error {
+      if (!this._is_init) throw new ContextError.BAD_LAUNCH(N_("Not initialized"));
+      if (this.mode == mode) throw new ContextError.INVALID_MODE(N_("Target mode and current mode both match"));
+      if (this.mode != ContextMode.OPTIONS) throw new ContextError.INVALID_MODE(N_("Cannot upgrade from a %s to %s mode").printf(this.mode.to_nick(), mode.to_nick()));
+
+      GLib.debug(N_("Reloading Genesis Shell from mode %s to mode %s").printf(this.mode.to_nick(), mode.to_nick()));
+
+      this._is_init = false;
+      foreach (var info in this.plugin_engine.get_plugin_list()) {
+        var obj = this._plugins.get(info.get_module_name());
+        this.do_plugin_removed.begin(info, obj, cancellable, (obj, res) => {
+          try {
+            this.do_plugin_removed.end(res);
+          } catch (GLib.Error e) {
+            GLib.error(N_("Failed to remove plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
+          }
+        });
+      }
+
+      this._mode = mode;
+      this._is_reloading = true;
+      try {
+        return this.init(cancellable);
+      } finally {
+        this._is_reloading = false;
+      }
+    }
+
+    /**
+     * Reloads the shell and upgrades the context mode.
+     *
+     * This only works going from the options mode and so can only be called once.
+     */
+    public async bool reload_async(ContextMode mode, GLib.Cancellable? cancellable = null) throws GLib.Error {
+      if (!this._is_init) throw new ContextError.BAD_LAUNCH(N_("Not initialized"));
+      if (this.mode == mode) throw new ContextError.INVALID_MODE(N_("Target mode and current mode both match"));
+      if (this.mode != ContextMode.OPTIONS) throw new ContextError.INVALID_MODE(N_("Cannot upgrade from a %s to %s mode").printf(this.mode.to_nick(), mode.to_nick()));
+
+      GLib.debug(N_("Reloading Genesis Shell from mode %s to mode %s").printf(this.mode.to_nick(), mode.to_nick()));
+
+      this._is_init = false;
+      foreach (var info in this.plugin_engine.get_plugin_list()) {
+        var obj = this._plugins.get(info.get_module_name());
+        yield this.do_plugin_removed(info, obj, cancellable);
+      }
+
+      this._mode = mode;
+      this._is_reloading = true;
+      try {
+        return yield this.init_async(GLib.Priority.DEFAULT, cancellable);
+      } finally {
+        this._is_reloading = false;
+      }
+    }
+
+    private async bool init_async(int io_pri = GLib.Priority.DEFAULT, GLib.Cancellable? cancellable = null) throws GLib.Error {
       if (this._is_init) return true;
 
 #if HAS_DBUS
@@ -189,6 +251,12 @@ namespace GenesisShell {
       }
 #endif
       this.common_init();
+      if (this._is_reloading) {
+        foreach (var info in this.plugin_engine.get_plugin_list()) {
+          var obj = this.plugin_set.get_extension(info) as IPlugin;
+          yield this.do_plugin_added(info, obj, cancellable);
+        }
+      }
       this._is_init = true;
       return true;
     }
@@ -202,45 +270,81 @@ namespace GenesisShell {
       }
 #endif
       this.common_init();
+      if (this._is_reloading) {
+        foreach (var info in this.plugin_engine.get_plugin_list()) {
+          var obj = this.plugin_set.get_extension(info) as IPlugin;
+          this.do_plugin_added.begin(info, obj, cancellable, (obj, res) => {
+            try {
+              this.do_plugin_added.end(res);
+            } catch (GLib.Error e) {
+              GLib.error(N_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
+            }
+          });
+        }
+      }
       this._is_init = true;
       return true;
     }
 
     private bool common_init() throws GLib.Error {
       if (this._is_init) return true;
-      
-      this._devident = Devident.Context.get_global();
-      this._container = new Vdi.Container();
 
-      this._monitor_provider = new MonitorProvider(this);
-      this._window_provider = new WindowProvider(this);
-      this._workspace_provider = new WorkspaceProvider(this);
+      if (!this._is_reloading) {
+        this._devident = Devident.Context.get_global();
+        this._container = new Vdi.Container();
+
+        this._monitor_provider = new MonitorProvider(this);
+        this._window_provider = new WindowProvider(this);
+        this._workspace_provider = new WorkspaceProvider(this);
+
+        this._plugin_engine = new Peas.Engine.with_nonglobal_loaders();
+        this._plugin_engine.add_search_path(LIBDIR + "/genesis-shell/plugins", DATADIR + "/genesis-shell/plugins");
+
+        var plugin_paths_env = GLib.Environment.get_variable("GENESIS_SHELL_PLUGINS_PATH");
+        if (plugin_paths_env != null) {
+          var entries = plugin_paths_env.split(":");
+          if ((entries.length % 2) != 0) throw new ContextError.BAD_LAUNCH(N_("Plugins path is not a multiple of 2"));
+
+          for (var i = 0; i < entries.length; i += 2) {
+            var lib = entries[i];
+            var data = entries[i + 1];
+            GLib.debug("Adding plugins path %d, lib: %s, data: %s", (int)(i / 2), lib, data);
+            this._plugin_engine.add_search_path(lib, data);
+          }
+        }
+
+#if TARGET_SYSTEM_WINDOWS
+        var prefix = GLib.Win32.get_package_installation_directory_of_module(null);
+        this._plugin_engine.add_search_path(GLib.Path.build_filename(prefix, "lib", "devident", "plugins"), GLib.Path.build_filename(prefix, "share", "devident", "plugins"));
+#endif
+
+        this._plugin_set = new Peas.ExtensionSet(this._plugin_engine, typeof (IPlugin), "context", this);
+
+        this._plugin_set.extension_added.connect((info, obj) => {
+          this.do_plugin_added.begin(info, obj as IPlugin, null, (obj, res) => {
+            try {
+              this.do_plugin_added.end(res);
+            } catch (GLib.Error e) {
+              GLib.error(N_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
+            }
+          });
+        });
+
+        this._plugin_set.extension_removed.connect((info, obj) => {
+          this.do_plugin_removed.begin(info, obj as IPlugin, null, (obj, res) => {
+            try {
+              this.do_plugin_removed.end(res);
+            } catch (GLib.Error e) {
+              GLib.error(N_("Failed to remove plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
+            }
+          });
+        });
+      }
 
       this._monitor_provider.added.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been added").printf(monitor.id)));
       this._monitor_provider.removed.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been removed").printf(monitor.id)));
 
-      this._plugin_engine = new Peas.Engine.with_nonglobal_loaders();
-      this._plugin_engine.add_search_path(LIBDIR + "/genesis-shell/plugins", DATADIR + "/genesis-shell/plugins");
-
-      var plugin_paths_env = GLib.Environment.get_variable("GENESIS_SHELL_PLUGINS_PATH");
-      if (plugin_paths_env != null) {
-        var entries = plugin_paths_env.split(":");
-        if ((entries.length % 2) != 0) throw new ContextError.BAD_LAUNCH(N_("Plugins path is not a multiple of 2"));
-
-        for (var i = 0; i < entries.length; i += 2) {
-          var lib = entries[i];
-          var data = entries[i + 1];
-          GLib.debug("Adding plugins path %d, lib: %s, data: %s", (int)(i / 2), lib, data);
-          this._plugin_engine.add_search_path(lib, data);
-        }
-      }
-
-#if TARGET_SYSTEM_WINDOWS
-      var prefix = GLib.Win32.get_package_installation_directory_of_module(null);
-      this._plugin_engine.add_search_path(GLib.Path.build_filename(prefix, "lib", "devident", "plugins"), GLib.Path.build_filename(prefix, "share", "devident", "plugins"));
-#endif
-
-      this._plugin_set = new Peas.ExtensionSet(this._plugin_engine, typeof (IPlugin), "context", this);
+      GLib.debug(N_("Genesis Shell context %p is running in mode %s"), this, this.mode.to_nick());
 
       this.plugin_set.foreach((pset, info, extension) => {
         this.do_plugin_added.begin(info, extension as IPlugin, null, (obj, res) => {
@@ -252,33 +356,13 @@ namespace GenesisShell {
         });
       });
 
-      this._plugin_set.extension_added.connect((info, obj) => {
-        this.do_plugin_added.begin(info, obj as IPlugin, null, (obj, res) => {
-          try {
-            this.do_plugin_added.end(res);
-          } catch (GLib.Error e) {
-            GLib.error(N_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
-          }
-        });
-      });
-
-      this._plugin_set.extension_removed.connect((info, obj) => {
-        this.do_plugin_removed.begin(info, obj as IPlugin, null, (obj, res) => {
-          try {
-            this.do_plugin_removed.end(res);
-          } catch (GLib.Error e) {
-            GLib.error(N_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
-          }
-        });
-      });
-
-      GLib.debug(N_("Genesis Shell context %p is running in mode %s"), this, this.mode.to_nick());
-
       this.plugin_engine.rescan_plugins();
 
-      foreach (var info in this.plugin_engine.get_plugin_list()) {
-        GLib.debug(N_("Plugin %s found in engine, trying to load"), info.get_module_name());
-        if (!this.plugin_engine.try_load_plugin(info)) GLib.warning(N_("Plugin %s failed to load"), info.get_module_name());
+      if (!this._is_reloading) {
+        foreach (var info in this.plugin_engine.get_plugin_list()) {
+          GLib.debug(N_("Plugin %s found in engine, trying to load"), info.get_module_name());
+          if (!this.plugin_engine.try_load_plugin(info)) GLib.warning(N_("Plugin %s failed to load"), info.get_module_name());
+        }
       }
 
       switch (this.mode) {
@@ -337,12 +421,14 @@ namespace GenesisShell {
 
     private async bool do_plugin_removed(Peas.PluginInfo info, IPlugin? plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
       GLib.debug(N_("Discovered plugin %s"), info.get_module_name());
-      if (plugin != null && !this.plugins.contains(info.get_module_name())) {
+      if (plugin != null && this.plugins.contains(info.get_module_name())) {
         GLib.debug(N_("Removing plugin \"%s\" %p"), info.get_name(), plugin);
 
         var async_plugin = plugin as AsyncPlugin;
         var sync_plugin = plugin as Plugin;
         assert((async_plugin == null || sync_plugin == null) && !(async_plugin == null && sync_plugin == null));
+
+        this._plugins.remove(info.get_module_name());
 
         try {
           if (async_plugin != null) {
@@ -355,10 +441,12 @@ namespace GenesisShell {
 
           this.plugin_removed(info, plugin);
         } catch (GLib.Error e) {
-          this._plugins.remove(info.get_module_name());
+          this._plugins.set(info.get_module_name(), plugin);
           throw e;
         }
         return true;
+      } else {
+        if (!this.plugins.contains(info.get_module_name())) GLib.warning(N_("Plugin \"%s\" is already added").printf(info.get_name()));
       }
       return false;
     }
