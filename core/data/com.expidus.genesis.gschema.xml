@@ -8,5 +8,12 @@
         Disable all plugins by their module name in this list.
       </description>
     </key>
+    <key name="monitors" type="a{sv}">
+      <default>{}</default>
+      <summary>Monitor Configuration</summary>
+      <description>
+        A GVariant packed type which contains all of the various options for the monitor
+      </description>
+    </key>
   </schema>
 </schemalist>

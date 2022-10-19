@@ -91,7 +91,7 @@ namespace GenesisShell {
     public int depth;
     public double rate;
 
-    public const string VARIANT_FORMAT = "nnnd";
+    public const string VARIANT_FORMAT = "(nnnd)";
     public const string STRING_FORMAT = N_("%dx%d (%d) %f Hz");
 
     public MonitorMode(int width, int height, int depth, double rate) {
@@ -195,6 +195,8 @@ namespace GenesisShell {
     public abstract void remove_workspace(WorkspaceID id) throws GLib.DBusError, GLib.IOError, MonitorError;
     public abstract bool has_workspace(WorkspaceID id) throws GLib.DBusError, GLib.IOError, MonitorError;
 
+    public abstract GLib.Variant to_variant() throws GLib.DBusError, GLib.IOError;
+
     public signal void workspace_added(WorkspaceID id);
     public signal void workspace_removed(WorkspaceID id);
   }
@@ -204,6 +206,8 @@ namespace GenesisShell {
     private bool _is_init;
     private GLib.List<Workspace> _workspaces;
     private WindowManager? _window_manger;
+
+    public const string VARIANT_FORMAT = "a{sv}";
     
 #if HAS_DBUS
     internal DBusMonitor dbus { get; }
@@ -281,6 +285,8 @@ namespace GenesisShell {
      * EDID could not be found.
      */
     public abstract GLib.Bytes? edid { get; }
+
+    public string wallpaper { get; set; }
 
     /**
      * The scale to multiple the DPI by
@@ -373,6 +379,21 @@ namespace GenesisShell {
       return item != null;
     }
 
+    public GLib.Variant to_variant() {
+      var builder = new GLib.VariantBuilder(new GLib.VariantType(VARIANT_FORMAT));
+      builder.add("{sv}", "id", new GLib.Variant.string(this.id));
+      builder.add("{sv}", "mode", this.mode.to_variant());
+      builder.add("{sv}", "orientation", new GLib.Variant.int16(this.orientation));
+      builder.add("{sv}", "is-primary", new GLib.Variant.boolean(this.is_primary));
+      builder.add("{sv}", "scale", new GLib.Variant.double(this.scale));
+      builder.add("{sv}", "x", new GLib.Variant.int32(this.x));
+      builder.add("{sv}", "y", new GLib.Variant.int32(this.y));
+
+      if (this.mirroring != null) builder.add("{sv}", "mirroring", new GLib.Variant.string(this.mirroring));
+      if (this.wallpaper != null) builder.add("{sv}", "wallpaper", new GLib.Variant.string(this.wallpaper));
+      return builder.end();
+    }
+
     public signal void workspace_added(Workspace workspace);
     public signal void workspace_removed(Workspace workspace);
 
@@ -384,6 +405,53 @@ namespace GenesisShell {
       this._dbus = new DBusMonitor(this, this.context.dbus.connection, cancellable);
 #endif
       return true;
+    }
+
+    internal void load_settings() {
+      var monitors = this.context.settings.get_value("monitors");
+      assert(monitors.is_of_type(new VariantType(VARIANT_FORMAT)));
+
+      var value = monitors.lookup_value(this.id, null);
+      if (value == null) {
+        this.save_settings();
+        return;
+      }
+
+      GLib.debug(N_("Loading monitor \"%s\": %s (%d)"), this.id, value.print(true), value.n_children());
+      assert_cmpstr(value.lookup_value("id", GLib.VariantType.STRING).get_string(), GLib.CompareOperator.EQ, this.id);
+
+      this.mode = MonitorMode.from_variant(value.lookup_value("mode", new GLib.VariantType(MonitorMode.VARIANT_FORMAT)));
+      this.orientation = (MonitorOrientation)value.lookup_value("orientation", GLib.VariantType.INT16).get_int16();
+      this.is_primary = value.lookup_value("is-primary", GLib.VariantType.BOOLEAN).get_boolean();
+      this.scale = value.lookup_value("scale", GLib.VariantType.DOUBLE).get_double();
+      this.x = value.lookup_value("x", GLib.VariantType.INT32).get_int32();
+      this.y = value.lookup_value("y", GLib.VariantType.INT32).get_int32();
+
+      var child = value.lookup_value("mirroring", GLib.VariantType.STRING);
+      if (child != null) this.mirroring = child.get_string();
+
+      child = value.lookup_value("wallpaper", GLib.VariantType.STRING);
+      if (child != null) this.wallpaper = child.get_string();
+    }
+
+    internal void save_settings() {
+      var builder = new GLib.VariantBuilder(new GLib.VariantType(VARIANT_FORMAT));
+
+      var monitors = this.context.settings.get_value("monitors");
+      assert(monitors.is_of_type(new VariantType(VARIANT_FORMAT)));
+
+      foreach (var monitor in monitors) {
+        var id = monitor.get_child_value(0).get_string();
+        if (id == this.id) continue;
+
+        builder.add("{sv}", id, monitor.get_child_value(1).get_child_value(0));
+      }
+
+      builder.add("{sv}", this.id, this.to_variant());
+
+      var value = builder.end();
+      GLib.debug(N_("Setting monitors to \"%s\""), value.print(true));
+      this.context.settings.set_value("monitors", value);
     }
   }
 
@@ -556,6 +624,10 @@ namespace GenesisShell {
       if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(N_("Invalid workspace %llu").printf(id));
 
       return this.monitor.has_workspace(workspace);
+    }
+
+    public GLib.Variant to_variant() throws GLib.DBusError, GLib.IOError {
+      return this.monitor.to_variant();
     }
   }
 #endif

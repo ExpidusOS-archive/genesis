@@ -343,7 +343,10 @@ namespace GenesisShell {
           });
         });
 
-        this._monitor_provider.added.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been added").printf(monitor.id)));
+        this._monitor_provider.added.connect((monitor) => {
+          GLib.debug(N_("Monitor \"%s\" has been added").printf(monitor.id));
+          monitor.load_settings();
+        });
         this._monitor_provider.removed.connect((monitor) => GLib.debug(N_("Monitor \"%s\" has been removed").printf(monitor.id)));
       }
 
