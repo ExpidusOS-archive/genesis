@@ -28,7 +28,7 @@
         in
         {
           default = pkgs.mkShell {
-            packages = pkg.nativeBuildInputs ++ pkg.buildInputs;
+            packages = pkg.nativeBuildInputs ++ pkg.buildInputs ++ [ pkgs.expidus-sdk ];
           };
         });
     };

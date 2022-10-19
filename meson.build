@@ -3,6 +3,7 @@ project('genesis-shell', 'vala', 'c', license: 'GPL-3.0-only', version: '0.2.0-a
 gnome = import('gnome')
 i18n = import('i18n')
 pkg = import('pkgconfig')
+fs = import('fs')
 
 prefix = get_option('prefix')
 bindir = prefix / get_option('bindir')
@@ -127,9 +128,18 @@ conf_data.set('LOCALDIR', join_paths(datadir, 'locale'))
 conf_data.set('BUILDDIR', meson.current_build_dir())
 conf_data.set('SOURCEDIR', meson.current_source_dir())
 
+plugins = []
+
 subdir('po')
 subdir('core')
 subdir('shell')
 subdir('plugins')
 
 gnome.post_install(glib_compile_schemas: true)
+
+plugin_names = []
+foreach tgt : plugins
+  plugin_names += [fs.name(tgt.full_name())]
+endforeach
+
+summary(plugin_names, section: 'Plugins')

@@ -22,7 +22,7 @@ endif
 
 plugin_gtk3_sources += [build_conf_plugin_gtk3]
 
-shared_module('genesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sources,
+plugin_gtk3 = shared_module('genesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sources,
   c_args: ['-DG_LOG_DOMAIN="GenesisShellGtk3"', '-DGETTEXT_PACKAGE="genesis-shell"'],
   vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"'],
   vala_gir: 'GenesisShellGtk3-@0@.gir'.format(shortver.split('-')[0]),
@@ -30,3 +30,5 @@ shared_module('genesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sour
   install: true,
   install_dir: [join_paths(libdir, 'genesis-shell', 'plugins'), join_paths(datadir, 'include', 'genesis-shell', 'plugins'),
     join_paths(datadir, 'genesis-shell', 'plugins', 'vapi'), join_paths(datadir, 'genesis-shell', 'plugins', 'gir-1.0')])
+
+plugins += [plugin_gtk3]

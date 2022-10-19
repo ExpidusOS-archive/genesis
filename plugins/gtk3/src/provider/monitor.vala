@@ -1,6 +1,6 @@
 namespace GenesisShellGtk3 {
   public class MonitorProvider : GLib.Object, GenesisShell.IMonitorProvider, GLib.Initable {
-    private GLib.HashTable<string, Monitor> _monitors;
+    private GLib.HashTable <string, Monitor> _monitors;
     private ulong _monitor_added;
     private ulong _monitor_removed;
     private bool _is_init = false;
@@ -14,7 +14,7 @@ namespace GenesisShellGtk3 {
 
     public Plugin plugin { get; construct; }
 
-    internal MonitorProvider(Plugin plugin, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal MonitorProvider(Plugin plugin, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(plugin: plugin);
       this.init(cancellable);
     }
@@ -32,7 +32,7 @@ namespace GenesisShellGtk3 {
     }
 
     construct {
-      this._monitors = new GLib.HashTable<string, Monitor>(GLib.str_hash, GLib.str_equal);
+      this._monitors      = new GLib.HashTable <string, Monitor>(GLib.str_hash, GLib.str_equal);
       this._monitor_added = this.plugin.display.monitor_added.connect((monitor) => {
         try {
           this.add_monitor(monitor);
@@ -43,26 +43,32 @@ namespace GenesisShellGtk3 {
 
       this._monitor_removed = this.plugin.display.monitor_removed.connect((monitor) => {
         string name = Monitor.name_for(monitor);
-        var obj = this._monitors.get(name);
-        if (obj != null) this.removed(obj);
+        var obj     = this._monitors.get(name);
+        if (obj != null) {
+          this.removed(obj);
+        }
         this._monitors.remove(name);
       });
     }
 
-    public bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
-      if (this._is_init) return true;
+    public bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
       this._is_init = true;
 
       for (var i = 0; i < this.plugin.display.get_n_monitors(); i++) {
         var monitor = this.plugin.display.get_monitor(i);
-        if (monitor == null) continue;
+        if (monitor == null) {
+          continue;
+        }
 
         this.add_monitor(monitor, cancellable);
       }
       return true;
     }
 
-    private void add_monitor(Gdk.Monitor monitor, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    private void add_monitor(Gdk.Monitor monitor, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       string name = Monitor.name_for(monitor);
       if (!this._monitors.contains(name)) {
         var obj = new Monitor(this, monitor);
@@ -71,15 +77,17 @@ namespace GenesisShellGtk3 {
       }
     }
 
-    public unowned GenesisShell.Monitor? get_monitor(string id) {
+    public unowned GenesisShell.Monitor ? get_monitor(string id) {
       return this._monitors.get(id);
     }
 
-    public GLib.List<string> get_monitor_ids() {
-      var list = new GLib.List<string>();
+    public GLib.List <string> get_monitor_ids() {
+      var list = new GLib.List <string>();
       for (var i = 0; i < this.plugin.display.get_n_monitors(); i++) {
         var monitor = this.plugin.display.get_monitor(i);
-        if (monitor == null) continue;
+        if (monitor == null) {
+          continue;
+        }
 
         list.append(Monitor.name_for(monitor));
       }

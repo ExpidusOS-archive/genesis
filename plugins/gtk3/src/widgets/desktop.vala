@@ -42,10 +42,10 @@ namespace GenesisShellGtk3 {
       var monitor = this.monitor as Monitor;
       assert(monitor != null);
 
-      this.decorated = false;
-      this.skip_pager_hint = true;
+      this.decorated         = false;
+      this.skip_pager_hint   = true;
       this.skip_taskbar_hint = true;
-      this.type_hint = Gdk.WindowTypeHint.DESKTOP;
+      this.type_hint         = Gdk.WindowTypeHint.DESKTOP;
 
 #if HAS_GTK_LAYER_SHELL
       if (!this.should_resize) {
@@ -58,7 +58,9 @@ namespace GenesisShellGtk3 {
       if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
         for (var i = 0; i < this.get_display().get_n_monitors(); i++) {
           var m = this.get_display().get_monitor(i);
-          if (m == null) continue;
+          if (m == null) {
+            continue;
+          }
           if (m.geometry.equal(monitor.gdk_monitor.geometry) && m.get_model() == monitor.gdk_monitor.get_model()) {
             this.fullscreen_on_monitor(this.get_display().get_default_screen(), i);
             break;
@@ -91,7 +93,7 @@ namespace GenesisShellGtk3 {
 
     private void update_mode() {
       if (this.should_resize) {
-        this.default_width = this.monitor.mode.width;
+        this.default_width  = this.monitor.mode.width;
         this.default_height = this.monitor.mode.height;
         this.resize(this.monitor.mode.width, this.monitor.mode.height);
       }

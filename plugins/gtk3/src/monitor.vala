@@ -5,7 +5,7 @@ namespace GenesisShellGtk3 {
     public Gdk.Monitor gdk_monitor { get; construct; }
     public Desktop desktop { get; }
 
-    public override GLib.Bytes? edid {
+    public override GLib.Bytes ?edid {
       get {
         return null;
       }
@@ -13,7 +13,9 @@ namespace GenesisShellGtk3 {
 
     public override string id {
       get {
-        if (this._id == null) this._id = Monitor.name_for(this.gdk_monitor);
+        if (this._id == null) {
+          this._id = Monitor.name_for(this.gdk_monitor);
+        }
         return this._id;
       }
     }
@@ -33,7 +35,7 @@ namespace GenesisShellGtk3 {
       }
     }
 
-    public override string? mirroring {
+    public override string ?mirroring {
       get {
         return null;
       }
@@ -45,13 +47,14 @@ namespace GenesisShellGtk3 {
     public override GenesisShell.MonitorMode mode {
       get {
         var screen = this.gdk_monitor.get_display().get_default_screen();
-        var visual = screen.get_rgba_visual() == null ? screen.get_system_visual() : screen.get_rgba_visual();
+        var visual = screen.get_rgba_visual() == null ?screen.get_system_visual() : screen.get_rgba_visual();
+
         this._mode = GenesisShell.MonitorMode(
           this.gdk_monitor.geometry.x,
           this.gdk_monitor.geometry.y,
           visual.get_depth(),
           this.gdk_monitor.refresh_rate / 1000
-        );
+          );
         return this._mode;
       }
       set {
@@ -98,22 +101,22 @@ namespace GenesisShellGtk3 {
       }
     }
 
-    internal Monitor(GenesisShell.IMonitorProvider provider, Gdk.Monitor monitor, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal Monitor(GenesisShell.IMonitorProvider provider, Gdk.Monitor monitor, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(provider: provider, gdk_monitor: monitor);
       this.init(cancellable);
     }
 
-    public override bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
+    public override bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
       base.init(cancellable);
 
       this._desktop = new Desktop(this.context, this);
       return true;
     }
 
-    public override GLib.List<GenesisShell.MonitorMode?> list_modes() {
-      var list = new GLib.List<GenesisShell.MonitorMode?>();
+    public override GLib.List <GenesisShell.MonitorMode ?> list_modes() {
+      var list    = new GLib.List <GenesisShell.MonitorMode ?>();
       var visuals = this.gdk_monitor.get_display().get_default_screen().list_visuals();
-      var depths = new GLib.List<int>();
+      var depths  = new GLib.List <int>();
 
       foreach (var visual in visuals) {
         if (depths.find(visual.get_depth()) == null) {
@@ -123,11 +126,11 @@ namespace GenesisShellGtk3 {
 
       foreach (var depth in depths) {
         list.append(GenesisShell.MonitorMode(
-          this.gdk_monitor.geometry.x,
-          this.gdk_monitor.geometry.y,
-          depth,
-          this.gdk_monitor.refresh_rate / 1000
-        ));
+                      this.gdk_monitor.geometry.x,
+                      this.gdk_monitor.geometry.y,
+                      depth,
+                      this.gdk_monitor.refresh_rate / 1000
+                      ));
       }
       return list;
     }
