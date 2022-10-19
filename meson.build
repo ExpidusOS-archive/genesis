@@ -92,10 +92,30 @@ dbus = dependency('dbus-1', required: get_option('dbus').disable_auto_if(target_
 libintl = meson.get_compiler('c').find_library('intl', required: false)
 
 gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
-  libtokyo_gtk3, gtk3_x11, gtk3_wayland, gtk_layer_shell]
+  libtokyo_gtk3]
+
+if gtk3_x11.found()
+  gtk3 += [gtk3_x11]
+endif
+
+if gtk3_wayland.found()
+  gtk3 += [gtk3_wayland]
+endif
+
+if gtk_layer_shell.found()
+  gtk3 += [gtk_layer_shell]
+endif
 
 gtk4 = [dependency('gtk4', disabler: not libtokyo_gtk4.found(), required: libtokyo_gtk4.found()),
-  libtokyo_gtk4, gtk4_wayland, gtk4_x11]
+  libtokyo_gtk4]
+
+if gtk4_x11.found()
+  gtk4 += [gtk4_x11]
+endif
+
+if gtk4_wayland.found()
+  gtk4 += [gtk4_wayland]
+endif
 
 conf_data.set('PREFIX', prefix)
 conf_data.set('BINDIR', bindir)
