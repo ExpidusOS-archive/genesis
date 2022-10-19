@@ -139,7 +139,9 @@ gnome.post_install(glib_compile_schemas: true)
 
 plugin_names = []
 foreach tgt : plugins
-  plugin_names += [fs.name(tgt.full_name())]
+  plugin_names += [fs.name(tgt.full_path()).replace('lib', '').replace('.so', '')]
 endforeach
 
-summary(plugin_names, section: 'Plugins')
+summary({
+  'Plugins': ', '.join(plugin_names)
+})
