@@ -3,7 +3,7 @@ namespace GenesisShellGtk3 {
     private string _id;
     private GenesisShell.MonitorMode _mode;
     public Gdk.Monitor gdk_monitor { get; construct; }
-    public Desktop desktop { get; }
+    public DesktopWindow desktop { get; }
 
     public override GLib.Bytes ?edid {
       get {
@@ -109,7 +109,7 @@ namespace GenesisShellGtk3 {
     public override bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
       base.init(cancellable);
 
-      this._desktop = new Desktop(this.context, this);
+      this._desktop = new DesktopWindow(this.context, this);
       return true;
     }
 
