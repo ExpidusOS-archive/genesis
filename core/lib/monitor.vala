@@ -286,7 +286,7 @@ namespace GenesisShell {
      */
     public abstract GLib.Bytes? edid { get; }
 
-    public string wallpaper { get; set; }
+    public string? wallpaper { get; set; }
 
     /**
      * The scale to multiple the DPI by
@@ -333,6 +333,24 @@ namespace GenesisShell {
      * Wether or not the monitor is the primary monitor.
      */
     public abstract bool is_primary { get; set; }
+
+    construct {
+      if (this.wallpaper == null) this.wallpaper = this.get_default_wallpaper();
+    }
+
+    public string get_default_wallpaper() {
+      var device = this.context.devident.get_default();
+      if (device != null) {
+        switch (device.kind) {
+          case Devident.DeviceKind.PHONE:
+            return DATADIR + "/backgrounds/genesis-shell/mobile/default.jpg";
+          default:
+            if (this.mode.width < this.mode.height) return DATADIR + "/backgrounds/genesis-shell/mobile/default.jpg";
+            return DATADIR + "/backgrounds/genesis-shell/desktop/default.jpg";
+        }
+      }
+      return DATADIR + "/backgrounds/genesis-shell/desktop/default.jpg";
+    }
 
     /**
      * List all monitor modes
@@ -388,9 +406,9 @@ namespace GenesisShell {
       builder.add("{sv}", "scale", new GLib.Variant.double(this.scale));
       builder.add("{sv}", "x", new GLib.Variant.int32(this.x));
       builder.add("{sv}", "y", new GLib.Variant.int32(this.y));
+      builder.add("{sv}", "wallpaper", new GLib.Variant.string(this.wallpaper == null ? this.get_default_wallpaper() : this.wallpaper));
 
       if (this.mirroring != null) builder.add("{sv}", "mirroring", new GLib.Variant.string(this.mirroring));
-      if (this.wallpaper != null) builder.add("{sv}", "wallpaper", new GLib.Variant.string(this.wallpaper));
       return builder.end();
     }
 

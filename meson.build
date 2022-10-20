@@ -130,6 +130,7 @@ conf_data.set('SOURCEDIR', meson.current_source_dir())
 
 plugins = []
 
+subdir('data')
 subdir('po')
 subdir('core')
 subdir('shell')

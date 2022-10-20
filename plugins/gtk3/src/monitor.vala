@@ -50,8 +50,8 @@ namespace GenesisShellGtk3 {
         var visual = screen.get_rgba_visual() == null ?screen.get_system_visual() : screen.get_rgba_visual();
 
         this._mode = GenesisShell.MonitorMode(
-          this.gdk_monitor.geometry.x,
-          this.gdk_monitor.geometry.y,
+          this.gdk_monitor.geometry.width,
+          this.gdk_monitor.geometry.height,
           visual.get_depth(),
           this.gdk_monitor.refresh_rate / 1000
           );
@@ -126,8 +126,8 @@ namespace GenesisShellGtk3 {
 
       foreach (var depth in depths) {
         list.append(GenesisShell.MonitorMode(
-                      this.gdk_monitor.geometry.x,
-                      this.gdk_monitor.geometry.y,
+                      this.gdk_monitor.geometry.width,
+                      this.gdk_monitor.geometry.height,
                       depth,
                       this.gdk_monitor.refresh_rate / 1000
                       ));
