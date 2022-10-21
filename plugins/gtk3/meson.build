@@ -37,7 +37,7 @@ plugin_gtk3 = declare_dependency(link_with: [plugin_gtk3_shlib],
 
 plugins += [shared_module('genesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sources,
   c_args: ['-DG_LOG_DOMAIN="GenesisShellGtk3"', '-DGETTEXT_PACKAGE="genesis-shell"'],
-  vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"'],
+  vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"', '--define=NOT_LINKABLE'],
   vala_gir: 'GenesisShellGtk3-@0@.gir'.format(shortver.split('-')[0]),
   name_suffix: 'so',
   dependencies: plugin_gtk3_deps,

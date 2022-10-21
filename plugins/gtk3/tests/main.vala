@@ -5,8 +5,7 @@ public static int main(string[] args) {
   GLib.Test.add_func("/mode/big-picture", () => {
     try {
       var context = new GenesisShell.Context(GenesisShell.ContextMode.BIG_PICTURE);
-      var plugin = new GenesisShellGtk3.Plugin(context);
-      plugin.activate();
+      new GenesisShellGtk3.Plugin(context).activate();
     } catch (GLib.Error e) {
       GLib.error("%s:%d: %s", e.domain.to_string(), e.code, e.message);
     }
