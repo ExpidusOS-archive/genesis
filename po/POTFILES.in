@@ -15,6 +15,9 @@ plugins/gtk3/src/build.vala.in
 plugins/gtk3/src/monitor.vala
 plugins/gtk3/src/plugin.vala
 plugins/gtk3/src/provider/monitor.vala
+plugins/gtk3/src/widgets/desktop.vala
+plugins/gtk3/src/widgets/panel.vala
+plugins/gtk3/src/windows/desktop.vala
 
 shell/src/build.vala.in
 shell/src/main.vala
