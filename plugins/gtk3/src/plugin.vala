@@ -1,6 +1,10 @@
 namespace GenesisShellGtk3 {
-  public sealed class Plugin : GenesisShell.Plugin {
+  public class Plugin : GenesisShell.Plugin {
     internal Gdk.Display display { get; }
+
+    public Plugin(GenesisShell.Context context) {
+      Object(context: context);
+    }
 
     construct {
       TokyoGtk.init();
