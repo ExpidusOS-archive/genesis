@@ -14,4 +14,10 @@ namespace GenesisShell {
     public int width;
     public int height;
   }
+
+  namespace Math {
+    public static int em(double dpi, double size) {
+      return (int)((dpi * size) / 5.5);
+    }
+  }
 }

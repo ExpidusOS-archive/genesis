@@ -109,7 +109,7 @@ namespace GenesisShellGtk3 {
     public override bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
       base.init(cancellable);
 
-      this._desktop = new DesktopWindow(this.context, this);
+      this._desktop = new DesktopWindow(this);
       return true;
     }
 

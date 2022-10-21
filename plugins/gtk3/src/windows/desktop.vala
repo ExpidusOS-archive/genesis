@@ -4,7 +4,12 @@ namespace GenesisShellGtk3 {
     private ulong _y_id;
     private ulong _mode_id;
 
-    public GenesisShell.Context context { get; construct; }
+    public GenesisShell.Context context {
+      get {
+        return this.monitor.context;
+      }
+    }
+
     public GenesisShell.Monitor monitor { get; construct; }
     public DesktopWidget widget { get; }
 
@@ -28,8 +33,8 @@ namespace GenesisShellGtk3 {
       }
     }
 
-    internal DesktopWindow(GenesisShell.Context context, GenesisShell.Monitor monitor) {
-      Object(context: context, monitor: monitor);
+    internal DesktopWindow(GenesisShell.Monitor monitor) {
+      Object(monitor: monitor);
     }
 
     ~DesktopWindow() {
@@ -50,16 +55,16 @@ namespace GenesisShellGtk3 {
     }
 
     construct {
-      var monitor = this.monitor as Monitor;
-      assert(monitor != null);
-
       this.decorated         = false;
       this.skip_pager_hint   = true;
       this.skip_taskbar_hint = true;
-      this._widget = new DesktopWidget(this.context, this.monitor);
+      this._widget = new DesktopWidget(this.monitor);
 
 #if HAS_GTK_LAYER_SHELL
       if (!this.should_resize) {
+        var monitor = this.monitor as Monitor;
+        assert(monitor != null);
+
         GtkLayerShell.init_for_window(this);
         GtkLayerShell.set_monitor(this, monitor.gdk_monitor);
         GtkLayerShell.set_layer(this, GtkLayerShell.Layer.BACKGROUND);
@@ -67,6 +72,9 @@ namespace GenesisShellGtk3 {
 #endif
 
       if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
+        var monitor = this.monitor as Monitor;
+        assert(monitor != null);
+
         for (var i = 0; i < this.get_display().get_n_monitors(); i++) {
           var m = this.get_display().get_monitor(i);
           if (m == null) {

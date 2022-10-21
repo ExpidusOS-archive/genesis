@@ -3,12 +3,19 @@ namespace GenesisShellGtk3 {
     private ulong _mode_id;
     private ulong _wallpaper_id;
 
-    public GenesisShell.Context context { get; construct; }
+    public GenesisShell.Context context {
+      get {
+        return this.monitor.context;
+      }
+    }
+
     public GenesisShell.Monitor monitor { get; construct; }
     public Gtk.Image wallpaper { get; }
 
-    internal DesktopWidget(GenesisShell.Context context, GenesisShell.Monitor monitor) {
-      Object(context: context, monitor: monitor);
+    public PanelWidget? panel { get; }
+
+    internal DesktopWidget(GenesisShell.Monitor monitor) {
+      Object(monitor: monitor);
     }
 
     ~DesktopWidget() {
@@ -24,9 +31,6 @@ namespace GenesisShellGtk3 {
     }
 
     construct {
-      var monitor = this.monitor as Monitor;
-      assert(monitor != null);
-
       this._wallpaper = new Gtk.Image();
 
       this._mode_id = this.monitor.notify["mode"].connect(() => {
@@ -38,6 +42,13 @@ namespace GenesisShellGtk3 {
       });
 
       this.update_wallpaper();
+
+      if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
+        this._panel = new PanelWidget(this.monitor);
+        this.add(this.panel);
+      }
+
+      this.orientation = Gtk.Orientation.VERTICAL;
       this.add(this.wallpaper);
 
       this.hexpand = true;
