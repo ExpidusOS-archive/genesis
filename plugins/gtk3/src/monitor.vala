@@ -110,6 +110,7 @@ namespace GenesisShellGtk3 {
       base.init(cancellable);
 
       this._desktop = new DesktopWindow(this);
+      if (this.is_primary) Gtk.Settings.get_default().gtk_xft_dpi = (int)this.dpi;
       return true;
     }
 

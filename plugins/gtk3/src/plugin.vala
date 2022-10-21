@@ -11,6 +11,11 @@ namespace GenesisShellGtk3 {
         this._display = Gdk.Display.get_default();
         assert(this._display != null);
 
+        var style_manager_provider = Tokyo.Provider.get_global().get_style_manager_provider() as TokyoGtk.StyleManagerProvider;
+        assert(style_manager_provider != null);
+
+        style_manager_provider.ensure();
+
         this.container.bind_instance(typeof(GenesisShell.IMonitorProvider), new MonitorProvider(this, cancellable));
       }
     }

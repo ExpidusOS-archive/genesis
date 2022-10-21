@@ -336,6 +336,8 @@ namespace GenesisShell {
 
     construct {
       if (this.wallpaper == null) this.wallpaper = this.get_default_wallpaper();
+
+      this.notify.connect(() => this.save_settings());
     }
 
     public string get_default_wallpaper() {

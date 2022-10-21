@@ -10,7 +10,7 @@ namespace GenesisShellGtk3 {
     }
 
     public GenesisShell.Monitor monitor { get; construct; }
-    public Gtk.Image wallpaper { get; }
+    public Gdk.Pixbuf? wallpaper { get; }
 
     public PanelWidget? panel { get; }
 
@@ -31,7 +31,7 @@ namespace GenesisShellGtk3 {
     }
 
     construct {
-      this._wallpaper = new Gtk.Image();
+      this.get_style_context().add_class("genesis-shell-desktop");
 
       this._mode_id = this.monitor.notify["mode"].connect(() => {
         this.update_wallpaper();
@@ -49,18 +49,25 @@ namespace GenesisShellGtk3 {
       }
 
       this.orientation = Gtk.Orientation.VERTICAL;
-      this.add(this.wallpaper);
 
       this.hexpand = true;
       this.vexpand = true;
     }
 
+    public override bool draw(Cairo.Context cr) {
+      if (this.wallpaper != null) {
+        Gdk.cairo_set_source_pixbuf(cr, this.wallpaper, 0, 0);
+        cr.paint();
+      }
+      return base.draw(cr);
+    }
+
     private void update_wallpaper() {
       try {
-        this.wallpaper.pixbuf = new Gdk.Pixbuf.from_file_at_scale(this.monitor.wallpaper, this.monitor.mode.width, this.monitor.mode.height, true);
+        this._wallpaper = new Gdk.Pixbuf.from_file_at_scale(this.monitor.wallpaper, this.monitor.mode.width, this.monitor.mode.height, true);
 
-        var width = this.wallpaper.pixbuf.width;
-        var height = this.wallpaper.pixbuf.height;
+        var width = this.wallpaper.width;
+        var height = this.wallpaper.height;
 
         if (width != this.monitor.mode.width || height != this.monitor.mode.height) {
           var scale_width = (this.monitor.mode.width / width) + 1.0;
@@ -75,11 +82,13 @@ namespace GenesisShellGtk3 {
           pb.fill(0);
           scale_pb.copy_options(pb);
           scale_pb.composite(pb, 0, 0, pb.width, pb.height, x, y, 1.0, 1.0, Gdk.InterpType.BILINEAR, 255);
-          this.wallpaper.pixbuf = pb;
+          this._wallpaper = pb;
         }
+
+        this.queue_draw();
       } catch (GLib.Error e) {
-        GLib.warning(N_("Failed to set wallpaper with scaling, falling back to lazy setting: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
-        this.wallpaper.file = this.monitor.wallpaper;
+        GLib.critical(N_("Failed to set wallpaper with scaling, falling back to lazy setting: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+        this.monitor.wallpaper = this.monitor.get_default_wallpaper();
       }
     }
   }
