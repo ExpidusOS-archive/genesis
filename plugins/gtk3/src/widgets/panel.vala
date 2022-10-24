@@ -81,11 +81,11 @@ namespace GenesisShellGtk3 {
     }
 
     private int get_width() {
-      return this.monitor.mode.width - GenesisShell.Math.em(this.monitor.dpi, 2.0);
+      return (int)(this.monitor.mode.width * 0.99);
     }
 
     private int get_height() {
-      return GenesisShell.Math.em(this.monitor.dpi, 1.7);
+      return GenesisShell.Math.em(this.monitor.dpi, 0.85);
     }
 
     public override void get_preferred_width(out int min_width, out int nat_width) {

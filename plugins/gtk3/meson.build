@@ -24,26 +24,27 @@ endif
 plugin_gtk3_sources += [build_conf_plugin_gtk3]
 plugin_gtk3_deps = [libgenesis_core, gtk3, libtokyo]
 
-plugin_gtk3_shlib = shared_library('libgenesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sources,
+plugin_gtk3_lib = static_library('libgenesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sources,
   c_args: ['-DG_LOG_DOMAIN="GenesisShellGtk3"', '-DGETTEXT_PACKAGE="genesis-shell"'],
   vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"'],
+  vala_gir: 'GenesisShellGtk3-@0@.gir'.format(shortver.split('-')[0]),
   name_prefix: '',
   dependencies: plugin_gtk3_deps,
-  install: false)
+  install: true,
+  install_dir: [false, join_paths(datadir, 'include', 'genesis-shell', 'plugins'),
+    join_paths(datadir, 'genesis-shell', 'plugins', 'vapi'), join_paths(datadir, 'genesis-shell', 'plugins', 'gir-1.0')])
 
-plugin_gtk3 = declare_dependency(link_with: [plugin_gtk3_shlib],
+plugin_gtk3 = declare_dependency(link_whole: [plugin_gtk3_lib],
   dependencies: plugin_gtk3_deps,
   compile_args: ['-I' + join_paths(meson.project_build_root(), 'plugins', 'gtk3')])
 
-plugins += [shared_module('genesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sources,
+plugins += [shared_module('genesis-shell-gtk3', 'src/main.vala',
   c_args: ['-DG_LOG_DOMAIN="GenesisShellGtk3"', '-DGETTEXT_PACKAGE="genesis-shell"'],
-  vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"', '--define=NOT_LINKABLE'],
-  vala_gir: 'GenesisShellGtk3-@0@.gir'.format(shortver.split('-')[0]),
+  vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"'],
+  dependencies: [plugin_gtk3],
   name_suffix: 'so',
-  dependencies: plugin_gtk3_deps,
   install: true,
-  install_dir: [join_paths(libdir, 'genesis-shell', 'plugins'), join_paths(datadir, 'include', 'genesis-shell', 'plugins'),
-    join_paths(datadir, 'genesis-shell', 'plugins', 'vapi'), join_paths(datadir, 'genesis-shell', 'plugins', 'gir-1.0')])]
+  install_dir: [join_paths(libdir, 'genesis-shell', 'plugins'), false, false])]
 
 if get_option('tests')
   subdir('tests')
