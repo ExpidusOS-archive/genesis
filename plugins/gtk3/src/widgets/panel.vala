@@ -23,6 +23,7 @@ namespace GenesisShellGtk3 {
     private Gtk.Box _center;
     private Gtk.Box _right;
     private GLib.List<PanelApplet> _applets;
+    private GLib.HashTable<string, ulong> _applet_sigs;
 
     public Gtk.Label clock { get; }
 
@@ -33,6 +34,12 @@ namespace GenesisShellGtk3 {
     }
 
     public GenesisShell.Monitor monitor { get; construct; }
+
+    public GLib.List<unowned PanelApplet> applets {
+      owned get {
+        return this._applets.copy();
+      }
+    }
 
     internal PanelWidget(GenesisShell.Monitor monitor) {
       Object(monitor: monitor);
@@ -49,6 +56,7 @@ namespace GenesisShellGtk3 {
       this.get_style_context().add_class("genesis-shell-panel");
 
       this._applets = new GLib.List<PanelApplet>();
+      this._applet_sigs = new GLib.HashTable<string, ulong>(GLib.str_hash, GLib.str_equal);
 
       this._left = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.5));
       this._left.halign = Gtk.Align.START;
@@ -109,6 +117,18 @@ namespace GenesisShellGtk3 {
       return this._applets.find_custom(applet, (a, b) => GLib.strcmp(a.id, b.id));
     }
 
+    private Gtk.Box get_side(PanelAppletSide side) {
+      switch (side) {
+        case PanelAppletSide.LEFT:
+          return this._left;
+        case PanelAppletSide.CENTER:
+          return this._center;
+        case PanelAppletSide.RIGHT:
+          return this._right;
+      }
+      return null;
+    }
+
     public bool has_applet(PanelApplet applet) {
       return this.find_applet(applet) != null;
     }
@@ -116,20 +136,34 @@ namespace GenesisShellGtk3 {
     public void add_applet(PanelApplet applet) {
       if (this.find_applet(applet) == null) {
         this._applets.append(applet);
-        // this.applet_added(applet);
+        this.applet_added(applet);
+
+        var old_side = applet.side;
+        this._applet_sigs.set(applet.id, applet.notify["side"].connect(() => {
+          this.get_side(old_side).remove(applet);
+          this.get_side(applet.side).add(applet);
+          old_side = applet.side;
+        }));
+
+        this.get_side(applet.side).add(applet);
       }
     }
 
     public void remove_applet(PanelApplet applet) {
       unowned var elem = this.find_applet(applet);
       if (elem != null) {
-        // this.applet_removed(elem.data);
+        this.applet_removed(elem.data);
         this._applets.remove_link(elem);
+
+        var sig = this._applet_sigs.get(applet.id);
+        this._applet_sigs.remove(applet.id);
+        applet.disconnect(sig);
+
+        this.get_side(applet.side).remove(applet);
       }
     }
 
-    // FIXME: GObject wtf warning: parameter 1 of type 'GenesisShellGtk3PanelApplet' for signal "GenesisShellGtk3PanelWidget::applet-added" is not a value type
-    /* public signal void applet_added(PanelApplet applet);
-    public signal void applet_removed(PanelApplet applet); */
+    public signal void applet_added(PanelApplet applet);
+    public signal void applet_removed(PanelApplet applet);
   }
 }
