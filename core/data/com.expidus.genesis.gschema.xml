@@ -15,5 +15,12 @@
         A GVariant packed type which contains all of the various options for the monitor
       </description>
     </key>
+    <key name="clock-format" type="s">
+      <default>"%X"</default>
+      <summary>Clock Format</summary>
+      <description>
+        The printf-like format string for the clock, default is "%X" which uses the locale for the time.
+      </description>
+    </key>
   </schema>
 </schemalist>

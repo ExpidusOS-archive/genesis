@@ -15,6 +15,10 @@ namespace GenesisShellGtk3 {
     public GenesisShell.Monitor monitor { get; construct; }
     public PanelAppletSide side { get; set construct; }
     public string id { get; construct; }
+
+    public static PanelApplet @new(GLib.Type type, GenesisShell.Monitor monitor, string id) {
+      return (PanelApplet)GLib.Object.new(type, "monitor", monitor, "id", id);
+    }
   }
 
   public sealed class PanelWidget : Hdy.HeaderBar {
@@ -63,11 +67,11 @@ namespace GenesisShellGtk3 {
       this._left.hexpand = true;
 
       this._center = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.5));
-      this._center.halign = Gtk.Align.START;
+      this._center.halign = Gtk.Align.CENTER;
       this._center.hexpand = true;
 
       this._right = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.5));
-      this._right.halign = Gtk.Align.START;
+      this._right.halign = Gtk.Align.END;
       this._right.hexpand = true;
 
       this._mode_id = this.monitor.notify["scale"].connect(() => this.queue_resize());
@@ -86,6 +90,10 @@ namespace GenesisShellGtk3 {
       if (!(this.parent is Gtk.Window)) {
         this.margin_top = this.margin_bottom = 5;
       }
+
+      var clock = new PanelApplets.Clock(this.monitor, "clock-0");
+      clock.side = PanelAppletSide.RIGHT;
+      this.add_applet(clock);
     }
 
     private int get_width() {

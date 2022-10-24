@@ -100,7 +100,7 @@ namespace GenesisShell {
     internal DBusContext dbus { get; }
 #endif
 
-    internal GLib.Settings settings { get; }
+    public GLib.Settings settings { get; }
 
     public ContextMode mode { get; construct; default = ContextMode.COMPOSITOR; }
     public Devident.Context devident { get; }
