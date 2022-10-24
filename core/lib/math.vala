@@ -16,8 +16,13 @@ namespace GenesisShell {
   }
 
   namespace Math {
+    public static int round(int num) {
+      while ((num % 10) > 0) num++;
+      return num;
+    }
+
     public static int em(double dpi, double size) {
-      return (int)((dpi * size) / 5.5);
+      return round((int)((dpi * size) / 5.5));
     }
   }
 }
