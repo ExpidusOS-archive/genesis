@@ -54,6 +54,22 @@ namespace GenesisShellGtk3 {
       this.vexpand = true;
     }
 
+    private int get_width() {
+      return this.monitor.mode.width;
+    }
+
+    private int get_height() {
+      return this.monitor.mode.height;
+    }
+
+    public override void get_preferred_width(out int min_width, out int nat_width) {
+      min_width = nat_width = this.get_width();
+    }
+
+    public override void get_preferred_height(out int min_height, out int nat_height) {
+      min_height = nat_height = this.get_height();
+    }
+
     public override bool draw(Cairo.Context cr) {
       if (this.wallpaper != null) {
         Gdk.cairo_set_source_pixbuf(cr, this.wallpaper, 0, 0);

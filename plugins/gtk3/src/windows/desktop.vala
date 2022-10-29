@@ -26,7 +26,17 @@ namespace GenesisShellGtk3 {
     public bool should_resize {
       get {
 #if HAS_GTK_LAYER_SHELL
-        return !(this.is_wayland && this.context.mode != GenesisShell.ContextMode.BIG_PICTURE);
+        if (this.is_wayland) {
+          switch (this.context.mode) {
+            case GenesisShell.ContextMode.BIG_PICTURE:
+              return true;
+            case GenesisShell.ContextMode.GADGETS:
+              return false;
+            default:
+              return true;
+          }
+        }
+        return true;
 #else
         return true;
 #endif
@@ -60,17 +70,6 @@ namespace GenesisShellGtk3 {
       this.skip_taskbar_hint = true;
       this._widget = new DesktopWidget(this.monitor);
 
-#if HAS_GTK_LAYER_SHELL
-      if (!this.should_resize) {
-        var monitor = this.monitor as Monitor;
-        assert(monitor != null);
-
-        GtkLayerShell.init_for_window(this);
-        GtkLayerShell.set_monitor(this, monitor.gdk_monitor);
-        GtkLayerShell.set_layer(this, GtkLayerShell.Layer.BACKGROUND);
-      }
-#endif
-
       if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
         var monitor = this.monitor as Monitor;
         assert(monitor != null);
@@ -86,6 +85,25 @@ namespace GenesisShellGtk3 {
           }
         }
       } else {
+#if HAS_GTK_LAYER_SHELL
+        if (this.is_wayland) {
+          var monitor = this.monitor as Monitor;
+          assert(monitor != null);
+
+          GtkLayerShell.init_for_window(this);
+          GtkLayerShell.set_monitor(this, monitor.gdk_monitor);
+          GtkLayerShell.set_keyboard_mode(this, GtkLayerShell.KeyboardMode.ON_DEMAND);
+          GtkLayerShell.set_keyboard_interactivity(this, true);
+          GtkLayerShell.set_layer(this, GtkLayerShell.Layer.BACKGROUND);
+          GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.LEFT, true);
+          GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.RIGHT, true);
+          GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.TOP, true);
+          GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.BOTTOM, true);
+          GtkLayerShell.set_namespace(this, "genesis-shell");
+          GLib.debug(N_("Gtk layer shell is active on %p"), this);
+        }
+#endif
+
         this.type_hint = Gdk.WindowTypeHint.DESKTOP;
       }
 
@@ -107,6 +125,22 @@ namespace GenesisShellGtk3 {
       this.get_box().add(this.widget);
       this.show_all();
       this.header.hide();
+    }
+
+    private int get_width() {
+      return this.monitor.mode.width;
+    }
+
+    private int get_height() {
+      return this.monitor.mode.height;
+    }
+
+    public override void get_preferred_width(out int min_width, out int nat_width) {
+      min_width = nat_width = this.get_width();
+    }
+
+    public override void get_preferred_height(out int min_height, out int nat_height) {
+      min_height = nat_height = this.get_height();
     }
 
     private void update_position() {
