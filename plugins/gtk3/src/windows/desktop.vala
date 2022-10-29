@@ -92,14 +92,12 @@ namespace GenesisShellGtk3 {
 
           GtkLayerShell.init_for_window(this);
           GtkLayerShell.set_monitor(this, monitor.gdk_monitor);
-          GtkLayerShell.set_keyboard_mode(this, GtkLayerShell.KeyboardMode.ON_DEMAND);
-          GtkLayerShell.set_keyboard_interactivity(this, true);
           GtkLayerShell.set_layer(this, GtkLayerShell.Layer.BACKGROUND);
           GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.LEFT, true);
           GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.RIGHT, true);
           GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.TOP, true);
           GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.BOTTOM, true);
-          GtkLayerShell.set_namespace(this, "genesis-shell");
+          GtkLayerShell.set_namespace(this, "genesis-shell-desktop");
           GLib.debug(N_("Gtk layer shell is active on %p"), this);
         }
 #endif

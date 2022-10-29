@@ -56,10 +56,9 @@ namespace GenesisShellGtk3 {
         assert(monitor != null);
 
         GtkLayerShell.init_for_window(this);
+        GtkLayerShell.auto_exclusive_zone_enable(this);
         GtkLayerShell.set_monitor(this, monitor.gdk_monitor);
-        GtkLayerShell.set_keyboard_mode(this, GtkLayerShell.KeyboardMode.ON_DEMAND);
-        GtkLayerShell.set_keyboard_interactivity(this, true);
-        GtkLayerShell.set_layer(this, GtkLayerShell.Layer.TOP);
+        GtkLayerShell.set_layer(this, GtkLayerShell.Layer.BOTTOM);
         GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.LEFT, true);
         GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.RIGHT, true);
         GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.TOP, true);
@@ -69,14 +68,13 @@ namespace GenesisShellGtk3 {
         GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, (int)(edge / 2));
         GtkLayerShell.set_margin(this, GtkLayerShell.Edge.TOP, 5);
         GtkLayerShell.set_margin(this, GtkLayerShell.Edge.BOTTOM, 5);
-        GtkLayerShell.auto_exclusive_zone_enable(this);
 
-        GtkLayerShell.set_namespace(this, "genesis-shell");
+        GtkLayerShell.set_namespace(this, "genesis-shell-panel");
         GLib.debug(N_("Gtk layer shell is active on %p"), this);
       }
 #endif
 
-      this.type_hint = Gdk.WindowTypeHint.DESKTOP;
+      this.type_hint = Gdk.WindowTypeHint.DOCK;
 
       this._x_id = this.monitor.notify["x"].connect(() => {
         this.update_position();
