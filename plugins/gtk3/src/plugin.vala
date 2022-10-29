@@ -7,7 +7,7 @@ namespace GenesisShellGtk3 {
     }
 
     construct {
-      TokyoGtk.init();
+      if (this.context.mode != GenesisShell.ContextMode.OPTIONS) TokyoGtk.init();
     }
 
     public override void activate(GLib.Cancellable ?cancellable = null) throws GLib.Error {
