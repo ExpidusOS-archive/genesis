@@ -6,12 +6,10 @@ namespace GenesisShellGtk3 {
       Object(context: context);
     }
 
-    construct {
-      if (this.context.mode != GenesisShell.ContextMode.OPTIONS) TokyoGtk.init();
-    }
-
     public override void activate(GLib.Cancellable ?cancellable = null) throws GLib.Error {
       if (this.context.mode != GenesisShell.ContextMode.OPTIONS) {
+        TokyoGtk.init();
+
         this._display = Gdk.Display.get_default();
         assert(this._display != null);
 
