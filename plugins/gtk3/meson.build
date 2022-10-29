@@ -9,7 +9,8 @@ configure_file(input: 'src/gtk3.plugin.in', output: 'genesis-shell-gtk3.plugin',
   install_dir: join_paths(libdir, 'genesis-shell', 'plugins'))
 
 plugin_gtk3_rel_sources = ['src/plugin.vala', 'src/monitor.vala', 'src/provider/monitor.vala',
-  'src/widgets/desktop.vala', 'src/widgets/panel.vala', 'src/windows/desktop.vala',
+  'src/widgets/desktop.vala', 'src/widgets/panel.vala',
+  'src/windows/desktop.vala', 'src/windows/panel.vala',
   'src/panel-applets/clock.vala']
 plugin_gtk3_sources = []
 

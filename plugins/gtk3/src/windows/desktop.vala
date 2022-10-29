@@ -153,6 +153,8 @@ namespace GenesisShellGtk3 {
         this.default_height = this.monitor.mode.height;
         this.resize(this.monitor.mode.width, this.monitor.mode.height);
       }
+
+      this.queue_resize();
     }
   }
 }
