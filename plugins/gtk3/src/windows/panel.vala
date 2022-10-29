@@ -58,7 +58,7 @@ namespace GenesisShellGtk3 {
         GtkLayerShell.init_for_window(this);
         GtkLayerShell.auto_exclusive_zone_enable(this);
         GtkLayerShell.set_monitor(this, monitor.gdk_monitor);
-        GtkLayerShell.set_layer(this, GtkLayerShell.Layer.BOTTOM);
+        GtkLayerShell.set_layer(this, GtkLayerShell.Layer.TOP);
         GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.LEFT, true);
         GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.RIGHT, true);
         GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.TOP, true);

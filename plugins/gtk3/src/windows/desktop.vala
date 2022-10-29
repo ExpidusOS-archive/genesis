@@ -97,6 +97,7 @@ namespace GenesisShellGtk3 {
           GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.RIGHT, true);
           GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.TOP, true);
           GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.BOTTOM, true);
+          GtkLayerShell.set_exclusive_zone(this, -1);
           GtkLayerShell.set_namespace(this, "genesis-shell-desktop");
           GLib.debug(N_("Gtk layer shell is active on %p"), this);
         }
