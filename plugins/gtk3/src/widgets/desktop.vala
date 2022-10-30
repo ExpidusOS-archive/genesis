@@ -1,7 +1,13 @@
 namespace GenesisShellGtk3 {
-  public sealed class DesktopWidget : Gtk.Box {
+  public sealed class DesktopWidget : Gtk.Box, GenesisShell.IUIElement {
     private ulong _mode_id;
     private ulong _wallpaper_id;
+
+    public GenesisShell.UIElementKind kind {
+      get {
+        return GenesisShell.UIElementKind.DESKTOP;
+      }
+    }
 
     public GenesisShell.Context context {
       get {

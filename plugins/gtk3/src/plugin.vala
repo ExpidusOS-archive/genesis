@@ -19,6 +19,7 @@ namespace GenesisShellGtk3 {
         style_manager_provider.ensure();
 
         this.container.bind_instance(typeof(GenesisShell.IMonitorProvider), new MonitorProvider(this, cancellable));
+        this.container.bind_instance(typeof(GenesisShell.IUIProvider), new UIProvider(this));
       }
     }
 

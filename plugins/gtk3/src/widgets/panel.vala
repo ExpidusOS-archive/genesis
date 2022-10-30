@@ -21,7 +21,7 @@ namespace GenesisShellGtk3 {
     }
   }
 
-  public sealed class PanelWidget : Hdy.HeaderBar {
+  public sealed class PanelWidget : Hdy.HeaderBar, GenesisShell.IUIElement {
     private ulong _mode_id;
     private Gtk.Box _left;
     private Gtk.Box _center;
@@ -30,6 +30,12 @@ namespace GenesisShellGtk3 {
     private GLib.HashTable<string, ulong> _applet_sigs;
 
     public Gtk.Label clock { get; }
+
+    public GenesisShell.UIElementKind kind {
+      get {
+        return GenesisShell.UIElementKind.PANEL;
+      }
+    }
 
     public GenesisShell.Context context {
       get {

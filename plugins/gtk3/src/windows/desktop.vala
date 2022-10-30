@@ -11,7 +11,7 @@ namespace GenesisShellGtk3 {
     }
 
     public GenesisShell.Monitor monitor { get; construct; }
-    public DesktopWidget widget { get; }
+    public DesktopWidget? widget { get; }
 
     public bool is_wayland {
       get {
