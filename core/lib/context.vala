@@ -89,9 +89,10 @@ namespace GenesisShell {
 
   public sealed class Context : GLib.Object, GLib.AsyncInitable, GLib.Initable {
     private bool _is_init = false;
-    private IMonitorProvider _monitor_provider;
-    private IWindowProvider _window_provider;
-    private IWorkspaceProvider _workspace_provider;
+    private IMonitorProvider? _monitor_provider;
+    private IUIProvider? _ui_provider;
+    private IWindowProvider? _window_provider;
+    private IWorkspaceProvider? _workspace_provider;
     private bool _is_shutting_down = false;
     private bool _is_reloading = false;
 
@@ -183,6 +184,28 @@ namespace GenesisShell {
       var group = new GLib.OptionGroup(plugin_name, _("Plugin \"%s\" Options").printf(plugin_info.get_name()), _("Show all options for the \"%s\" plugin").printf(plugin_info.get_name()));
       group.add_entries(plugin.get_options());
       return group;
+    }
+
+    /**
+     * Clears the internal cached instances of the providers.
+     *
+     * This sets the internal provider properties which causes Vdi
+     * to fetch the providers and store them again. This is mainly
+     * used when a plugin wants to override the global providers.
+     *
+     * This method should not be called often as it may cause
+     * a slight slowdown with grabbing the providers.
+     * 
+     * If you override the global providers, be sure to
+     * unbind them from Vdi and call this method when
+     * your plugin unloads. If you do not call this method and you
+     * override the global providers then it will cause side effects.
+     */
+    public void invalidate_providers() {
+      this._monitor_provider = null;
+      this._ui_provider = null;
+      this._window_provider = null;
+      this._workspace_provider = null;
     }
 
     /**
@@ -296,9 +319,10 @@ namespace GenesisShell {
         this._devident = Devident.Context.get_global();
         this._container = new Vdi.Container();
 
-        this._monitor_provider = new MonitorProvider(this);
-        this._window_provider = new WindowProvider(this);
-        this._workspace_provider = new WorkspaceProvider(this);
+        this._container.bind_factory(typeof (IMonitorProvider), () => new MonitorProvider(this));
+        this._container.bind_factory(typeof (IUIProvider), () => new UIProvider(this));
+        this._container.bind_factory(typeof (IWindowProvider), () => new WindowProvider(this));
+        this._container.bind_factory(typeof (IWorkspaceProvider), () => new WorkspaceProvider(this));
 
         this._plugin_engine = new Peas.Engine.with_nonglobal_loaders();
         this._plugin_engine.add_search_path(LIBDIR + "/genesis-shell/plugins", DATADIR + "/genesis-shell/plugins");
@@ -343,7 +367,7 @@ namespace GenesisShell {
           });
         });
 
-        this._monitor_provider.added.connect((monitor) => {
+        this.monitor_provider.added.connect((monitor) => {
           GLib.debug(_("Monitor \"%s\" has been added").printf(monitor.id));
           monitor.load_settings();
         });

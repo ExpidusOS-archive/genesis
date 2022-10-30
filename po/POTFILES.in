@@ -4,10 +4,12 @@ core/lib/context.vala
 core/lib/math.vala
 core/lib/monitor.vala
 core/lib/plugin.vala
+core/lib/ui.vala
 core/lib/window-manager.vala
 core/lib/window.vala
 core/lib/workspace.vala
 core/lib/provider/monitor.vala
+core/lib/provider/ui.vala
 core/lib/provider/window.vala
 core/lib/provider/workspace.vala
 

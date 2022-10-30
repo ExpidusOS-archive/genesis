@@ -15,8 +15,8 @@ build_conf_core = configure_file(input: 'lib/build.vala.in', output: 'build.vala
 
 libgenesis_core_docs_args = ['--package-name=libgenesis', '--package-version=@0@'.format(shortver)]
 libgenesis_core_rel_sources = ['lib/context.vala', 'lib/math.vala', 'lib/monitor.vala',
-  'lib/plugin.vala', 'lib/window-manager.vala', 'lib/window.vala', 'lib/workspace.vala',
-  'lib/provider/monitor.vala', 'lib/provider/window.vala', 'lib/provider/workspace.vala']
+  'lib/plugin.vala', 'lib/ui.vala', 'lib/window-manager.vala', 'lib/window.vala', 'lib/workspace.vala',
+  'lib/provider/monitor.vala', 'lib/provider/ui.vala', 'lib/provider/window.vala', 'lib/provider/workspace.vala']
 libgenesis_core_sources = []
 
 foreach src : libgenesis_core_rel_sources
