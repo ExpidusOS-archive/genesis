@@ -39,7 +39,7 @@ namespace GenesisShellGtk3 {
     construct {
       var style_ctx = this.get_style_context();
       style_ctx.add_class("genesis-shell-desktop");
-      style_ctx.add_class("genesis-mode-%s".printf(this.context.mode.to_nick());
+      style_ctx.add_class("genesis-mode-%s".printf(this.context.mode.to_nick()));
 
       this._mode_id = this.monitor.notify["mode"].connect(() => {
         this.update_wallpaper();

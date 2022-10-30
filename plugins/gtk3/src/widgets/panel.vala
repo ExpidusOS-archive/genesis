@@ -87,7 +87,7 @@ namespace GenesisShellGtk3 {
     construct {
       var style_ctx = this.get_style_context();
       style_ctx.add_class("genesis-shell-panel");
-      style_ctx.add_class("genesis-mode-%s".printf(this.context.mode.to_nick());
+      style_ctx.add_class("genesis-mode-%s".printf(this.context.mode.to_nick()));
       style_ctx.changed.connect(() => this.update_style());
 
       this._applets     = new GLib.List <PanelApplet>();
