@@ -11,7 +11,7 @@ namespace GenesisShellGtk3 {
     }
 
     public GenesisShell.Monitor monitor { get; construct; }
-    public DesktopWidget? widget { get; }
+    public DesktopWidget ?widget { get; }
 
     public bool is_wayland {
       get {
@@ -28,12 +28,14 @@ namespace GenesisShellGtk3 {
 #if HAS_GTK_LAYER_SHELL
         if (this.is_wayland) {
           switch (this.context.mode) {
-            case GenesisShell.ContextMode.BIG_PICTURE:
-              return true;
-            case GenesisShell.ContextMode.GADGETS:
-              return false;
-            default:
-              return true;
+          case GenesisShell.ContextMode.BIG_PICTURE:
+            return true;
+
+          case GenesisShell.ContextMode.GADGETS:
+            return false;
+
+          default:
+            return true;
           }
         }
         return true;
@@ -68,7 +70,7 @@ namespace GenesisShellGtk3 {
       this.decorated         = false;
       this.skip_pager_hint   = true;
       this.skip_taskbar_hint = true;
-      this._widget = new DesktopWidget(this.monitor);
+      this._widget           = new DesktopWidget(this.monitor);
 
       if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
         var monitor = this.monitor as Monitor;

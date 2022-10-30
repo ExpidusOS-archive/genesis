@@ -13,38 +13,45 @@ namespace GenesisShellGtk3 {
       Object(plugin: plugin);
     }
 
-    public GLib.List<string> monitor_list_ids_for_kind(GenesisShell.Monitor monitor, GenesisShell.UIElementKind kind) {
-      var list = new GLib.List<string>();
+    public GLib.List <string> monitor_list_ids_for_kind(GenesisShell.Monitor monitor, GenesisShell.UIElementKind kind) {
+      var list = new GLib.List <string>();
 
       var gtk_monitor = monitor as Monitor;
       if (gtk_monitor != null) {
         switch (kind) {
-          case GenesisShell.UIElementKind.DESKTOP:
-            list.append("desktop");
-            break;
-          case GenesisShell.UIElementKind.PANEL:
-            list.append("panel");
-            break;
-          default:
-            break;
+        case GenesisShell.UIElementKind.DESKTOP:
+          list.append("desktop");
+          break;
+
+        case GenesisShell.UIElementKind.PANEL:
+          list.append("panel");
+          break;
+
+        default:
+          break;
         }
         return list;
       }
       return list;
     }
 
-    public GenesisShell.IUIElement? for_monitor(GenesisShell.Monitor monitor, GenesisShell.UIElementKind kind, string? id) {
+    public GenesisShell.IUIElement ?for_monitor(GenesisShell.Monitor monitor, GenesisShell.UIElementKind kind, string ?id) {
       var gtk_monitor = monitor as Monitor;
       if (gtk_monitor != null) {
         switch (kind) {
-          case GenesisShell.UIElementKind.DESKTOP:
-            return gtk_monitor.desktop.widget;
-          case GenesisShell.UIElementKind.PANEL:
-            if (gtk_monitor.panel == null && gtk_monitor.desktop.widget.panel != null) return gtk_monitor.desktop.widget.panel;
-            else if (gtk_monitor.panel != null && gtk_monitor.desktop.widget.panel == null) return gtk_monitor.panel.widget;
-            return null;
-          default:
-            return null;
+        case GenesisShell.UIElementKind.DESKTOP:
+          return gtk_monitor.desktop.widget;
+
+        case GenesisShell.UIElementKind.PANEL:
+          if (gtk_monitor.panel == null && gtk_monitor.desktop.widget.panel != null) {
+            return gtk_monitor.desktop.widget.panel;
+          }else if (gtk_monitor.panel != null && gtk_monitor.desktop.widget.panel == null) {
+            return gtk_monitor.panel.widget;
+          }
+          return null;
+
+        default:
+          return null;
         }
       }
       return null;

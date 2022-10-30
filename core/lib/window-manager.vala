@@ -1,17 +1,17 @@
 namespace GenesisShell {
   public abstract class WindowManager : GLib.Object {
-    private GLib.List<Monitor> _monitors;
-    private GLib.List<Workspace> _workspaces;
+    private GLib.List <Monitor> _monitors;
+    private GLib.List <Workspace> _workspaces;
 
     public Context context { get; construct; }
 
-    public GLib.List<weak Monitor> monitors {
+    public GLib.List <weak Monitor> monitors {
       owned get {
         return this._monitors.copy();
       }
     }
 
-    public GLib.List<weak Workspace> workspaces {
+    public GLib.List <weak Workspace> workspaces {
       owned get {
         return this._workspaces.copy();
       }

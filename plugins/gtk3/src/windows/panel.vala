@@ -48,7 +48,7 @@ namespace GenesisShellGtk3 {
       this.decorated         = false;
       this.skip_pager_hint   = true;
       this.skip_taskbar_hint = true;
-      this._widget = new PanelWidget(this.monitor);
+      this._widget           = new PanelWidget(this.monitor);
 
 #if HAS_GTK_LAYER_SHELL
       if (this.is_wayland) {

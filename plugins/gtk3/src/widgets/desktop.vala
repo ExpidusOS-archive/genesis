@@ -16,9 +16,9 @@ namespace GenesisShellGtk3 {
     }
 
     public GenesisShell.Monitor monitor { get; construct; }
-    public Gdk.Pixbuf? wallpaper { get; }
+    public Gdk.Pixbuf ?wallpaper { get; }
 
-    public PanelWidget? panel { get; }
+    public PanelWidget ?panel { get; }
 
     internal DesktopWidget(GenesisShell.Monitor monitor) {
       Object(monitor: monitor);
@@ -88,13 +88,13 @@ namespace GenesisShellGtk3 {
       try {
         this._wallpaper = new Gdk.Pixbuf.from_file_at_scale(this.monitor.wallpaper, this.monitor.mode.width, this.monitor.mode.height, true);
 
-        var width = this.wallpaper.width;
+        var width  = this.wallpaper.width;
         var height = this.wallpaper.height;
 
         if (width != this.monitor.mode.width || height != this.monitor.mode.height) {
-          var scale_width = (this.monitor.mode.width / width) + 1.0;
+          var scale_width  = (this.monitor.mode.width / width) + 1.0;
           var scale_height = (this.monitor.mode.height / height) + 1.0;
-          var scale_pb = new Gdk.Pixbuf.from_file_at_size(this.monitor.wallpaper, (int)(width * scale_width), (int)(height * scale_height));
+          var scale_pb     = new Gdk.Pixbuf.from_file_at_size(this.monitor.wallpaper, (int)(width * scale_width), (int)(height * scale_height));
 
           var pb = new Gdk.Pixbuf(scale_pb.colorspace, scale_pb.has_alpha, scale_pb.bits_per_sample, this.monitor.mode.width, this.monitor.mode.height);
 

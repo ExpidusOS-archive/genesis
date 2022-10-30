@@ -38,7 +38,7 @@ namespace GenesisShellGtk3 {
       }
 
       private void update() {
-        var dt = new GLib.DateTime.now();
+        var dt   = new GLib.DateTime.now();
         var time = dt.format(this.context.settings.get_string("clock-format"));
         this._label.label = time;
       }

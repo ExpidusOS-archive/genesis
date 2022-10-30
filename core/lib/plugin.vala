@@ -16,8 +16,8 @@ namespace GenesisShell {
       this._container = new Vdi.Container();
     }
 
-    public abstract async void activate(GLib.Cancellable? cancellable = null) throws GLib.Error;
-    public abstract async void deactivate(GLib.Cancellable? cancellable = null) throws GLib.Error;
+    public abstract async void activate(GLib.Cancellable ?cancellable   = null) throws GLib.Error;
+    public abstract async void deactivate(GLib.Cancellable ?cancellable = null) throws GLib.Error;
   }
 
   public abstract class Plugin : GLib.Object, IPlugin {
@@ -28,7 +28,7 @@ namespace GenesisShell {
       this._container = new Vdi.Container();
     }
 
-    public abstract void activate(GLib.Cancellable? cancellable = null) throws GLib.Error;
-    public abstract void deactivate(GLib.Cancellable? cancellable = null) throws GLib.Error;
+    public abstract void activate(GLib.Cancellable ?cancellable   = null) throws GLib.Error;
+    public abstract void deactivate(GLib.Cancellable ?cancellable = null) throws GLib.Error;
   }
 }

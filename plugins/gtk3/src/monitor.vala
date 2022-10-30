@@ -4,7 +4,7 @@ namespace GenesisShellGtk3 {
     private GenesisShell.MonitorMode _mode;
     public Gdk.Monitor gdk_monitor { get; construct; }
     public DesktopWindow desktop { get; }
-    public PanelWindow? panel { get; }
+    public PanelWindow ?panel { get; }
 
     public override GLib.Bytes ?edid {
       get {
@@ -111,9 +111,13 @@ namespace GenesisShellGtk3 {
       base.init(cancellable);
 
       this._desktop = new DesktopWindow(this);
-      if (this.context.mode == GenesisShell.ContextMode.GADGETS) this._panel = new PanelWindow(this);
+      if (this.context.mode == GenesisShell.ContextMode.GADGETS) {
+        this._panel = new PanelWindow(this);
+      }
 
-      if (this.is_primary) Gtk.Settings.get_default().gtk_xft_dpi = (int)this.dpi;
+      if (this.is_primary) {
+        Gtk.Settings.get_default().gtk_xft_dpi = (int)this.dpi;
+      }
       return true;
     }
 

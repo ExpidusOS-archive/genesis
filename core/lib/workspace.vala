@@ -4,9 +4,10 @@ namespace GenesisShell {
   public interface IWorkspaceProvider : GLib.Object {
     public abstract Context context { get; construct; }
 
-    public abstract Workspace? create_workspace(string name);
-    public abstract GLib.List<WorkspaceID?> get_workspace_ids();
-    public abstract unowned Workspace? get_workspace(WorkspaceID id);
+    public abstract Workspace ? create_workspace(string name);
+
+    public abstract GLib.List <WorkspaceID ?> get_workspace_ids();
+    public abstract unowned Workspace ? get_workspace(WorkspaceID id);
   }
 
   [CCode(type_signature = "x")]
@@ -47,7 +48,7 @@ namespace GenesisShell {
 
   public abstract class Workspace : GLib.Object, GLib.Initable {
     private bool _is_init;
-    private WindowManager? _window_manger;
+    private WindowManager ?_window_manger;
 
 #if HAS_DBUS
     internal DBusWorkspace dbus { get; }
@@ -63,25 +64,31 @@ namespace GenesisShell {
     public string name { get; construct; }
     public WorkspaceID id { get; }
 
-    public WindowManager? window_manager {
+    public WindowManager ?window_manager {
       get {
         return this._window_manger;
       }
       set {
-        if (this._window_manger != null) this._window_manger.remove_workspace(this);
+        if (this._window_manger != null) {
+          this._window_manger.remove_workspace(this);
+        }
 
         this._window_manger = value;
         this._window_manger.add_workspace(this);
       }
     }
 
-    public GLib.List<weak Monitor> monitors {
+    public GLib.List <weak Monitor> monitors {
       owned get {
-        var list = new GLib.List<weak Monitor>();
+        var list = new GLib.List <weak Monitor>();
         foreach (var id in this.context.monitor_provider.get_monitor_ids()) {
           unowned var monitor = this.context.monitor_provider.get_monitor(id);
-          if (monitor == null) continue;
-          if (monitor.has_workspace(this)) list.append(monitor);
+          if (monitor == null) {
+            continue;
+          }
+          if (monitor.has_workspace(this)) {
+            list.append(monitor);
+          }
         }
         return list;
       }
@@ -110,8 +117,10 @@ namespace GenesisShell {
       }
     }
 
-    public virtual bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
-      if (this._is_init) return true;
+    public virtual bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
       this._is_init = true;
 
 #if HAS_DBUS
@@ -141,7 +150,9 @@ namespace GenesisShell {
     public string[] monitors {
       owned get {
         string[] value = {};
-        foreach (var monitor in this.workspace.monitors) value += monitor.id;
+        foreach (var monitor in this.workspace.monitors) {
+          value += monitor.id;
+        }
         return value;
       }
     }
@@ -152,17 +163,17 @@ namespace GenesisShell {
       }
     }
 
-    internal DBusWorkspace(Workspace workspace, GLib.DBusConnection connection, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal DBusWorkspace(Workspace workspace, GLib.DBusConnection connection, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(workspace: workspace, connection: connection);
       this.init(cancellable);
     }
 
-    internal async DBusWorkspace.make_async_connection(Workspace workspace, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal async DBusWorkspace.make_async_connection(Workspace workspace, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(workspace: workspace, connection: yield GLib.Bus.get(GLib.BusType.SESSION, cancellable));
       this.init(cancellable);
     }
 
-    internal DBusWorkspace.make_sync_connection(Workspace workspace, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal DBusWorkspace.make_sync_connection(Workspace workspace, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(workspace: workspace, connection: GLib.Bus.get_sync(GLib.BusType.SESSION, cancellable));
       this.init(cancellable);
     }
@@ -174,33 +185,43 @@ namespace GenesisShell {
 
     ~DBusWorkspace() {
       if (this._obj_id > 0) {
-        if (this.connection.unregister_object(this._obj_id)) this._obj_id = 0;
+        if (this.connection.unregister_object(this._obj_id)) {
+          this._obj_id = 0;
+        }
       }
     }
 
     public void add_monitor(string id) throws GLib.DBusError, GLib.IOError, WorkspaceError {
       var monitor = this.workspace.context.monitor_provider.get_monitor(id);
-      if (monitor == null) throw new WorkspaceError.INVALID_MONITOR(_("Invalid monitor %s").printf(id));
+      if (monitor == null) {
+        throw new WorkspaceError.INVALID_MONITOR(_("Invalid monitor %s").printf(id));
+      }
 
       this.workspace.add_monitor(monitor);
     }
 
     public bool has_monitor(string id) throws GLib.DBusError, GLib.IOError, WorkspaceError {
       var monitor = this.workspace.context.monitor_provider.get_monitor(id);
-      if (monitor == null) throw new WorkspaceError.INVALID_MONITOR(_("Invalid monitor %s").printf(id));
+      if (monitor == null) {
+        throw new WorkspaceError.INVALID_MONITOR(_("Invalid monitor %s").printf(id));
+      }
 
       return this.workspace.has_monitor(monitor);
     }
 
     public void remove_monitor(string id) throws GLib.DBusError, GLib.IOError, WorkspaceError {
       var monitor = this.workspace.context.monitor_provider.get_monitor(id);
-      if (monitor == null) throw new WorkspaceError.INVALID_MONITOR(_("Invalid monitor %s").printf(id));
+      if (monitor == null) {
+        throw new WorkspaceError.INVALID_MONITOR(_("Invalid monitor %s").printf(id));
+      }
 
       this.workspace.remove_monitor(monitor);
     }
 
-    private bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
-      if (this._is_init) return true;
+    private bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
       this._is_init = true;
 
       this._obj_id = this.connection.register_object("/com/expidus/genesis/workspace/%llu".printf(this.workspace.id), (IWorkspaceDBus)this);

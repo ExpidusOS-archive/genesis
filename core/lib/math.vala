@@ -17,7 +17,9 @@ namespace GenesisShell {
 
   namespace Math {
     public static int round(int num) {
-      while ((num % 10) > 0) num++;
+      while ((num % 10) > 0) {
+        num++;
+      }
       return num;
     }
 

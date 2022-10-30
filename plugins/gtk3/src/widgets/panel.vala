@@ -26,8 +26,8 @@ namespace GenesisShellGtk3 {
     private Gtk.Box _left;
     private Gtk.Box _center;
     private Gtk.Box _right;
-    private GLib.List<PanelApplet> _applets;
-    private GLib.HashTable<string, ulong> _applet_sigs;
+    private GLib.List <PanelApplet> _applets;
+    private GLib.HashTable <string, ulong> _applet_sigs;
 
     public Gtk.Label clock { get; }
 
@@ -45,7 +45,7 @@ namespace GenesisShellGtk3 {
 
     public GenesisShell.Monitor monitor { get; construct; }
 
-    public GLib.List<unowned PanelApplet> applets {
+    public GLib.List <unowned PanelApplet> applets {
       owned get {
         return this._applets.copy();
       }
@@ -87,28 +87,30 @@ namespace GenesisShellGtk3 {
     construct {
       this.get_style_context().add_class("genesis-shell-panel");
 
-      this._applets = new GLib.List<PanelApplet>();
-      this._applet_sigs = new GLib.HashTable<string, ulong>(GLib.str_hash, GLib.str_equal);
+      this._applets     = new GLib.List <PanelApplet>();
+      this._applet_sigs = new GLib.HashTable <string, ulong>(GLib.str_hash, GLib.str_equal);
 
-      this._left = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
-      this._left.halign = Gtk.Align.START;
+      this._left         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
+      this._left.halign  = Gtk.Align.START;
       this._left.hexpand = true;
 
-      this._center = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
-      this._center.halign = Gtk.Align.CENTER;
+      this._center         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
+      this._center.halign  = Gtk.Align.CENTER;
       this._center.hexpand = true;
 
-      this._right = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
-      this._right.halign = Gtk.Align.END;
+      this._right         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
+      this._right.halign  = Gtk.Align.END;
       this._right.hexpand = true;
 
       this._mode_id = this.monitor.notify["scale"].connect(() => this.queue_resize());
 
       var screen = this.get_display().get_default_screen();
       this.app_paintable = screen.is_composited() && screen.get_rgba_visual() != null;
-      if (this.app_paintable) this.set_visual(screen.get_rgba_visual());
+      if (this.app_paintable) {
+        this.set_visual(screen.get_rgba_visual());
+      }
 
-      this.halign = Gtk.Align.CENTER;
+      this.halign  = Gtk.Align.CENTER;
       this.spacing = GenesisShell.Math.em(this.monitor.dpi, 1.0);
 
       this.pack_start(this._left);
@@ -122,7 +124,7 @@ namespace GenesisShellGtk3 {
       this.init_async.begin((obj, ctx) => {
         this.init_async.end(ctx);
 
-        var clock = new PanelApplets.Clock(this.monitor, "clock-0");
+        var clock  = new PanelApplets.Clock(this.monitor, "clock-0");
         clock.side = PanelAppletSide.RIGHT;
         this.add_applet(clock);
         clock.show_all();
@@ -149,23 +151,25 @@ namespace GenesisShellGtk3 {
       return GLib.strcmp(a.id, id);
     }
 
-    private unowned GLib.List<PanelApplet> find_applet_element_by_id(string id) {
+    private unowned GLib.List <PanelApplet> find_applet_element_by_id(string id) {
       // FIXME: why is this invalid: this._applets.search(id, (a, str) => GLib.strcmp(a.id, str));
       return this._applets.search(id, applet_search_func);
     }
 
-    private unowned GLib.List<PanelApplet> find_applet(PanelApplet applet) {
+    private unowned GLib.List <PanelApplet> find_applet(PanelApplet applet) {
       return this._applets.find_custom(applet, (a, b) => GLib.strcmp(a.id, b.id));
     }
 
-    private Gtk.Box? get_side(PanelAppletSide side) {
+    private Gtk.Box ?get_side(PanelAppletSide side) {
       switch (side) {
-        case PanelAppletSide.LEFT:
-          return this._left;
-        case PanelAppletSide.CENTER:
-          return this._center;
-        case PanelAppletSide.RIGHT:
-          return this._right;
+      case PanelAppletSide.LEFT:
+        return this._left;
+
+      case PanelAppletSide.CENTER:
+        return this._center;
+
+      case PanelAppletSide.RIGHT:
+        return this._right;
       }
 
       return null;

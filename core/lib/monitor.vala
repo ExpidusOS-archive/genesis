@@ -2,18 +2,23 @@ namespace GenesisShell {
   public interface IMonitorProvider : GLib.Object {
     public abstract Context context { get; construct; }
 
-    public virtual Monitor? create_virtual_monitor() {
+    public virtual Monitor ? create_virtual_monitor() {
       return null;
     }
 
-    public abstract unowned Monitor? get_monitor(string id);
-    public abstract GLib.List<string> get_monitor_ids();
+    public abstract unowned Monitor ? get_monitor(string id);
 
-    public virtual unowned Monitor? get_primary_monitor() {
+    public abstract GLib.List <string> get_monitor_ids();
+
+    public virtual unowned Monitor ? get_primary_monitor() {
       foreach (var id in this.get_monitor_ids()) {
         unowned var monitor = this.get_monitor(id);
-        if (monitor == null) continue;
-        if (monitor.is_primary) return monitor;
+        if (monitor == null) {
+          continue;
+        }
+        if (monitor.is_primary) {
+          return monitor;
+        }
       }
       return null;
     }
@@ -45,7 +50,7 @@ namespace GenesisShell {
     FLIPPED;
 
     public static bool try_parse_name(string name, out MonitorOrientation result = null) {
-      var enumc = (GLib.EnumClass)(typeof (MonitorOrientation).class_ref());
+      var enumc        = (GLib.EnumClass)(typeof(MonitorOrientation).class_ref());
       unowned var eval = enumc.get_value_by_name(name);
 
       if (eval == null) {
@@ -58,7 +63,7 @@ namespace GenesisShell {
     }
 
     public static bool try_parse_nick(string name, out MonitorOrientation result = null) {
-      var enumc = (GLib.EnumClass)(typeof (MonitorOrientation).class_ref());
+      var enumc        = (GLib.EnumClass)(typeof(MonitorOrientation).class_ref());
       unowned var eval = enumc.get_value_by_nick(name);
       return_val_if_fail(eval != null, false);
 
@@ -72,7 +77,7 @@ namespace GenesisShell {
     }
 
     public string to_nick() {
-      var enumc = (GLib.EnumClass)(typeof (MonitorOrientation).class_ref());
+      var enumc = (GLib.EnumClass)(typeof(MonitorOrientation).class_ref());
       var eval  = enumc.get_value(this);
       return_val_if_fail(eval != null, null);
       return eval.value_nick;
@@ -86,19 +91,19 @@ namespace GenesisShell {
 
   [DBus(name = "com.expidus.genesis.MonitorMode")]
   public struct MonitorMode {
-    public int width;
-    public int height;
-    public int depth;
-    public double rate;
+    public int          width;
+    public int          height;
+    public int          depth;
+    public double       rate;
 
     public const string VARIANT_FORMAT = "(nnnd)";
-    public const string STRING_FORMAT = _("%dx%d (%d) %f Hz");
+    public const string STRING_FORMAT  = _("%dx%d (%d) %f Hz");
 
     public MonitorMode(int width, int height, int depth, double rate) {
-      this.width = width;
+      this.width  = width;
       this.height = height;
-      this.depth = depth;
-      this.rate = rate;
+      this.depth  = depth;
+      this.rate   = rate;
     }
 
     public MonitorMode.from_variant(GLib.Variant variant) {
@@ -146,7 +151,7 @@ namespace GenesisShell {
      * The physical height of the monitor in millimeters.
      */
     public abstract int physical_height { get; }
-    
+
     /**
      * The display mode of the monitor.
      */
@@ -204,11 +209,11 @@ namespace GenesisShell {
 
   public abstract class Monitor : GLib.Object, GLib.Initable {
     private bool _is_init;
-    private GLib.List<Workspace> _workspaces;
-    private WindowManager? _window_manger;
+    private GLib.List <Workspace> _workspaces;
+    private WindowManager ?_window_manger;
 
     public const string VARIANT_FORMAT = "a{sv}";
-    
+
 #if HAS_DBUS
     internal DBusMonitor dbus { get; }
 #endif
@@ -222,12 +227,14 @@ namespace GenesisShell {
       }
     }
 
-    public WindowManager? window_manager {
+    public WindowManager ?window_manager {
       get {
         return this._window_manger;
       }
       set {
-        if (this._window_manger != null) this._window_manger.remove_monitor(this);
+        if (this._window_manger != null) {
+          this._window_manger.remove_monitor(this);
+        }
 
         this._window_manger = value;
         this._window_manger.add_monitor(this);
@@ -237,7 +244,7 @@ namespace GenesisShell {
     /**
      * The workspaces attached to this monitor
      */
-    public GLib.List<weak Workspace> workspaces {
+    public GLib.List <weak Workspace> workspaces {
       owned get {
         return this._workspaces.copy();
       }
@@ -272,7 +279,7 @@ namespace GenesisShell {
      * The physical height of the monitor in millimeters.
      */
     public abstract int physical_height { get; }
-    
+
     /**
      * The display mode of the monitor.
      */
@@ -284,9 +291,9 @@ namespace GenesisShell {
      * This is the raw EDID of the monitor, this can be null if the monitor's
      * EDID could not be found.
      */
-    public abstract GLib.Bytes? edid { get; }
+    public abstract GLib.Bytes ?edid { get; }
 
-    public string? wallpaper { get; set; }
+    public string ?wallpaper { get; set; }
 
     /**
      * The scale to multiple the DPI by
@@ -303,10 +310,12 @@ namespace GenesisShell {
      */
     public double dpi {
       get {
-        if (this.physical_width < 1 || this.physical_height < 1) return 96.0 * this.scale;
+        if (this.physical_width < 1 || this.physical_height < 1) {
+          return 96.0 * this.scale;
+        }
 
         var diag_inch = GLib.Math.sqrt(GLib.Math.pow(this.physical_width, 2) + GLib.Math.pow(this.physical_height, 2)) * 0.039370;
-        var diag_px = GLib.Math.sqrt(GLib.Math.pow(this.mode.width, 2) + GLib.Math.pow(this.mode.height, 2));
+        var diag_px   = GLib.Math.sqrt(GLib.Math.pow(this.mode.width, 2) + GLib.Math.pow(this.mode.height, 2));
         return (diag_px / diag_inch) * this.scale;
       }
     }
@@ -322,7 +331,7 @@ namespace GenesisShell {
      * This is the ID of the monitor to mirror from, set to null
      * will stop mirroring.
      */
-    public abstract string? mirroring { get; set; }
+    public abstract string ?mirroring { get; set; }
 
     /**
      * Whether or not the monitor is a physical or virtual one.
@@ -335,7 +344,9 @@ namespace GenesisShell {
     public abstract bool is_primary { get; set; }
 
     construct {
-      if (this.wallpaper == null) this.wallpaper = this.get_default_wallpaper();
+      if (this.wallpaper == null) {
+        this.wallpaper = this.get_default_wallpaper();
+      }
 
       this.notify.connect(() => this.save_settings());
     }
@@ -344,11 +355,14 @@ namespace GenesisShell {
       var device = this.context.devident.get_default();
       if (device != null) {
         switch (device.kind) {
-          case Devident.DeviceKind.PHONE:
+        case Devident.DeviceKind.PHONE:
+          return DATADIR + "/backgrounds/genesis-shell/mobile/default.jpg";
+
+        default:
+          if (this.mode.width < this.mode.height) {
             return DATADIR + "/backgrounds/genesis-shell/mobile/default.jpg";
-          default:
-            if (this.mode.width < this.mode.height) return DATADIR + "/backgrounds/genesis-shell/mobile/default.jpg";
-            return DATADIR + "/backgrounds/genesis-shell/desktop/default.jpg";
+          }
+          return DATADIR + "/backgrounds/genesis-shell/desktop/default.jpg";
         }
       }
       return DATADIR + "/backgrounds/genesis-shell/desktop/default.jpg";
@@ -360,7 +374,7 @@ namespace GenesisShell {
      * This returns a list of every monitor mode which were found
      * to be supported by the monitor.
      */
-    public abstract GLib.List<MonitorMode?> list_modes();
+    public abstract GLib.List <MonitorMode ?> list_modes();
 
     /**
      * Check if the provided mode is available for the monitor.
@@ -371,10 +385,12 @@ namespace GenesisShell {
     public virtual bool is_mode_available(MonitorMode mode) {
       var modes = this.list_modes();
       foreach (var avail_mode in modes) {
-        if (avail_mode.width == mode.width
-          && avail_mode.height == mode.height
-          && avail_mode.depth == mode.depth
-          && avail_mode.rate == mode.rate) return true;
+        if (avail_mode.width == mode.width &&
+            avail_mode.height == mode.height &&
+            avail_mode.depth == mode.depth &&
+            avail_mode.rate == mode.rate) {
+          return true;
+        }
       }
       return false;
     }
@@ -410,15 +426,19 @@ namespace GenesisShell {
       builder.add("{sv}", "y", new GLib.Variant.int32(this.y));
       builder.add("{sv}", "wallpaper", new GLib.Variant.string(this.wallpaper == null ? this.get_default_wallpaper() : this.wallpaper));
 
-      if (this.mirroring != null) builder.add("{sv}", "mirroring", new GLib.Variant.string(this.mirroring));
+      if (this.mirroring != null) {
+        builder.add("{sv}", "mirroring", new GLib.Variant.string(this.mirroring));
+      }
       return builder.end();
     }
 
     public signal void workspace_added(Workspace workspace);
     public signal void workspace_removed(Workspace workspace);
 
-    public virtual bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
-      if (this._is_init) return true;
+    public virtual bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
       this._is_init = true;
 
 #if HAS_DBUS
@@ -440,18 +460,22 @@ namespace GenesisShell {
       GLib.debug(_("Loading monitor \"%s\": %s (%d)"), this.id, value.print(true), value.n_children());
       assert_cmpstr(value.lookup_value("id", GLib.VariantType.STRING).get_string(), GLib.CompareOperator.EQ, this.id);
 
-      this.mode = MonitorMode.from_variant(value.lookup_value("mode", new GLib.VariantType(MonitorMode.VARIANT_FORMAT)));
+      this.mode        = MonitorMode.from_variant(value.lookup_value("mode", new GLib.VariantType(MonitorMode.VARIANT_FORMAT)));
       this.orientation = (MonitorOrientation)value.lookup_value("orientation", GLib.VariantType.INT16).get_int16();
-      this.is_primary = value.lookup_value("is-primary", GLib.VariantType.BOOLEAN).get_boolean();
-      this.scale = value.lookup_value("scale", GLib.VariantType.DOUBLE).get_double();
-      this.x = value.lookup_value("x", GLib.VariantType.INT32).get_int32();
-      this.y = value.lookup_value("y", GLib.VariantType.INT32).get_int32();
+      this.is_primary  = value.lookup_value("is-primary", GLib.VariantType.BOOLEAN).get_boolean();
+      this.scale       = value.lookup_value("scale", GLib.VariantType.DOUBLE).get_double();
+      this.x           = value.lookup_value("x", GLib.VariantType.INT32).get_int32();
+      this.y           = value.lookup_value("y", GLib.VariantType.INT32).get_int32();
 
       var child = value.lookup_value("mirroring", GLib.VariantType.STRING);
-      if (child != null) this.mirroring = child.get_string();
+      if (child != null) {
+        this.mirroring = child.get_string();
+      }
 
       child = value.lookup_value("wallpaper", GLib.VariantType.STRING);
-      if (child != null) this.wallpaper = child.get_string();
+      if (child != null) {
+        this.wallpaper = child.get_string();
+      }
     }
 
     internal void save_settings() {
@@ -462,7 +486,9 @@ namespace GenesisShell {
 
       foreach (var monitor in monitors) {
         var id = monitor.get_child_value(0).get_string();
-        if (id == this.id) continue;
+        if (id == this.id) {
+          continue;
+        }
 
         builder.add("{sv}", id, monitor.get_child_value(1).get_child_value(0));
       }
@@ -491,7 +517,9 @@ namespace GenesisShell {
 
     public uint8[]? edid {
       owned get {
-        if (this.monitor.edid == null) return null;
+        if (this.monitor.edid == null) {
+          return null;
+        }
         return this.monitor.edid.get_data();
       }
     }
@@ -514,7 +542,7 @@ namespace GenesisShell {
       }
     }
 
-    public string? mirroring {
+    public string ?mirroring {
       get {
         return this.monitor.mirroring;
       }
@@ -580,17 +608,17 @@ namespace GenesisShell {
       }
     }
 
-    internal DBusMonitor(Monitor monitor, GLib.DBusConnection connection, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal DBusMonitor(Monitor monitor, GLib.DBusConnection connection, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(monitor: monitor, connection: connection);
       this.init(cancellable);
     }
 
-    internal async DBusMonitor.make_async_connection(Monitor monitor, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal async DBusMonitor.make_async_connection(Monitor monitor, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(monitor: monitor, connection: yield GLib.Bus.get(GLib.BusType.SESSION, cancellable));
       this.init(cancellable);
     }
 
-    internal DBusMonitor.make_sync_connection(Monitor monitor, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal DBusMonitor.make_sync_connection(Monitor monitor, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(monitor: monitor, connection: GLib.Bus.get_sync(GLib.BusType.SESSION, cancellable));
       this.init(cancellable);
     }
@@ -602,12 +630,16 @@ namespace GenesisShell {
 
     ~DBusMonitor() {
       if (this._obj_id > 0) {
-        if (this.connection.unregister_object(this._obj_id)) this._obj_id = 0;
+        if (this.connection.unregister_object(this._obj_id)) {
+          this._obj_id = 0;
+        }
       }
     }
 
-    private bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
-      if (this._is_init) return true;
+    private bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
       this._is_init = true;
 
       this._obj_id = this.connection.register_object("/com/expidus/genesis/monitor/%s".printf(this.monitor.id.replace(" ", "").replace(",", "")), (IMonitorDBus)this);
@@ -615,9 +647,11 @@ namespace GenesisShell {
     }
 
     public MonitorMode[] list_modes() throws GLib.DBusError, GLib.IOError {
-      var list = this.monitor.list_modes();
-      MonitorMode[] arr = {};
-      foreach (var mode in list) arr += mode;
+      var           list = this.monitor.list_modes();
+      MonitorMode[] arr  = {};
+      foreach (var mode in list) {
+        arr += mode;
+      }
       return arr;
     }
 
@@ -627,21 +661,27 @@ namespace GenesisShell {
 
     public void add_workspace(WorkspaceID id) throws GLib.DBusError, GLib.IOError, MonitorError {
       var workspace = this.monitor.context.workspace_provider.get_workspace(id);
-      if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(_("Invalid workspace %llu").printf(id));
+      if (workspace == null) {
+        throw new MonitorError.INVALID_WORKSPACE(_("Invalid workspace %llu").printf(id));
+      }
 
       this.monitor.add_workspace(workspace);
     }
 
     public void remove_workspace(WorkspaceID id) throws GLib.DBusError, GLib.IOError, MonitorError {
       var workspace = this.monitor.context.workspace_provider.get_workspace(id);
-      if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(_("Invalid workspace %llu").printf(id));
+      if (workspace == null) {
+        throw new MonitorError.INVALID_WORKSPACE(_("Invalid workspace %llu").printf(id));
+      }
 
       this.monitor.remove_workspace(workspace);
     }
 
     public bool has_workspace(WorkspaceID id) throws GLib.DBusError, GLib.IOError, MonitorError {
       var workspace = this.monitor.context.workspace_provider.get_workspace(id);
-      if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(_("Invalid workspace %llu").printf(id));
+      if (workspace == null) {
+        throw new MonitorError.INVALID_WORKSPACE(_("Invalid workspace %llu").printf(id));
+      }
 
       return this.monitor.has_workspace(workspace);
     }

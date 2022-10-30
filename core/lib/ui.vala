@@ -7,7 +7,7 @@ namespace GenesisShell {
     DASH;
 
     public static uint n_values() {
-      var enumc = (GLib.EnumClass) typeof (UIElementKind).class_ref();
+      var enumc = (GLib.EnumClass)typeof(UIElementKind).class_ref();
       return enumc.n_values;
     }
   }
@@ -22,7 +22,7 @@ namespace GenesisShell {
     TOGGLE_SHOW;
 
     public static uint n_values() {
-      var enumc = (GLib.EnumClass) typeof (UIActionKind).class_ref();
+      var enumc = (GLib.EnumClass)typeof(UIActionKind).class_ref();
       return enumc.n_values;
     }
   }
@@ -30,8 +30,8 @@ namespace GenesisShell {
   public interface IUIProvider : GLib.Object {
     public abstract Context context { get; construct; }
 
-    public GLib.HashTable<UIElementKind, GLib.List<string>> monitor_list_all(Monitor monitor) {
-      var tbl = new GLib.HashTable<UIElementKind, GLib.List<string>>(GLib.int_hash, GLib.int_equal);
+    public GLib.HashTable <UIElementKind, GLib.List <string> > monitor_list_all(Monitor monitor) {
+      var tbl = new GLib.HashTable <UIElementKind, GLib.List <string> >(GLib.int_hash, GLib.int_equal);
 
       for (var i = 0; i < UIElementKind.n_values(); i++) {
         var kind = (UIElementKind)i;
@@ -41,8 +41,8 @@ namespace GenesisShell {
       return tbl;
     }
 
-    public abstract GLib.List<string> monitor_list_ids_for_kind(Monitor monitor, UIElementKind kind);
-    public abstract IUIElement? for_monitor(Monitor monitor, UIElementKind kind, string? id);
+    public abstract GLib.List <string> monitor_list_ids_for_kind(Monitor monitor, UIElementKind kind);
+    public abstract IUIElement ? for_monitor(Monitor monitor, UIElementKind kind, string ?id);
 
     public bool action(UIElementKind elem, UIActionKind action, ...) {
       return this.actionv(elem, action, va_list());
@@ -52,15 +52,17 @@ namespace GenesisShell {
       var dup = va_list.copy(ap);
 
       var i = 0;
-      for (var item = dup.arg<void*>(); item != null; item = dup.arg<void*>()) i++;
+      for (var item = dup.arg <void *>(); item != null; item = dup.arg <void *>()) {
+        i++;
+      }
       assert(i % 2 == 0);
 
-      string[] names = {};
+      string[]     names  = {};
       GLib.Value[] values = {};
 
       for (var x = 0; x < i; x += 2) {
-        names[x] = ap.arg<string>();
-        values[x] = ap.arg<GLib.Value>();
+        names[x]  = ap.arg <string>();
+        values[x] = ap.arg <GLib.Value>();
       }
 
       return this.action_with_properties(elem, action, names, values);
@@ -74,7 +76,7 @@ namespace GenesisShell {
   public interface IUIElement : GLib.Object {
     public abstract UIElementKind kind { get; }
 
-    public virtual string? id {
+    public virtual string ?id {
       get {
         return null;
       }
@@ -90,15 +92,17 @@ namespace GenesisShell {
       var dup = va_list.copy(ap);
 
       var i = 0;
-      for (var item = dup.arg<void*>(); item != null; item = dup.arg<void*>()) i++;
+      for (var item = dup.arg <void *>(); item != null; item = dup.arg <void *>()) {
+        i++;
+      }
       assert(i % 2 == 0);
 
-      string[] names = {};
+      string[]     names  = {};
       GLib.Value[] values = {};
 
       for (var x = 0; x < i; x += 2) {
-        names[x] = ap.arg<string>();
-        values[x] = ap.arg<GLib.Value>();
+        names[x]  = ap.arg <string>();
+        values[x] = ap.arg <GLib.Value>();
       }
 
       return this.action_with_properties(action, names, values);

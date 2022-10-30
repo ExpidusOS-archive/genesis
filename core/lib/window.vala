@@ -24,7 +24,7 @@ namespace GenesisShell {
     OVERLAY;
 
     public static bool try_parse_name(string name, out WindowShellLayer result = null) {
-      var enumc = (GLib.EnumClass)(typeof (WindowShellLayer).class_ref());
+      var enumc        = (GLib.EnumClass)(typeof(WindowShellLayer).class_ref());
       unowned var eval = enumc.get_value_by_name(name);
 
       if (eval == null) {
@@ -37,7 +37,7 @@ namespace GenesisShell {
     }
 
     public static bool try_parse_nick(string name, out WindowShellLayer result = null) {
-      var enumc = (GLib.EnumClass)(typeof (WindowShellLayer).class_ref());
+      var enumc        = (GLib.EnumClass)(typeof(WindowShellLayer).class_ref());
       unowned var eval = enumc.get_value_by_nick(name);
       return_val_if_fail(eval != null, false);
 
@@ -51,7 +51,7 @@ namespace GenesisShell {
     }
 
     public string to_nick() {
-      var enumc = (GLib.EnumClass)(typeof (WindowShellLayer).class_ref());
+      var enumc = (GLib.EnumClass)(typeof(WindowShellLayer).class_ref());
       var eval  = enumc.get_value(this);
       return_val_if_fail(eval != null, null);
       return eval.value_nick;
@@ -61,8 +61,9 @@ namespace GenesisShell {
   public interface IWindowProvider : GLib.Object {
     public abstract Context context { get; construct; }
 
-    public abstract unowned Window? get_window(WindowID id);
-    public abstract GLib.List<WindowID?> get_window_ids();
+    public abstract unowned Window ? get_window(WindowID id);
+
+    public abstract GLib.List <WindowID ?> get_window_ids();
   }
 
 #if HAS_DBUS
@@ -85,7 +86,7 @@ namespace GenesisShell {
 
   public abstract class Window : GLib.Object, GLib.Initable {
     private bool _is_init;
-    private WindowManager? _window_manger;
+    private WindowManager ?_window_manger;
 
 #if HAS_DBUS
     internal DBusWindow dbus { get; }
@@ -104,12 +105,14 @@ namespace GenesisShell {
     public abstract Workspace workspace { get; set; }
     public abstract Rectangle geometry { get; set; }
 
-    public WindowManager? window_manager {
+    public WindowManager ?window_manager {
       get {
         return this._window_manger;
       }
       set {
-        if (this._window_manger != null) this._window_manger.unmanage(this);
+        if (this._window_manger != null) {
+          this._window_manger.unmanage(this);
+        }
 
         this._window_manger = value;
         this._window_manger.manage(this);
@@ -120,8 +123,10 @@ namespace GenesisShell {
       this._id = WindowID.next();
     }
 
-    public virtual bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
-      if (this._is_init) return true;
+    public virtual bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
       this._is_init = true;
 
 #if HAS_DBUS
@@ -142,10 +147,12 @@ namespace GenesisShell {
     public abstract WindowShellLayer layer { get; set; }
     public abstract bool allow_keyboard { get; set; }
 
-    public override bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
+    public override bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
       base.init(cancellable);
 
-      if (this._is_init) return true;
+      if (this._is_init) {
+        return true;
+      }
       this._is_init = true;
 
 #if HAS_DBUS
@@ -175,7 +182,9 @@ namespace GenesisShell {
       }
       set {
         unowned var monitor = this.window.context.monitor_provider.get_monitor(value);
-        if (monitor != null) this.window.monitor = monitor;
+        if (monitor != null) {
+          this.window.monitor = monitor;
+        }
       }
     }
 
@@ -185,7 +194,9 @@ namespace GenesisShell {
       }
       set {
         unowned var workspace = this.window.context.workspace_provider.get_workspace(value);
-        if (workspace != null) this.window.workspace = workspace;
+        if (workspace != null) {
+          this.window.workspace = workspace;
+        }
       }
     }
 
@@ -198,29 +209,33 @@ namespace GenesisShell {
       }
     }
 
-    internal DBusWindow(Window window, GLib.DBusConnection connection, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal DBusWindow(Window window, GLib.DBusConnection connection, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(window: window, connection: connection);
       this.init(cancellable);
     }
 
-    internal async DBusWindow.make_async_connection(Window window, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal async DBusWindow.make_async_connection(Window window, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(window: window, connection: yield GLib.Bus.get(GLib.BusType.SESSION, cancellable));
       this.init(cancellable);
     }
 
-    internal DBusWindow.make_sync_connection(Window window, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal DBusWindow.make_sync_connection(Window window, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(window: window, connection: GLib.Bus.get_sync(GLib.BusType.SESSION, cancellable));
       this.init(cancellable);
     }
 
     ~DBusWindow() {
       if (this._obj_id > 0) {
-        if (this.connection.unregister_object(this._obj_id)) this._obj_id = 0;
+        if (this.connection.unregister_object(this._obj_id)) {
+          this._obj_id = 0;
+        }
       }
     }
 
-    private bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
-      if (this._is_init) return true;
+    private bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
       this._is_init = true;
 
       this._obj_id = this.connection.register_object("/com/expidus/genesis/window/%llu".printf(this.window.id), (IWindowDBus)this);
@@ -262,29 +277,33 @@ namespace GenesisShell {
       }
     }
 
-    internal DBusLayerWindow(LayerWindow window, GLib.DBusConnection connection, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal DBusLayerWindow(LayerWindow window, GLib.DBusConnection connection, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(window: window, connection: connection);
       this.init(cancellable);
     }
 
-    internal async DBusLayerWindow.make_async_connection(LayerWindow window, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal async DBusLayerWindow.make_async_connection(LayerWindow window, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(window: window, connection: yield GLib.Bus.get(GLib.BusType.SESSION, cancellable));
       this.init(cancellable);
     }
 
-    internal DBusLayerWindow.make_sync_connection(LayerWindow window, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    internal DBusLayerWindow.make_sync_connection(LayerWindow window, GLib.Cancellable ?cancellable = null) throws GLib.Error {
       Object(window: window, connection: GLib.Bus.get_sync(GLib.BusType.SESSION, cancellable));
       this.init(cancellable);
     }
 
     ~DBusLayerWindow() {
       if (this._obj_id > 0) {
-        if (this.connection.unregister_object(this._obj_id)) this._obj_id = 0;
+        if (this.connection.unregister_object(this._obj_id)) {
+          this._obj_id = 0;
+        }
       }
     }
 
-    private bool init(GLib.Cancellable? cancellable = null) throws GLib.Error {
-      if (this._is_init) return true;
+    private bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
       this._is_init = true;
 
       this._obj_id = this.connection.register_object("/com/expidus/genesis/window/%llu".printf(this.window.id), (ILayerWindowDBus)this);

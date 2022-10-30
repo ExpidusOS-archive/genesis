@@ -5,7 +5,7 @@ namespace GenesisShellGtk3 {
       private ulong _ap_id;
       private ulong _ap_strength_id;
 
-      private NM.AccessPoint? _ap;
+      private NM.AccessPoint ?_ap;
 
       public NM.Device device { get; construct; }
       public Gtk.Image icon { get; }
@@ -17,7 +17,7 @@ namespace GenesisShellGtk3 {
       construct {
         GLib.debug(_("Found network device %s"), this.device.@interface);
 
-        this._icon = new Gtk.Image.from_icon_name("network-offline", Gtk.IconSize.LARGE_TOOLBAR);
+        this._icon             = new Gtk.Image.from_icon_name("network-offline", Gtk.IconSize.LARGE_TOOLBAR);
         this._icon.no_show_all = true;
         this.add(this._icon);
 
@@ -32,63 +32,81 @@ namespace GenesisShellGtk3 {
         var wifi = this.device as NM.DeviceWifi;
         if (wifi != null) {
           this._icon.icon_name = "network-wireless";
-          this._ap_id = wifi.notify["active-access-point"].connect(() => this.update_ap());
+          this._ap_id          = wifi.notify["active-access-point"].connect(() => this.update_ap());
           this.update_ap();
         }
       }
 
       private void update_state() {
-        var eth = this.device as NM.DeviceEthernet;
+        var eth  = this.device as NM.DeviceEthernet;
         var wifi = this.device as NM.DeviceWifi;
 
         switch (this.device.state) {
-          case NM.DeviceState.UNAVAILABLE:
-          case NM.DeviceState.UNMANAGED:
-            this.icon.hide();
-            break;
-          case NM.DeviceState.ACTIVATED:
-            this.icon.show();
-            break;
-          case NM.DeviceState.DISCONNECTED:
-            this.icon.show();
-            if (eth != null) this._icon.icon_name = "network-wired-disconnected";
-            if (wifi != null) this._icon.icon_name = "network-wireless-offline";
-            break;
-          case NM.DeviceState.FAILED:
-            this.icon.show();
-            if (eth != null) this._icon.icon_name = "network-wired-error";
-            if (wifi != null) this._icon.icon_name = "network-wireless-error";
-            break;
-          case NM.DeviceState.CONFIG:
-          case NM.DeviceState.IP_CHECK:
-          case NM.DeviceState.IP_CONFIG:
-          case NM.DeviceState.NEED_AUTH:
-          case NM.DeviceState.PREPARE:
-            this.icon.show();
-            if (eth != null) this._icon.icon_name = "network-wired-acquiring";
-            if (wifi != null) this._icon.icon_name = "network-wireless-acquiring";
-            break;
+        case NM.DeviceState.UNAVAILABLE:
+        case NM.DeviceState.UNMANAGED:
+          this.icon.hide();
+          break;
+
+        case NM.DeviceState.ACTIVATED:
+          this.icon.show();
+          break;
+
+        case NM.DeviceState.DISCONNECTED:
+          this.icon.show();
+          if (eth != null) {
+            this._icon.icon_name = "network-wired-disconnected";
+          }
+          if (wifi != null) {
+            this._icon.icon_name = "network-wireless-offline";
+          }
+          break;
+
+        case NM.DeviceState.FAILED:
+          this.icon.show();
+          if (eth != null) {
+            this._icon.icon_name = "network-wired-error";
+          }
+          if (wifi != null) {
+            this._icon.icon_name = "network-wireless-error";
+          }
+          break;
+
+        case NM.DeviceState.CONFIG:
+        case NM.DeviceState.IP_CHECK:
+        case NM.DeviceState.IP_CONFIG:
+        case NM.DeviceState.NEED_AUTH:
+        case NM.DeviceState.PREPARE:
+          this.icon.show();
+          if (eth != null) {
+            this._icon.icon_name = "network-wired-acquiring";
+          }
+          if (wifi != null) {
+            this._icon.icon_name = "network-wireless-acquiring";
+          }
+          break;
         }
       }
 
       private void update_ap() {
         var wifi = this.device as NM.DeviceWifi;
-        if (wifi == null) return;
+        if (wifi == null) {
+          return;
+        }
 
         if (this._ap != null && wifi.active_access_point != null) {
           if (wifi.active_access_point.bssid != this._ap.bssid) {
             this._ap.disconnect(this._ap_strength_id);
             this._ap_strength_id = 0;
-            this._ap = null;
+            this._ap             = null;
           }
         } else if (this._ap != null && wifi.active_access_point == null) {
           this._ap.disconnect(this._ap_strength_id);
           this._ap_strength_id = 0;
-          this._ap = null;
+          this._ap             = null;
         }
 
         if (this._ap == null && wifi.active_access_point != null) {
-          this._ap = wifi.active_access_point;
+          this._ap             = wifi.active_access_point;
           this._ap_strength_id = this._ap.notify["strength"].connect(() => this.update_ap_strength());
           this.update_ap_strength();
         }
@@ -96,14 +114,18 @@ namespace GenesisShellGtk3 {
 
       private void update_ap_strength() {
         var wifi = this.device as NM.DeviceWifi;
-        if (wifi == null) return;
+        if (wifi == null) {
+          return;
+        }
         if (this._ap == null) {
           this._icon.icon_name = "network-wireless-offline";
           return;
         }
 
         var ssid = "";
-        foreach (var c in this._ap.ssid.get_data()) ssid += "%c".printf(c);
+        foreach (var c in this._ap.ssid.get_data()) {
+          ssid += "%c".printf(c);
+        }
         this.tooltip_text = _("%s (%d%%)").printf(ssid, this._ap.strength);
 
         if (this._ap.strength >= 90) {
@@ -126,10 +148,10 @@ namespace GenesisShellGtk3 {
 
       private ulong _wifi_enable_id;
 
-      public NetworkIcon? wifi { get; }
-      public NetworkIcon? eth { get; }
+      public NetworkIcon ?wifi { get; }
+      public NetworkIcon ?eth { get; }
 
-      public async Networks(GenesisShell.Monitor monitor, string id, int io_pri = GLib.Priority.DEFAULT, GLib.Cancellable? cancellable = null) throws GLib.Error {
+      public async Networks(GenesisShell.Monitor monitor, string id, int io_pri = GLib.Priority.DEFAULT, GLib.Cancellable ?cancellable = null) throws GLib.Error {
         Object(monitor: monitor, id: id);
         yield this.init_async(io_pri, cancellable);
       }
@@ -141,8 +163,9 @@ namespace GenesisShellGtk3 {
         this.add(this._icons);
       }
 
-      public async bool init_async(int io_pri = GLib.Priority.DEFAULT, GLib.Cancellable? cancellable = null) throws GLib.Error {
+      public async bool init_async(int io_pri = GLib.Priority.DEFAULT, GLib.Cancellable ?cancellable = null) throws GLib.Error {
         this._client = yield NM.Client.new_async(cancellable);
+
         this._wifi_enable_id = this._client.notify["wireless-enabled"].connect(() => {
           this.update_wifi();
         });
