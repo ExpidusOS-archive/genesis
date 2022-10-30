@@ -54,6 +54,7 @@ libmath = meson.get_compiler('c').find_library('m', required: false)
 libdevident = dependency('devident', fallback: ['libdevident', 'libdevident_core'], required: true)
 
 libnm = dependency('libnm', required: false)
+upower = dependency('upower-glib', required: false)
 
 libtokyo = dependency('tokyo', fallback: ['libtokyo', 'libtokyo_core_dep'], required: false)
 libtokyo_gtk3 = dependency('tokyo-gtk3', fallback: ['libtokyo', 'libtokyo_gtk3_dep'], disabler: not libtokyo.found(), required: false)

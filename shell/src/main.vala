@@ -8,8 +8,10 @@ private const GLib.OptionEntry[] options = {
 };
 
 public static int main(string[] args) {
+  GLib.Intl.setlocale(GLib.LocaleCategory.ALL, "");
   GLib.Intl.bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
   GLib.Intl.bindtextdomain(GETTEXT_PACKAGE, LOCALDIR);
+  GLib.Intl.textdomain(GETTEXT_PACKAGE);
 
   try {
     var opt_ctx = new GLib.OptionContext(N_("- Genesis Shell - The next-generation desktop and mobile compositor and window manager."));

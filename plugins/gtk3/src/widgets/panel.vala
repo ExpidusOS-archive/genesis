@@ -56,7 +56,7 @@ namespace GenesisShellGtk3 {
       }
     }
 
-    private async void init_net() {
+    private async void init_async() {
 #if HAS_LIBNM
       try {
         var nets = yield new PanelApplets.Networks(this.monitor, "wifi-0");
@@ -64,6 +64,16 @@ namespace GenesisShellGtk3 {
         this.add_applet(nets);
       } catch (GLib.Error e) {
         GLib.warning(N_("Networking failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+      }
+#endif
+
+#if HAS_UPOWER
+      try {
+        var power = yield new PanelApplets.Power(this.monitor, "power-0");
+        power.side = PanelAppletSide.RIGHT;
+        this.add_applet(power);
+      } catch (GLib.Error e) {
+        GLib.warning(N_("Power failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
       }
 #endif
     }
@@ -103,8 +113,8 @@ namespace GenesisShellGtk3 {
         this.margin_top = this.margin_bottom = 5;
       }
 
-      this.init_net.begin((obj, ctx) => {
-        this.init_net.end(ctx);
+      this.init_async.begin((obj, ctx) => {
+        this.init_async.end(ctx);
 
         var clock = new PanelApplets.Clock(this.monitor, "clock-0");
         clock.side = PanelAppletSide.RIGHT;

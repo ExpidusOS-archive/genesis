@@ -8,6 +8,11 @@ if libnm.found()
   conf_data_plugin_gtk3.set('HAS_LIBNM', 'true')
 endif
 
+if upower.found()
+  plugin_gtk3_args += ['--define=HAS_UPOWER']
+  conf_data_plugin_gtk3.set('HAS_UPOWER', 'true')
+endif
+
 build_conf_plugin_gtk3 = configure_file(input: 'src/build.vala.in', output: 'build.vala',
   configuration: conf_data_plugin_gtk3)
 configure_file(input: 'src/gtk3.plugin.in', output: 'genesis-shell-gtk3.plugin',
@@ -25,6 +30,10 @@ if libnm.found()
   plugin_gtk3_rel_sources += ['src/panel-applets/networks.vala']
 endif
 
+if upower.found()
+  plugin_gtk3_rel_sources += ['src/panel-applets/power.vala']
+endif
+
 foreach src : plugin_gtk3_rel_sources
   plugin_gtk3_sources += [join_paths(meson.current_source_dir(), src)]
 endforeach
@@ -39,6 +48,10 @@ plugin_gtk3_deps = [libgenesis_core, gtk3, libtokyo]
 
 if libnm.found()
   plugin_gtk3_deps += [libnm]
+endif
+
+if upower.found()
+  plugin_gtk3_deps += [upower]
 endif
 
 plugin_gtk3_lib = static_library('libgenesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sources,
