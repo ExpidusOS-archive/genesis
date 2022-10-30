@@ -130,7 +130,7 @@ namespace GenesisShell {
         if (this._ui_provider == null) {
           var provider = this.container.get(typeof(IUIProvider)) as IUIProvider;
           if (provider == null) {
-            provider = new IUIProvider(this);
+            provider = new UIProvider(this);
           }
 
           this._ui_provider = provider;
