@@ -123,6 +123,18 @@ namespace GenesisShell {
       }
     }
     
+    public IUIProvider ui_provider {
+      get {
+        if (this._ui_provider == null) {
+          var provider = this.container.get(typeof (IUIProvider)) as IUIProvider;
+          if (provider == null) provider = new IUIProvider(this);
+
+          this._ui_provider = provider;
+        }
+        return this._ui_provider;
+      }
+    }
+    
     public IWindowProvider window_provider {
       get {
         if (this._window_provider == null) {
