@@ -85,7 +85,10 @@ namespace GenesisShellGtk3 {
     }
 
     construct {
-      this.get_style_context().add_class("genesis-shell-panel");
+      var style_ctx = this.get_style_context();
+      style_ctx.add_class("genesis-shell-panel");
+      style_ctx.add_class("genesis-mode-%s".printf(this.context.mode.to_nick());
+      style_ctx.changed.connect(() => this.update_style());
 
       this._applets     = new GLib.List <PanelApplet>();
       this._applet_sigs = new GLib.HashTable <string, ulong>(GLib.str_hash, GLib.str_equal);
@@ -129,6 +132,19 @@ namespace GenesisShellGtk3 {
         this.add_applet(clock);
         clock.show_all();
       });
+
+      this.update_style();
+    }
+
+    private void update_style() {
+      if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
+        var style_ctx = this.get_style_context();
+        var padding = style_ctx.get_padding(style_ctx.get_state());
+        this._left.margin_left = padding.left;
+        this._right.margin_right = padding.right;
+      }
+
+      this.queue_resize();
     }
 
     private int get_width() {
@@ -136,7 +152,13 @@ namespace GenesisShellGtk3 {
     }
 
     private int get_height() {
-      return GenesisShell.Math.em(this.monitor.dpi, 0.85);
+      var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+      if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
+        var style_ctx = this.get_style_context();
+        var padding = style_ctx.get_padding(style_ctx.get_state());
+        value += padding.top + padding.bottom;
+      }
+      return value;
     }
 
     public override void get_preferred_width(out int min_width, out int nat_width) {
