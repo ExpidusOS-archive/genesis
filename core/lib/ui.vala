@@ -58,7 +58,7 @@ namespace GenesisShell {
       string[] names = {};
       GLib.Value[] values = {};
 
-      for (var x = 0; x < i; x++) {
+      for (var x = 0; x < i; x += 2) {
         names[x] = ap.arg<string>();
         values[x] = ap.arg<GLib.Value>();
       }
@@ -96,7 +96,7 @@ namespace GenesisShell {
       string[] names = {};
       GLib.Value[] values = {};
 
-      for (var x = 0; x < i; x++) {
+      for (var x = 0; x < i; x += 2) {
         names[x] = ap.arg<string>();
         values[x] = ap.arg<GLib.Value>();
       }
