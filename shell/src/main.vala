@@ -14,7 +14,7 @@ public static int main(string[] args) {
   GLib.Intl.textdomain(GETTEXT_PACKAGE);
 
   try {
-    var opt_ctx = new GLib.OptionContext(N_("- Genesis Shell - The next-generation desktop and mobile compositor and window manager."));
+    var opt_ctx = new GLib.OptionContext(_("- Genesis Shell - The next-generation desktop and mobile compositor and window manager."));
     var ctx = new GenesisShell.Context(GenesisShell.ContextMode.OPTIONS);
 
     opt_ctx.set_help_enabled(true);
@@ -29,7 +29,7 @@ public static int main(string[] args) {
     opt_ctx.parse(ref args);
 
     if (arg_version) {
-      stdout.printf(N_("Genesis Shell v%s\n"), GenesisShell.VERSION);
+      stdout.printf(_("Genesis Shell v%s\n"), GenesisShell.VERSION);
       stdout.printf("\n");
 
       foreach (var plugin_id in ctx.plugins.get_keys()) {
@@ -37,7 +37,7 @@ public static int main(string[] args) {
         if (plugin_info == null) continue;
 
         var version = plugin_info.get_version();
-        stdout.printf(N_("Plugin \"%s\" (%s, %s)"), plugin_info.get_module_name(), plugin_id, version == null ? N_("no version") : version);
+        stdout.printf(_("Plugin \"%s\" (%s, %s)"), plugin_info.get_module_name(), plugin_id, version == null ? _("no version") : version);
       }
       return 0;
     }
@@ -45,13 +45,13 @@ public static int main(string[] args) {
     var mode = GenesisShell.ContextMode.COMPOSITOR;
     if (arg_shell_mode != null) {
       if (!GenesisShell.ContextMode.try_parse_nick(arg_shell_mode, out mode)) {
-        stderr.printf(N_("%s: invalid shell mode \"%s\"\n"), args[0], arg_shell_mode);
+        stderr.printf(_("%s: invalid shell mode \"%s\"\n"), args[0], arg_shell_mode);
         return 1;
       }
     }
 
     if (mode == GenesisShell.ContextMode.OPTIONS) {
-      stderr.printf(N_("%s: cannot start the shell in options mode\n"), args[0]);
+      stderr.printf(_("%s: cannot start the shell in options mode\n"), args[0]);
       return 1;
     }
 
@@ -61,14 +61,14 @@ public static int main(string[] args) {
       try {
         ctx.reload_async.end(res);
       } catch (GLib.Error e) {
-        stderr.printf(N_("%s: failed to start the shell: %s:%d: %s\n"), args[0], e.domain.to_string(), e.code, e.message);
+        stderr.printf(_("%s: failed to start the shell: %s:%d: %s\n"), args[0], e.domain.to_string(), e.code, e.message);
         loop.quit();
       }
     });
     loop.run();
     return 0;
   } catch (GLib.Error e) {
-    stderr.printf(N_("%s: failed to handle arguments: %s:%d: %s\n"), args[0], e.domain.to_string(), e.code, e.message);
+    stderr.printf(_("%s: failed to handle arguments: %s:%d: %s\n"), args[0], e.domain.to_string(), e.code, e.message);
     return 1;
   }
 }

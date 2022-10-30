@@ -63,7 +63,7 @@ namespace GenesisShellGtk3 {
         nets.side = PanelAppletSide.RIGHT;
         this.add_applet(nets);
       } catch (GLib.Error e) {
-        GLib.warning(N_("Networking failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+        GLib.warning(_("Networking failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
       }
 #endif
 
@@ -73,7 +73,7 @@ namespace GenesisShellGtk3 {
         power.side = PanelAppletSide.RIGHT;
         this.add_applet(power);
       } catch (GLib.Error e) {
-        GLib.warning(N_("Power failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+        GLib.warning(_("Power failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
       }
 #endif
     }

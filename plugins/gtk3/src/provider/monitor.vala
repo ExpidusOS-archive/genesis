@@ -37,7 +37,7 @@ namespace GenesisShellGtk3 {
         try {
           this.add_monitor(monitor);
         } catch (GLib.Error e) {
-          GLib.error(N_("Failed to add monitor \"%s\": %s:%d: %s"), Monitor.name_for(monitor), e.domain.to_string(), e.code, e.message);
+          GLib.error(_("Failed to add monitor \"%s\": %s:%d: %s"), Monitor.name_for(monitor), e.domain.to_string(), e.code, e.message);
         }
       });
 

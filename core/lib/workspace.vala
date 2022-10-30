@@ -180,21 +180,21 @@ namespace GenesisShell {
 
     public void add_monitor(string id) throws GLib.DBusError, GLib.IOError, WorkspaceError {
       var monitor = this.workspace.context.monitor_provider.get_monitor(id);
-      if (monitor == null) throw new WorkspaceError.INVALID_MONITOR(N_("Invalid monitor %s").printf(id));
+      if (monitor == null) throw new WorkspaceError.INVALID_MONITOR(_("Invalid monitor %s").printf(id));
 
       this.workspace.add_monitor(monitor);
     }
 
     public bool has_monitor(string id) throws GLib.DBusError, GLib.IOError, WorkspaceError {
       var monitor = this.workspace.context.monitor_provider.get_monitor(id);
-      if (monitor == null) throw new WorkspaceError.INVALID_MONITOR(N_("Invalid monitor %s").printf(id));
+      if (monitor == null) throw new WorkspaceError.INVALID_MONITOR(_("Invalid monitor %s").printf(id));
 
       return this.workspace.has_monitor(monitor);
     }
 
     public void remove_monitor(string id) throws GLib.DBusError, GLib.IOError, WorkspaceError {
       var monitor = this.workspace.context.monitor_provider.get_monitor(id);
-      if (monitor == null) throw new WorkspaceError.INVALID_MONITOR(N_("Invalid monitor %s").printf(id));
+      if (monitor == null) throw new WorkspaceError.INVALID_MONITOR(_("Invalid monitor %s").printf(id));
 
       this.workspace.remove_monitor(monitor);
     }

@@ -70,7 +70,7 @@ namespace GenesisShellGtk3 {
         GtkLayerShell.set_margin(this, GtkLayerShell.Edge.BOTTOM, 5);
 
         GtkLayerShell.set_namespace(this, "genesis-shell-panel");
-        GLib.debug(N_("Gtk layer shell is active on %p"), this);
+        GLib.debug(_("Gtk layer shell is active on %p"), this);
       }
 #endif
 

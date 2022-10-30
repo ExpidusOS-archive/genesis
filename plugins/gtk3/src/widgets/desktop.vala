@@ -103,7 +103,7 @@ namespace GenesisShellGtk3 {
 
         this.queue_draw();
       } catch (GLib.Error e) {
-        GLib.critical(N_("Failed to set wallpaper with scaling, falling back to lazy setting: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+        GLib.critical(_("Failed to set wallpaper with scaling, falling back to lazy setting: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
         this.monitor.wallpaper = this.monitor.get_default_wallpaper();
       }
     }

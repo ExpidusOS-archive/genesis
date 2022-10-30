@@ -16,7 +16,7 @@ namespace GenesisShellGtk3 {
       construct {
         this.get_style_context().add_class("genesis-shell-panel-applet-battery");
 
-        GLib.debug(N_("Found UPower device %s"), this.device.native_path);
+        GLib.debug(_("Found UPower device %s"), this.device.native_path);
 
         this._icon = new Gtk.Image.from_icon_name("battery-missing", Gtk.IconSize.LARGE_TOOLBAR);
         this.add(this._icon);
@@ -38,19 +38,19 @@ namespace GenesisShellGtk3 {
             icon_suffix = "-charging";
 
             var minutes = this.device.time_to_full / 60;
-            this.tooltip_text = N_("%d:%0.2d until charged").printf((int)(minutes / 60), (int)(minutes % 60));
+            this.tooltip_text = _("%d:%0.2d until charged").printf((int)(minutes / 60), (int)(minutes % 60));
             break;
           case Up.DeviceState.DISCHARGING:
             icon_suffix = "-charging";
 
             var minutes = this.device.time_to_empty / 60;
-            this.tooltip_text = N_("%d:%0.2d remaining").printf((int)(minutes / 60), (int)(minutes % 60));
+            this.tooltip_text = _("%d:%0.2d remaining").printf((int)(minutes / 60), (int)(minutes % 60));
             break;
           case Up.DeviceState.FULLY_CHARGED:
-            this.tooltip_text = N_("Fully charged");
+            this.tooltip_text = _("Fully charged");
             break;
           case Up.DeviceState.EMPTY:
-            this.tooltip_text = N_("Battery is empty");
+            this.tooltip_text = _("Battery is empty");
             break;
           default:
             break;

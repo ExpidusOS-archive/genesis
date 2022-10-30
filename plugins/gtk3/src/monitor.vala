@@ -32,7 +32,7 @@ namespace GenesisShellGtk3 {
         return this.gdk_monitor.is_primary();
       }
       set {
-        GLib.warning(N_("Unuspported feature on monitor: set is-primary"));
+        GLib.warning(_("Unuspported feature on monitor: set is-primary"));
       }
     }
 
@@ -41,7 +41,7 @@ namespace GenesisShellGtk3 {
         return null;
       }
       set {
-        GLib.warning(N_("Unuspported feature on monitor: set mirroring"));
+        GLib.warning(_("Unuspported feature on monitor: set mirroring"));
       }
     }
 
@@ -59,7 +59,7 @@ namespace GenesisShellGtk3 {
         return this._mode;
       }
       set {
-        GLib.warning(N_("Unuspported feature on monitor: set mode"));
+        GLib.warning(_("Unuspported feature on monitor: set mode"));
       }
     }
 
@@ -68,7 +68,7 @@ namespace GenesisShellGtk3 {
         return GenesisShell.MonitorOrientation.NORMAL;
       }
       set {
-        GLib.warning(N_("Unuspported feature on monitor: set orientation"));
+        GLib.warning(_("Unuspported feature on monitor: set orientation"));
       }
     }
 
@@ -89,7 +89,7 @@ namespace GenesisShellGtk3 {
         return this.gdk_monitor.geometry.x;
       }
       set {
-        GLib.warning(N_("Unuspported feature on monitor: set x"));
+        GLib.warning(_("Unuspported feature on monitor: set x"));
       }
     }
 
@@ -98,7 +98,7 @@ namespace GenesisShellGtk3 {
         return this.gdk_monitor.geometry.y;
       }
       set {
-        GLib.warning(N_("Unuspported feature on monitor: set y"));
+        GLib.warning(_("Unuspported feature on monitor: set y"));
       }
     }
 

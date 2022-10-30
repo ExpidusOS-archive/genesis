@@ -15,7 +15,7 @@ namespace GenesisShellGtk3 {
       }
 
       construct {
-        GLib.debug(N_("Found network device %s"), this.device.@interface);
+        GLib.debug(_("Found network device %s"), this.device.@interface);
 
         this._icon = new Gtk.Image.from_icon_name("network-offline", Gtk.IconSize.LARGE_TOOLBAR);
         this._icon.no_show_all = true;
@@ -104,7 +104,7 @@ namespace GenesisShellGtk3 {
 
         var ssid = "";
         foreach (var c in this._ap.ssid.get_data()) ssid += "%c".printf(c);
-        this.tooltip_text = N_("%s (%d%%)").printf(ssid, this._ap.strength);
+        this.tooltip_text = _("%s (%d%%)").printf(ssid, this._ap.strength);
 
         if (this._ap.strength >= 90) {
           this._icon.icon_name = "network-wireless-signal-excellent";

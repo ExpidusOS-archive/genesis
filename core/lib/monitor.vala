@@ -92,7 +92,7 @@ namespace GenesisShell {
     public double rate;
 
     public const string VARIANT_FORMAT = "(nnnd)";
-    public const string STRING_FORMAT = N_("%dx%d (%d) %f Hz");
+    public const string STRING_FORMAT = _("%dx%d (%d) %f Hz");
 
     public MonitorMode(int width, int height, int depth, double rate) {
       this.width = width;
@@ -437,7 +437,7 @@ namespace GenesisShell {
         return;
       }
 
-      GLib.debug(N_("Loading monitor \"%s\": %s (%d)"), this.id, value.print(true), value.n_children());
+      GLib.debug(_("Loading monitor \"%s\": %s (%d)"), this.id, value.print(true), value.n_children());
       assert_cmpstr(value.lookup_value("id", GLib.VariantType.STRING).get_string(), GLib.CompareOperator.EQ, this.id);
 
       this.mode = MonitorMode.from_variant(value.lookup_value("mode", new GLib.VariantType(MonitorMode.VARIANT_FORMAT)));
@@ -470,7 +470,7 @@ namespace GenesisShell {
       builder.add("{sv}", this.id, this.to_variant());
 
       var value = builder.end();
-      GLib.debug(N_("Setting monitors to \"%s\""), value.print(true));
+      GLib.debug(_("Setting monitors to \"%s\""), value.print(true));
       this.context.settings.set_value("monitors", value);
     }
   }
@@ -627,21 +627,21 @@ namespace GenesisShell {
 
     public void add_workspace(WorkspaceID id) throws GLib.DBusError, GLib.IOError, MonitorError {
       var workspace = this.monitor.context.workspace_provider.get_workspace(id);
-      if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(N_("Invalid workspace %llu").printf(id));
+      if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(_("Invalid workspace %llu").printf(id));
 
       this.monitor.add_workspace(workspace);
     }
 
     public void remove_workspace(WorkspaceID id) throws GLib.DBusError, GLib.IOError, MonitorError {
       var workspace = this.monitor.context.workspace_provider.get_workspace(id);
-      if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(N_("Invalid workspace %llu").printf(id));
+      if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(_("Invalid workspace %llu").printf(id));
 
       this.monitor.remove_workspace(workspace);
     }
 
     public bool has_workspace(WorkspaceID id) throws GLib.DBusError, GLib.IOError, MonitorError {
       var workspace = this.monitor.context.workspace_provider.get_workspace(id);
-      if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(N_("Invalid workspace %llu").printf(id));
+      if (workspace == null) throw new MonitorError.INVALID_WORKSPACE(_("Invalid workspace %llu").printf(id));
 
       return this.monitor.has_workspace(workspace);
     }
