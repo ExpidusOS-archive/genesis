@@ -16,7 +16,7 @@ namespace GenesisShellGtk3 {
     public PanelAppletSide side { get; set construct; }
     public string id { get; construct; }
 
-    public static PanelApplet @new(GLib.Type type, GenesisShell.Monitor monitor, string id) {
+    public static new PanelApplet @new(GLib.Type type, GenesisShell.Monitor monitor, string id) {
       return (PanelApplet)GLib.Object.new(type, "monitor", monitor, "id", id);
     }
   }
@@ -56,21 +56,33 @@ namespace GenesisShellGtk3 {
       }
     }
 
+    private async void init_net() {
+#if HAS_LIBNM
+      try {
+        var nets = yield new PanelApplets.Networks(this.monitor, "wifi-0");
+        nets.side = PanelAppletSide.RIGHT;
+        this.add_applet(nets);
+      } catch (GLib.Error e) {
+        GLib.warning(N_("Networking failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+      }
+#endif
+    }
+
     construct {
       this.get_style_context().add_class("genesis-shell-panel");
 
       this._applets = new GLib.List<PanelApplet>();
       this._applet_sigs = new GLib.HashTable<string, ulong>(GLib.str_hash, GLib.str_equal);
 
-      this._left = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.5));
+      this._left = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
       this._left.halign = Gtk.Align.START;
       this._left.hexpand = true;
 
-      this._center = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.5));
+      this._center = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
       this._center.halign = Gtk.Align.CENTER;
       this._center.hexpand = true;
 
-      this._right = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.5));
+      this._right = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
       this._right.halign = Gtk.Align.END;
       this._right.hexpand = true;
 
@@ -91,9 +103,14 @@ namespace GenesisShellGtk3 {
         this.margin_top = this.margin_bottom = 5;
       }
 
-      var clock = new PanelApplets.Clock(this.monitor, "clock-0");
-      clock.side = PanelAppletSide.RIGHT;
-      this.add_applet(clock);
+      this.init_net.begin((obj, ctx) => {
+        this.init_net.end(ctx);
+
+        var clock = new PanelApplets.Clock(this.monitor, "clock-0");
+        clock.side = PanelAppletSide.RIGHT;
+        this.add_applet(clock);
+        clock.show_all();
+      });
     }
 
     private int get_width() {
@@ -125,7 +142,7 @@ namespace GenesisShellGtk3 {
       return this._applets.find_custom(applet, (a, b) => GLib.strcmp(a.id, b.id));
     }
 
-    private Gtk.Box get_side(PanelAppletSide side) {
+    private Gtk.Box? get_side(PanelAppletSide side) {
       switch (side) {
         case PanelAppletSide.LEFT:
           return this._left;
@@ -134,6 +151,7 @@ namespace GenesisShellGtk3 {
         case PanelAppletSide.RIGHT:
           return this._right;
       }
+
       return null;
     }
 
@@ -149,7 +167,7 @@ namespace GenesisShellGtk3 {
         var old_side = applet.side;
         this._applet_sigs.set(applet.id, applet.notify["side"].connect(() => {
           this.get_side(old_side).remove(applet);
-          this.get_side(applet.side).add(applet);
+          this.get_side(applet.side).pack_end(applet);
           old_side = applet.side;
         }));
 
@@ -167,7 +185,7 @@ namespace GenesisShellGtk3 {
         this._applet_sigs.remove(applet.id);
         applet.disconnect(sig);
 
-        this.get_side(applet.side).remove(applet);
+        this.get_side(applet.side).pack_end(applet);
       }
     }
 
