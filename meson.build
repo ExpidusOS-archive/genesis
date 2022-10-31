@@ -19,7 +19,8 @@ i18n_args = ['--package-version=@0@'.format(longver), '--copyright-holder=Midsta
 
 add_project_arguments([
   '--hide-internal',
-  '--vapidir', join_paths(meson.project_source_root(), 'vapi')
+  '--vapidir', join_paths(meson.project_source_root(), 'vapi'),
+  '--vapidir', meson.project_build_root()
 ], language: 'vala')
 
 if git.found()
@@ -52,6 +53,29 @@ valadoc = find_program('valadoc', required: get_option('docs'), native: true)
 
 libmath = meson.get_compiler('c').find_library('m', required: false)
 libdevident = dependency('devident', fallback: ['libdevident', 'libdevident_core'], required: true)
+
+if dependency('libpulse', required: false).found()
+  gvc = subproject('gvc', default_options: [
+    'package_name=' + meson.project_name(),
+    'package_version=' + meson.project_version(),
+    'pkgdatadir=' + join_paths(datadir, 'genesis-shell', 'libs'),
+    'pkglibdir=' + join_paths(libdir, 'genesis-shell', 'libs'),
+    'alsa=false',
+    'static=false',
+    'introspection=true'
+  ])
+
+  libgvc = gvc.get_variable('libgvc_dep')
+  libgvc_vapi = gnome.generate_vapi('gvc',
+    metadata_dirs: [join_paths(meson.project_source_root(), 'vapi')],
+    packages: ['gio-2.0'],
+    sources: [gvc.get_variable('libgvc_gir')[0]],
+    install: true,
+    install_dir: join_paths(datadir, 'genesis-shell', 'libs'))
+  libgvc_inc = include_directories(join_paths('subprojects', 'gvc'))
+else
+  libgvc = disabler()
+endif
 
 libnm = dependency('libnm', required: false)
 upower = dependency('upower-glib', required: false)

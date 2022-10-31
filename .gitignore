@@ -1,5 +1,7 @@
 # subproject directories
 /subprojects/*
+!/subprojects/gvc
+!/subprojects/gmobile
 !/subprojects/*.wrap
 
 # Meson Directories

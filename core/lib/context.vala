@@ -96,6 +96,11 @@ namespace GenesisShell {
     private bool _is_shutting_down = false;
     private bool _is_reloading     = false;
 
+#if HAS_LIBGVC
+    private ulong _mixer_control_state_id;
+    public Gvc.MixerControl mixer_control { get; }
+#endif
+
 #if HAS_DBUS
     private uint _dbus_name_id;
     internal DBusContext dbus { get; }
@@ -194,6 +199,47 @@ namespace GenesisShell {
 
       this._plugins  = new GLib.HashTable <string, IPlugin>(GLib.str_hash, GLib.str_equal);
       this._settings = new GLib.Settings("com.expidus.genesis");
+    }
+
+    private async bool init_mixer_control(GLib.Cancellable ?cancellable = null) {
+#if HAS_LIBGVC
+      GLib.SourceFunc callback = this.init_mixer_control.callback;
+      bool[] result = new bool[1];
+
+      this._mixer_control = new Gvc.MixerControl("Genesis Shell");
+      this._mixer_control_state_id = this._mixer_control.state_changed.connect(() => {
+        if (this._mixer_control_state_id == 0) return;
+
+        switch (this._mixer_control.get_state()) {
+          case Gvc.MixerControlState.CLOSED:
+            result[0] = false;
+            GLib.Idle.add((owned)callback);
+            break;
+          case Gvc.MixerControlState.FAILED:
+            result[0] = false;
+            GLib.Idle.add((owned)callback);
+            break;
+          case Gvc.MixerControlState.READY:
+            result[0] = true;
+            GLib.Idle.add((owned)callback);
+            break;
+        }
+      });
+
+      if (cancellable != null) {
+        cancellable.cancelled.connect(() => {
+          this._mixer_control.disconnect(this._mixer_control_state_id);
+          this._mixer_control_state_id = 0;
+          this._mixer_control.close();
+        });
+      }
+
+      this._mixer_control.open();
+      yield;
+      return result[0];
+#else
+      return false;
+#endif
     }
 
     public GLib.OptionGroup ?get_option_group_for_plugin(string plugin_name) {
@@ -307,6 +353,8 @@ namespace GenesisShell {
         return true;
       }
 
+      yield this.init_mixer_control(cancellable);
+
 #if HAS_DBUS
       if (this.mode != ContextMode.OPTIONS) {
         this._dbus = yield new DBusContext.make_async_connection(this, cancellable);
@@ -319,34 +367,55 @@ namespace GenesisShell {
           yield this.do_plugin_added(info, obj, cancellable);
         }
       }
+
       this._is_init = true;
       return true;
     }
+
+    private delegate void InitFunc(GLib.Cancellable? cancellable) throws GLib.Error;
 
     private bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
       if (this._is_init) {
         return true;
       }
 
+      InitFunc func = (cancellable) => {
 #if HAS_DBUS
-      if (this.mode != ContextMode.OPTIONS) {
-        this._dbus = new DBusContext.make_sync_connection(this, cancellable);
-      }
-#endif
-      this.common_init();
-      if (this._is_reloading) {
-        foreach (var info in this.plugin_engine.get_plugin_list()) {
-          var obj = this.plugin_set.get_extension(info) as IPlugin;
-          this.do_plugin_added.begin(info, obj, cancellable, (obj, res) => {
-            try {
-              this.do_plugin_added.end(res);
-            } catch (GLib.Error e) {
-              GLib.error(_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
-            }
-          });
+        if (this.mode != ContextMode.OPTIONS) {
+          this._dbus = new DBusContext.make_sync_connection(this, cancellable);
         }
+#endif
+        this.common_init();
+        if (this._is_reloading) {
+          foreach (var info in this.plugin_engine.get_plugin_list()) {
+            var obj = this.plugin_set.get_extension(info) as IPlugin;
+            this.do_plugin_added.begin(info, obj, cancellable, (obj, res) => {
+              try {
+                this.do_plugin_added.end(res);
+              } catch (GLib.Error e) {
+                GLib.error(_("Failed to add plugin \"%s\": %s:%d: %s"), info.get_name(), e.domain.to_string(), e.code, e.message);
+              }
+            });
+          }
+        }
+
+        this._is_init = true;
+      };
+
+      if (this.mode != ContextMode.OPTIONS) {
+        this.init_mixer_control.begin(cancellable, (obj, ctx) => {
+          this.init_mixer_control.end(ctx);
+          try {
+            func(cancellable);
+          } catch (GLib.Error e) {
+            this._is_init = false;
+            GLib.error(_("Failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+          }
+        });
+        return true;
       }
-      this._is_init = true;
+
+      func(cancellable);
       return true;
     }
 

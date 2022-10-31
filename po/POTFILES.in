@@ -20,6 +20,7 @@ plugins/gtk3/src/panel-applets/apps.vala
 plugins/gtk3/src/panel-applets/clock.vala
 plugins/gtk3/src/panel-applets/networks.vala
 plugins/gtk3/src/panel-applets/power.vala
+plugins/gtk3/src/panel-applets/sound.vala
 plugins/gtk3/src/provider/monitor.vala
 plugins/gtk3/src/widgets/desktop.vala
 plugins/gtk3/src/widgets/panel.vala

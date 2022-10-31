@@ -152,6 +152,11 @@ namespace GenesisShellGtk3 {
       this.init_async.begin((obj, ctx) => {
         this.init_async.end(ctx);
 
+        var sound = new PanelApplets.Sound(this.monitor, "sound-0");
+        sound.side = PanelAppletSide.RIGHT;
+        this.add_applet(sound);
+        sound.show_all();
+
         var clock  = new PanelApplets.Clock(this.monitor, "clock-0");
         clock.side = PanelAppletSide.RIGHT;
         this.add_applet(clock);
