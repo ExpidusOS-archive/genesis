@@ -444,6 +444,8 @@ namespace GenesisShell {
 #if HAS_DBUS
       this._dbus = new DBusMonitor(this, this.context.dbus.connection, cancellable);
 #endif
+
+      this.load_settings();
       return true;
     }
 

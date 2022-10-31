@@ -99,6 +99,7 @@ namespace GenesisShellGtk3 {
     }
 
     private int get_width() {
+      if (this._widget == null) return 0;
       int min;
       int nat;
       this.widget.get_preferred_width(out min, out nat);
@@ -106,6 +107,8 @@ namespace GenesisShellGtk3 {
     }
 
     private int get_height() {
+      if (this._widget == null) return 0;
+
       int min;
       int nat;
       this.widget.get_preferred_height(out min, out nat);

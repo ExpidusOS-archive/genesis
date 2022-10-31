@@ -411,7 +411,6 @@ namespace GenesisShell {
 
         this.monitor_provider.added.connect((monitor) => {
           GLib.debug(_("Monitor \"%s\" has been added").printf(monitor.id));
-          monitor.load_settings();
         });
         this._monitor_provider.removed.connect((monitor) => GLib.debug(_("Monitor \"%s\" has been removed").printf(monitor.id)));
       }

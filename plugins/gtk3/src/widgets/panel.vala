@@ -5,13 +5,23 @@ namespace GenesisShellGtk3 {
     RIGHT
   }
 
-  public abstract class PanelApplet : Gtk.Bin {
+  public interface IPanelApplet : Gtk.Widget {
     public GenesisShell.Context context {
       get {
         return this.monitor.context;
       }
     }
 
+    public abstract GenesisShell.Monitor monitor { get; construct; }
+    public abstract PanelAppletSide side { get; set construct; }
+    public abstract string id { get; construct; }
+
+    public static new IPanelApplet @new(GLib.Type type, GenesisShell.Monitor monitor, string id) {
+      return (IPanelApplet)GLib.Object.new(type, "monitor", monitor, "id", id);
+    }
+  }
+
+  public abstract class PanelApplet : Gtk.Bin, IPanelApplet {
     public GenesisShell.Monitor monitor { get; construct; }
     public PanelAppletSide side { get; set construct; }
     public string id { get; construct; }
@@ -21,12 +31,22 @@ namespace GenesisShellGtk3 {
     }
   }
 
+  public abstract class PanelAppletButton : Gtk.Button, IPanelApplet {
+    public GenesisShell.Monitor monitor { get; construct; }
+    public PanelAppletSide side { get; set construct; }
+    public string id { get; construct; }
+
+    public static new PanelAppletButton @new(GLib.Type type, GenesisShell.Monitor monitor, string id) {
+      return (PanelAppletButton)GLib.Object.new(type, "monitor", monitor, "id", id);
+    }
+  }
+
   public sealed class PanelWidget : Hdy.HeaderBar, GenesisShell.IUIElement {
     private ulong _mode_id;
     private Gtk.Box _left;
     private Gtk.Box _center;
     private Gtk.Box _right;
-    private GLib.List <PanelApplet> _applets;
+    private GLib.List <IPanelApplet> _applets;
     private GLib.HashTable <string, ulong> _applet_sigs;
 
     public Gtk.Label clock { get; }
@@ -45,7 +65,7 @@ namespace GenesisShellGtk3 {
 
     public GenesisShell.Monitor monitor { get; construct; }
 
-    public GLib.List <unowned PanelApplet> applets {
+    public GLib.List <unowned IPanelApplet> applets {
       owned get {
         return this._applets.copy();
       }
@@ -90,7 +110,7 @@ namespace GenesisShellGtk3 {
       style_ctx.add_class("genesis-mode-%s".printf(this.context.mode.to_nick()));
       style_ctx.changed.connect(() => this.update_style());
 
-      this._applets     = new GLib.List <PanelApplet>();
+      this._applets     = new GLib.List <IPanelApplet>();
       this._applet_sigs = new GLib.HashTable <string, ulong>(GLib.str_hash, GLib.str_equal);
 
       this._left         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
@@ -124,6 +144,11 @@ namespace GenesisShellGtk3 {
         this.margin_top = this.margin_bottom = 5;
       }
 
+      var apps  = new PanelApplets.Apps(this.monitor, "apps-0");
+      apps.side = PanelAppletSide.LEFT;
+      this.add_applet(apps);
+      apps.show_all();
+
       this.init_async.begin((obj, ctx) => {
         this.init_async.end(ctx);
 
@@ -140,8 +165,8 @@ namespace GenesisShellGtk3 {
       if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
         var style_ctx = this.get_style_context();
         var padding = style_ctx.get_padding(style_ctx.get_state());
-        this._left.margin_left = padding.left;
-        this._right.margin_right = padding.right;
+        this._left.margin_start = padding.left;
+        this._right.margin_end = padding.right;
       }
 
       this.queue_resize();
@@ -169,16 +194,16 @@ namespace GenesisShellGtk3 {
       min_height = nat_height = this.get_height();
     }
 
-    private static int applet_search_func(PanelApplet a, string id) {
+    private static int applet_search_func(IPanelApplet a, string id) {
       return GLib.strcmp(a.id, id);
     }
 
-    private unowned GLib.List <PanelApplet> find_applet_element_by_id(string id) {
+    private unowned GLib.List <IPanelApplet> find_applet_element_by_id(string id) {
       // FIXME: why is this invalid: this._applets.search(id, (a, str) => GLib.strcmp(a.id, str));
       return this._applets.search(id, applet_search_func);
     }
 
-    private unowned GLib.List <PanelApplet> find_applet(PanelApplet applet) {
+    private unowned GLib.List <IPanelApplet> find_applet(IPanelApplet applet) {
       return this._applets.find_custom(applet, (a, b) => GLib.strcmp(a.id, b.id));
     }
 
@@ -197,11 +222,11 @@ namespace GenesisShellGtk3 {
       return null;
     }
 
-    public bool has_applet(PanelApplet applet) {
+    public bool has_applet(IPanelApplet applet) {
       return this.find_applet(applet) != null;
     }
 
-    public void add_applet(PanelApplet applet) {
+    public void add_applet(IPanelApplet applet) {
       if (this.find_applet(applet) == null) {
         this._applets.append(applet);
         this.applet_added(applet);
@@ -217,7 +242,7 @@ namespace GenesisShellGtk3 {
       }
     }
 
-    public void remove_applet(PanelApplet applet) {
+    public void remove_applet(IPanelApplet applet) {
       unowned var elem = this.find_applet(applet);
       if (elem != null) {
         this.applet_removed(elem.data);
@@ -231,7 +256,7 @@ namespace GenesisShellGtk3 {
       }
     }
 
-    public signal void applet_added(PanelApplet applet);
-    public signal void applet_removed(PanelApplet applet);
+    public signal void applet_added(IPanelApplet applet);
+    public signal void applet_removed(IPanelApplet applet);
   }
 }

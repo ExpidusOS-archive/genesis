@@ -24,7 +24,7 @@ plugin_gtk3_rel_sources = ['src/plugin.vala', 'src/monitor.vala',
   'src/provider/monitor.vala', 'src/provider/ui.vala',
   'src/widgets/desktop.vala', 'src/widgets/panel.vala',
   'src/windows/desktop.vala', 'src/windows/panel.vala',
-  'src/panel-applets/clock.vala']
+  'src/panel-applets/apps.vala', 'src/panel-applets/clock.vala']
 plugin_gtk3_sources = []
 
 if libnm.found()

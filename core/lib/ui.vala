@@ -4,6 +4,7 @@ namespace GenesisShell {
     PANEL,
     DESKTOP,
     NOTIFICATION,
+    APPS,
     DASH;
 
     public static uint n_values() {
@@ -61,6 +62,7 @@ namespace GenesisShell {
       GLib.Value[] values = {};
 
       for (var x = 0; x < i; x += 2) {
+        // FIXME: prevent segfault
         names[x]  = ap.arg <string>();
         values[x] = ap.arg <GLib.Value>();
       }

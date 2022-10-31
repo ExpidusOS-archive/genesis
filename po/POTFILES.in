@@ -16,6 +16,7 @@ core/lib/provider/workspace.vala
 plugins/gtk3/src/build.vala.in
 plugins/gtk3/src/monitor.vala
 plugins/gtk3/src/plugin.vala
+plugins/gtk3/src/panel-applets/apps.vala
 plugins/gtk3/src/panel-applets/clock.vala
 plugins/gtk3/src/panel-applets/networks.vala
 plugins/gtk3/src/panel-applets/power.vala
