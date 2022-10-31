@@ -44,6 +44,7 @@ namespace GenesisShellGtk3 {
         switch (this.device.state) {
         case NM.DeviceState.UNAVAILABLE:
         case NM.DeviceState.UNMANAGED:
+        case NM.DeviceState.UNKNOWN:
           this.icon.hide();
           break;
 
@@ -52,6 +53,7 @@ namespace GenesisShellGtk3 {
           break;
 
         case NM.DeviceState.DISCONNECTED:
+        case NM.DeviceState.DEACTIVATING:
           this.icon.show();
           if (eth != null) {
             this._icon.icon_name = "network-wired-disconnected";
@@ -76,6 +78,7 @@ namespace GenesisShellGtk3 {
         case NM.DeviceState.IP_CONFIG:
         case NM.DeviceState.NEED_AUTH:
         case NM.DeviceState.PREPARE:
+        case NM.DeviceState.SECONDARIES:
           this.icon.show();
           if (eth != null) {
             this._icon.icon_name = "network-wired-acquiring";
