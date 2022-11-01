@@ -77,6 +77,8 @@ else
   libgvc = disabler()
 endif
 
+ibus = dependency('ibus-1.0', required: false)
+
 libnm = dependency('libnm', required: false)
 upower = dependency('upower-glib', required: false)
 

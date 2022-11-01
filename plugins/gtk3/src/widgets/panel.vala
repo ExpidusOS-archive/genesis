@@ -149,6 +149,11 @@ namespace GenesisShellGtk3 {
       this.add_applet(apps);
       apps.show_all();
 
+      var keyboard = new PanelApplets.Keyboard(this.monitor, "keyboard-0");
+      keyboard.side = PanelAppletSide.RIGHT;
+      this.add_applet(keyboard);
+      keyboard.show_all();
+
       this.init_async.begin((obj, ctx) => {
         this.init_async.end(ctx);
 

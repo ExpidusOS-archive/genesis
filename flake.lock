@@ -2,11 +2,11 @@
   "nodes": {
     "expidus-sdk": {
       "locked": {
-        "lastModified": 1667312361,
-        "narHash": "sha256-tklu9PaYpX1gDO8/dAPuaJOyfKrln1F0en1N8T4TPsQ=",
+        "lastModified": 1667322189,
+        "narHash": "sha256-WBnNI2ErfuxFpKSn/PXhwo9kYAjBbkTN00HkkY4esBg=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "83f6b4c71c5f06bdbcf52244237f3b508dd5d021",
+        "rev": "2659317727665e38dec526aa00129946568f6211",
         "type": "github"
       },
       "original": {
