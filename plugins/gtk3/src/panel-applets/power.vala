@@ -9,8 +9,8 @@ namespace GenesisShellGtk3 {
       public Up.Device device { get; construct; }
       public Gtk.Image icon { get; }
 
-      public Battery(Up.Device device) {
-        Object(device: device);
+      public Battery(GenesisShell.Monitor monitor, Up.Device device) {
+        Object(monitor: monitor, device: device);
       }
 
       construct {
@@ -18,7 +18,7 @@ namespace GenesisShellGtk3 {
 
         GLib.debug(_("Found UPower device %s"), this.device.native_path);
 
-        this._icon = new Gtk.Image.from_icon_name("battery-missing", Gtk.IconSize.LARGE_TOOLBAR);
+        this._icon = new Icon.for_monitor("battery-missing", this.monitor, 0.85);
         this.add(this._icon);
 
         this._energy_id     = this.device.notify["energy"].connect(() => this.update());
@@ -62,6 +62,34 @@ namespace GenesisShellGtk3 {
 
         this.icon.icon_name = "battery-%s%s".printf(icon_level, icon_suffix);
       }
+
+      private int get_size() {
+        var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+        var monitor = this.monitor as Monitor;
+        if (monitor != null) {
+          var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;
+          if (panel != null) {
+            var style_ctx = panel.get_style_context();
+            var padding = style_ctx.get_padding(style_ctx.get_state());
+            value += padding.top + padding.bottom;
+          }
+        }
+        return value;
+      }
+
+      public override void size_allocate(Gtk.Allocation alloc) {
+        alloc.width = this.get_size();
+        alloc.height = this.get_size();
+        base.size_allocate(alloc);
+      }
+
+      public override void get_preferred_height(out int min_width, out int nat_width) {
+        min_width = nat_width = this.get_size();
+      }
+
+      public override void get_preferred_width(out int min_width, out int nat_width) {
+        min_width = nat_width = this.get_size();
+      }
     }
 
     public class Power : GenesisShellGtk3.PanelApplet, GLib.AsyncInitable {
@@ -101,7 +129,7 @@ namespace GenesisShellGtk3 {
 
       private void device_added(Up.Device dev) {
         if (!this._entries.contains(dev.native_path) && dev.kind == Up.DeviceKind.BATTERY) {
-          var entry = new Battery(dev);
+          var entry = new Battery(this.monitor, dev);
           this._entries.set(dev.native_path, entry);
           this._icons.add(entry);
           entry.show_all();

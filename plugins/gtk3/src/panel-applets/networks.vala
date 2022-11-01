@@ -10,14 +10,14 @@ namespace GenesisShellGtk3 {
       public NM.Device device { get; construct; }
       public Gtk.Image icon { get; }
 
-      public NetworkIcon(NM.Device device) {
-        Object(device: device);
+      public NetworkIcon(GenesisShell.Monitor monitor, NM.Device device) {
+        Object(monitor: monitor, device: device);
       }
 
       construct {
         GLib.debug(_("Found network device %s"), this.device.@interface);
 
-        this._icon             = new Gtk.Image.from_icon_name("network-offline", Gtk.IconSize.LARGE_TOOLBAR);
+        this._icon             = new Icon.for_monitor("network-offline", this.monitor, 0.85);
         this._icon.no_show_all = true;
         this.add(this._icon);
 
@@ -35,6 +35,34 @@ namespace GenesisShellGtk3 {
           this._ap_id          = wifi.notify["active-access-point"].connect(() => this.update_ap());
           this.update_ap();
         }
+      }
+
+      private int get_size() {
+        var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+        var monitor = this.monitor as Monitor;
+        if (monitor != null) {
+          var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;
+          if (panel != null) {
+            var style_ctx = panel.get_style_context();
+            var padding = style_ctx.get_padding(style_ctx.get_state());
+            value += padding.top + padding.bottom;
+          }
+        }
+        return value;
+      }
+
+      public override void size_allocate(Gtk.Allocation alloc) {
+        alloc.width = this.get_size();
+        alloc.height = this.get_size();
+        base.size_allocate(alloc);
+      }
+
+      public override void get_preferred_height(out int min_width, out int nat_width) {
+        min_width = nat_width = this.get_size();
+      }
+
+      public override void get_preferred_width(out int min_width, out int nat_width) {
+        min_width = nat_width = this.get_size();
       }
 
       private void update_state() {
@@ -183,7 +211,7 @@ namespace GenesisShellGtk3 {
         if (this._eth == null) {
           foreach (var dev in this._client.get_all_devices()) {
             if (dev is NM.DeviceEthernet) {
-              this._eth = new NetworkIcon(dev);
+              this._eth = new NetworkIcon(this.monitor, dev);
               this._icons.add(this._eth);
               this._eth.show();
               break;
@@ -196,7 +224,7 @@ namespace GenesisShellGtk3 {
         if (this._client.wireless_enabled && this._wifi == null) {
           foreach (var dev in this._client.get_all_devices()) {
             if (dev is NM.DeviceWifi) {
-              this._wifi = new NetworkIcon(dev);
+              this._wifi = new NetworkIcon(this.monitor, dev);
               this._icons.add(this._wifi);
               this._wifi.show();
               break;

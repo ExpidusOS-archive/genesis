@@ -54,7 +54,8 @@ namespace GenesisShellGtk3 {
         this.get_style_context().add_class("genesis-shell-panel-applet-sound-device");
 
         // FIXME: image should be centered but it is not
-        this._button = new Gtk.Button.from_icon_name(this.icon_name_format.printf("high"), Gtk.IconSize.LARGE_TOOLBAR);
+        this._button = new Gtk.Button();
+        this._button.image = new Icon.for_monitor(this.icon_name_format.printf("high"), this.monitor, 0.85);
         this._button.always_show_image = true;
         this._button.image_position = Gtk.PositionType.BOTTOM;
         this._button.halign = Gtk.Align.CENTER;
