@@ -84,16 +84,16 @@ namespace GenesisShellGtk3 {
       }
 #endif
 
-      this.update_strut();
-
       this.type_hint = Gdk.WindowTypeHint.DOCK;
 
       this._x_id = this.monitor.notify["x"].connect(() => {
         this.update_position();
+        this.update_strut();
       });
 
       this._y_id = this.monitor.notify["y"].connect(() => {
         this.update_position();
+        this.update_strut();
       });
 
       this._mode_id = this.monitor.notify["mode"].connect(() => {
@@ -101,6 +101,7 @@ namespace GenesisShellGtk3 {
         GtkLayerShell.set_margin(this, GtkLayerShell.Edge.LEFT, (int)(edge / 2));
         GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, (int)(edge / 2));
         this.queue_resize();
+        this.update_strut();
       });
 
       this.update_position();
@@ -117,9 +118,12 @@ namespace GenesisShellGtk3 {
         var win = (Gdk.X11.Window)this.get_window();
 
         int[] strut = new int[12];
+        strut[0] = strut[1] = 0;
         strut[2] = this.get_height();
+        strut[3] = strut[4] = strut[5] = strut[6] = strut[7] = 0;
         strut[8] = this.monitor.x;
         strut[9] = this.monitor.x + this.monitor.mode.width - 1;
+        strut[10] = strut[11] = 0;
 
         var NET_WM_STRUT = Gdk.X11.get_xatom_by_name_for_display(display, "_NET_WM_STRUT");
         var NET_WM_STRUT_PARTIAL = Gdk.X11.get_xatom_by_name_for_display(display, "_NET_WM_STRUT_PARTIAL");
@@ -158,9 +162,22 @@ namespace GenesisShellGtk3 {
       min_height = nat_height = this.get_height();
     }
 
+    public override void size_allocate(Gtk.Allocation alloc) {
+      var edge = this.monitor.mode.width * 0.01;
+      alloc.x = this.monitor.x + (int)(edge / 2);
+      alloc.y = this.monitor.y + 5;
+      alloc.width = this.get_width();
+      alloc.height = this.get_height();
+      base.size_allocate(alloc);
+    }
+
     private void update_position() {
       var edge = this.monitor.mode.width * 0.01;
       this.move(this.monitor.x + (int)(edge / 2), this.monitor.y + 5);
+    }
+
+    public override void map() {
+      base.map();
       this.update_strut();
     }
   }
