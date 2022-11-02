@@ -109,6 +109,7 @@ namespace GenesisShellGtk3 {
       }
 
       public override void size_allocate(Gtk.Allocation alloc) {
+        alloc.y = (this.get_size() / 4) - alloc.y;
         alloc.width = this.get_size();
         alloc.height = this.get_size();
         base.size_allocate(alloc);

@@ -12,6 +12,8 @@ namespace GenesisShellGtk3 {
 
         this._button = new Gtk.Button();
         this._button.image = new Icon.for_monitor("view-app-grid", this.monitor, PanelWidget.UNIT_SIZE);
+        this._button.image.halign = Gtk.Align.CENTER;
+        this._button.image.valign = Gtk.Align.CENTER;
         this._button.always_show_image = true;
         this._button.image_position = Gtk.PositionType.BOTTOM;
         this._button.halign = Gtk.Align.CENTER;
@@ -44,13 +46,14 @@ namespace GenesisShellGtk3 {
       }
 
       public override void size_allocate(Gtk.Allocation alloc) {
+        alloc.y = (this.get_size() / 2) - alloc.y;
         alloc.width = this.get_size();
         alloc.height = this.get_size();
         base.size_allocate(alloc);
       }
 
-      public override void get_preferred_height(out int min_width, out int nat_width) {
-        min_width = nat_width = this.get_size();
+      public override void get_preferred_height(out int min_height, out int nat_height) {
+        min_height = nat_height = this.get_size();
       }
 
       public override void get_preferred_width(out int min_width, out int nat_width) {

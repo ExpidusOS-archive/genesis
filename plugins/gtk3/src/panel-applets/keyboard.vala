@@ -48,11 +48,17 @@ namespace GenesisShellGtk3 {
       }
 
       public override void size_allocate(Gtk.Allocation alloc) {
+        alloc.y = ((this.get_size() / 2) - alloc.y) / 2;
+        alloc.width = this.get_size();
         alloc.height = this.get_size();
         base.size_allocate(alloc);
       }
 
-      public override void get_preferred_height(out int min_width, out int nat_width) {
+      public override void get_preferred_height(out int min_height, out int nat_height) {
+        min_height = nat_height = this.get_size();
+      }
+
+      public override void get_preferred_width(out int min_width, out int nat_width) {
         min_width = nat_width = this.get_size();
       }
     }

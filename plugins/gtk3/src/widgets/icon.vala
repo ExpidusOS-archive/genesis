@@ -1,34 +1,25 @@
 namespace GenesisShellGtk3 {
   public class Icon : Gtk.Image {
     private GenesisShell.Monitor? _monitor;
-    private ulong _dpi_id;
+    private double _dpi;
 
     public GenesisShell.Monitor? monitor {
       get {
         return this._monitor;
       }
       set construct {
-        if (this._monitor != null) {
-          if (this._dpi_id > 0) {
-            this._monitor.disconnect(this._dpi_id);
-            this._dpi_id = 0;
-          }
-        }
-
         this._monitor = value;
-
-        if (this._monitor != null) {
-          this.dpi = this._monitor.dpi;
-          this._dpi_id = this._monitor.notify["dpi"].connect(() => {
-            this.dpi = this._monitor.dpi;
-          });
-        }
       }
     }
 
     public double dpi {
-      get; set construct;
-      default = 91.0;
+      get {
+        if (this._monitor != null) return this._monitor.dpi;
+        return this._dpi;
+      }
+      set construct {
+        this._dpi = value;
+      }
     }
 
     public double dpi_size {
@@ -51,15 +42,6 @@ namespace GenesisShellGtk3 {
 
     public Icon.for_monitor(string icon_name, GenesisShell.Monitor monitor, double dpi_size = 1.0) {
       Object(icon_name: icon_name, monitor: monitor, dpi_size: dpi_size);
-    }
-
-    ~Icon() {
-      if (this._monitor != null) {
-        if (this._dpi_id > 0) {
-          this._monitor.disconnect(this._dpi_id);
-          this._dpi_id = 0;
-        }
-      }
     }
 
     private int get_size() {
