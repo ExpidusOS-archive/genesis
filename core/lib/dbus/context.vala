@@ -4,7 +4,60 @@ namespace GenesisShell {
     public abstract ContextMode mode { get; }
     public abstract string[] plugin_names { owned get; }
 
+    public abstract void invalidate_providers() throws GLib.DBusError, GLib.IOError;
     public signal void shutdown();
+  }
+
+  public class ClientContext : GLib.Object, GLib.AsyncInitable, GLib.Initable, IContext {
+    private bool _is_init;
+
+    public GLib.DBusConnection connection { get; construct; }
+    public IContextDBus proxy { get; }
+    public ContextMode mode { get; construct; default = ContextMode.COMPOSITOR; }
+
+    public async ClientContext.async(ContextMode mode = ContextMode.COMPOSITOR, GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      Object(mode: mode);
+      yield this.init_async(GLib.Priority.DEFAULT, cancellable);
+    }
+
+    public ClientContext(ContextMode mode = ContextMode.COMPOSITOR, GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      Object(mode: mode);
+      this.init(cancellable);
+    }
+
+    public void invalidate_providers() {
+      try {
+        this.proxy.invalidate_providers();
+      } catch (GLib.Error e) {
+        GLib.error(_("Failed to execute \"%s\" on context \"%s\": %s:%d: %s"), "invalidate_providers", this.dbus_id, e.domain.to_string(), e.code, e.message);
+      }
+    }
+
+    private bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
+
+      this._connection = GLib.Bus.get_sync(GLib.BusType.SESSION, cancellable);
+
+      assert(this.dbus_id != null);
+      this._proxy = this.connection.get_proxy_sync(this.dbus_id, "/com/expidus/genesis/Shell");
+      this._is_init = true;
+      return true;
+    }
+
+    private async bool init_async(int io_pri = GLib.Priority.DEFAULT, GLib.Cancellable ?cancellable = null) throws GLib.Error {
+      if (this._is_init) {
+        return true;
+      }
+
+      this._connection = yield GLib.Bus.get(GLib.BusType.SESSION, cancellable);
+
+      assert(this.dbus_id != null);
+      this._proxy = yield this.connection.get_proxy(this.dbus_id, "/com/expidus/genesis/Shell");
+      this._is_init = true;
+      return true;
+    }
   }
 
   internal sealed class DBusContext : GLib.Object, IContextDBus, GLib.Initable {
@@ -51,6 +104,10 @@ namespace GenesisShell {
           this._obj_id = 0;
         }
       }
+    }
+
+    public void invalidate_providers() throws GLib.DBusError, GLib.IOError {
+      this.context.invalidate_providers();
     }
 
     private bool init(GLib.Cancellable ?cancellable = null) throws GLib.Error {

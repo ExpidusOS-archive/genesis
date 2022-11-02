@@ -77,7 +77,30 @@ namespace GenesisShell {
     INVALID_MODE
   }
 
-  public sealed class Context : GLib.Object, GLib.AsyncInitable, GLib.Initable {
+  public interface IContext : GLib.Object {
+    public string? dbus_id {
+      get {
+        switch (this.mode) {
+          case ContextMode.COMPOSITOR:
+            return "com.expidus.genesis.Compositor";
+          case ContextMode.GADGETS:
+            return "com.expidus.genesis.Gadgets";
+          case ContextMode.BIG_PICTURE:
+            return "com.expidus.genesis.BigPicture";
+          default:
+            return null;
+        }
+        return null;
+      }
+    }
+
+    public abstract ContextMode mode { get; construct; default = ContextMode.COMPOSITOR; }
+
+    public abstract void invalidate_providers();
+    public virtual signal void shutdown() {}
+  }
+
+  public sealed class Context : GLib.Object, GLib.AsyncInitable, GLib.Initable, IContext {
     private bool _is_init = false;
     private IMonitorProvider ?_monitor_provider;
     private IUIProvider ?_ui_provider;
@@ -491,23 +514,21 @@ namespace GenesisShell {
       case ContextMode.COMPOSITOR:
 #if !HAS_DBUS
         throw new ContextError.BAD_LAUNCH(_("Compositor mode requires dbus support to be enabled"));
-#else
-        this._dbus_name_id = GLib.Bus.own_name_on_connection(this.dbus.connection, "com.expidus.genesis.Compositor", GLib.BusNameOwnerFlags.DO_NOT_QUEUE);
-        break;
 #endif
+        break;
       case ContextMode.GADGETS:
 #if !HAS_DBUS
         throw new ContextError.BAD_LAUNCH(_("Gadgets mode requires dbus support to be enabled"));
-#else
-        this._dbus_name_id = GLib.Bus.own_name_on_connection(this.dbus.connection, "com.expidus.genesis.Gadgets", GLib.BusNameOwnerFlags.DO_NOT_QUEUE);
-        break;
-
-      case ContextMode.BIG_PICTURE:
-        this._dbus_name_id = GLib.Bus.own_name_on_connection(this.dbus.connection, "com.expidus.genesis.BigPicture", GLib.BusNameOwnerFlags.DO_NOT_QUEUE);
-        break;
 #endif
+        break;
       default:
         break;
+      }
+
+      if (this.dbus_id != null) {
+#if HAS_DBUS
+        this._dbus_name_id = GLib.Bus.own_name_on_connection(this.dbus.connection, this.dbus_id, GLib.BusNameOwnerFlags.DO_NOT_QUEUE);
+#endif
       }
       return true;
     }
@@ -620,7 +641,7 @@ namespace GenesisShell {
     public signal void plugin_added(Peas.PluginInfo info, IPlugin plugin);
     public signal void plugin_removed(Peas.PluginInfo info, IPlugin plugin);
 
-    public virtual signal void shutdown() {
+    public override void shutdown() {
       if (this._is_shutting_down) {
         return;
       }
