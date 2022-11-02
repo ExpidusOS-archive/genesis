@@ -5,7 +5,9 @@ namespace GenesisShell {
     DESKTOP,
     NOTIFICATION,
     APPS,
-    DASH;
+    DASH,
+    FILE_BROWSER,
+    APP_BROWSER;
 
     public static uint n_values() {
       var enumc = (GLib.EnumClass)typeof(UIElementKind).class_ref();
@@ -45,32 +47,7 @@ namespace GenesisShell {
     public abstract GLib.List <string> monitor_list_ids_for_kind(Monitor monitor, UIElementKind kind);
     public abstract IUIElement ? for_monitor(Monitor monitor, UIElementKind kind, string ?id);
 
-    public bool action(UIElementKind elem, UIActionKind action, ...) {
-      return this.actionv(elem, action, va_list());
-    }
-
-    public bool actionv(UIElementKind elem, UIActionKind action, va_list ap) {
-      var dup = va_list.copy(ap);
-
-      var i = 0;
-      for (var item = dup.arg <void *>(); item != null; item = dup.arg <void *>()) {
-        i++;
-      }
-      assert(i % 2 == 0);
-
-      string[]     names  = {};
-      GLib.Value[] values = {};
-
-      for (var x = 0; x < i; x += 2) {
-        // FIXME: prevent segfault
-        names[x]  = ap.arg <string>();
-        values[x] = ap.arg <GLib.Value>();
-      }
-
-      return this.action_with_properties(elem, action, names, values);
-    }
-
-    public virtual signal bool action_with_properties(UIElementKind elem, UIActionKind action, string[] names, GLib.Value[] values) {
+    public virtual signal GLib.Value action(UIElementKind elem, UIActionKind action, string[] names, GLib.Value[] values) {
       return false;
     }
   }
@@ -86,30 +63,6 @@ namespace GenesisShell {
   }
 
   public interface IUIActioner : GLib.Object, IUIElement {
-    public bool action(UIActionKind action, ...) {
-      return this.actionv(action, va_list());
-    }
-
-    public bool actionv(UIActionKind action, va_list ap) {
-      var dup = va_list.copy(ap);
-
-      var i = 0;
-      for (var item = dup.arg <void *>(); item != null; item = dup.arg <void *>()) {
-        i++;
-      }
-      assert(i % 2 == 0);
-
-      string[]     names  = {};
-      GLib.Value[] values = {};
-
-      for (var x = 0; x < i; x += 2) {
-        names[x]  = ap.arg <string>();
-        values[x] = ap.arg <GLib.Value>();
-      }
-
-      return this.action_with_properties(action, names, values);
-    }
-
-    public abstract signal bool action_with_properties(UIActionKind action, string[] names, GLib.Value[] values);
+    public abstract signal GLib.Value action(UIActionKind action, string[] names, GLib.Value[] values);
   }
 }

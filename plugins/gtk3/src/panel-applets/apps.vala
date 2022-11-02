@@ -28,7 +28,7 @@ namespace GenesisShellGtk3 {
       private void click() {
         var value = GLib.Value(typeof (GenesisShell.Monitor));
         value.set_object(this.monitor);
-        this.context.ui_provider.action_with_properties(GenesisShell.UIElementKind.APPS, GenesisShell.UIActionKind.OPEN, {"monitor"}, {value});
+        this.context.ui_provider.action(GenesisShell.UIElementKind.APPS, GenesisShell.UIActionKind.OPEN, {"monitor"}, {value});
       }
 
       private int get_size() {
