@@ -41,17 +41,10 @@ namespace GenesisShellGtk3 {
         switch (kind) {
         case GenesisShell.UIElementKind.DESKTOP:
           return gtk_monitor.desktop.widget;
-
         case GenesisShell.UIElementKind.PANEL:
-          if (gtk_monitor.panel == null && gtk_monitor.desktop.widget.panel != null) {
-            return gtk_monitor.desktop.widget.panel;
-          }else if (gtk_monitor.panel != null && gtk_monitor.desktop.widget.panel == null) {
-            return gtk_monitor.panel.widget;
-          }
-          return null;
-
+          return gtk_monitor.panel_widget;
         default:
-          return null;
+          break;
         }
       }
       return null;

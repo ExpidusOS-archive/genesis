@@ -3,8 +3,20 @@ namespace GenesisShellGtk3 {
     private string _id;
     private GenesisShell.MonitorMode _mode;
     public Gdk.Monitor gdk_monitor { get; construct; }
-    public DesktopWindow desktop { get; }
+    public DesktopWindow? desktop { get; }
     public PanelWindow ?panel { get; }
+
+    public PanelWidget? panel_widget {
+      get {
+        if (this._panel != null) return this._panel.widget;
+        if (this._desktop != null) {
+          if (this._desktop.widget != null) {
+            return this._desktop.widget.panel;
+          }
+        }
+        return null;
+      }
+    }
 
     public override GLib.Bytes ?edid {
       get {

@@ -42,6 +42,21 @@ namespace GenesisShellGtk3 {
         var time = dt.format(this.context.settings.get_string("clock-format"));
         this._label.label = time;
       }
+
+      public override void size_allocate(Gtk.Allocation alloc) {
+        base.size_allocate(alloc);
+        if (this._label != null) this._label.size_allocate(alloc);
+      }
+
+      public override void get_preferred_height(out int min_height, out int nat_height) {
+        if (this._label != null) this._label.get_preferred_height(out min_height, out nat_height);
+        else base.get_preferred_height(out min_height, out nat_height);
+      }
+
+      public override void get_preferred_width(out int min_width, out int nat_width) {
+        if (this._label != null) this._label.get_preferred_width(out min_width, out nat_width);
+        else base.get_preferred_width(out min_width, out nat_width);
+      }
     }
   }
 }

@@ -159,7 +159,7 @@ namespace GenesisShellGtk3 {
     }
 
     private void update_mode() {
-      if (this.should_resize) {
+      if (this.context.mode != GenesisShell.ContextMode.BIG_PICTURE && this.is_x11) {
         this.default_width  = this.monitor.mode.width;
         this.default_height = this.monitor.mode.height;
         this.resize(this.monitor.mode.width, this.monitor.mode.height);

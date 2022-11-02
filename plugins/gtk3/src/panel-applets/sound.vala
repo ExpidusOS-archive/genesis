@@ -98,7 +98,7 @@ namespace GenesisShellGtk3 {
         var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
         var monitor = this.monitor as Monitor;
         if (monitor != null) {
-          var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;
+          var panel = monitor.panel_widget;
           if (panel != null) {
             var style_ctx = panel.get_style_context();
             var padding = style_ctx.get_padding(style_ctx.get_state());

@@ -192,13 +192,18 @@ namespace GenesisShellGtk3 {
     }
 
     private int get_height() {
-      var value = GenesisShell.Math.scale(this.monitor.dpi, UNIT_SIZE);
+      return GenesisShell.Math.scale(this.monitor.dpi, UNIT_SIZE);
+    }
+
+    public override void size_allocate(Gtk.Allocation alloc) {
       if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
-        var style_ctx = this.get_style_context();
-        var padding = style_ctx.get_padding(style_ctx.get_state());
-        value += padding.top + padding.bottom;
+        var edge = this.monitor.mode.width * 0.01;
+        alloc.x = (int)(edge / 2);
+        alloc.y = 5;
+        alloc.width = this.get_width();
+        alloc.height = this.get_height();
       }
-      return value;
+      base.size_allocate(alloc);
     }
 
     public override void get_preferred_width(out int min_width, out int nat_width) {
