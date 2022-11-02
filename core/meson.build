@@ -25,6 +25,11 @@ libgenesis_core_rel_sources = ['lib/context.vala', 'lib/math.vala', 'lib/monitor
   'lib/provider/monitor.vala', 'lib/provider/ui.vala', 'lib/provider/window.vala', 'lib/provider/workspace.vala']
 libgenesis_core_sources = []
 
+if dbus.found()
+  libgenesis_core_rel_sources += ['lib/dbus/context.vala', 'lib/dbus/monitor.vala',
+    'lib/dbus/window.vala', 'lib/dbus/workspace.vala']
+endif
+
 foreach src : libgenesis_core_rel_sources
   libgenesis_core_sources += [join_paths(meson.current_source_dir(), src)]
 endforeach
