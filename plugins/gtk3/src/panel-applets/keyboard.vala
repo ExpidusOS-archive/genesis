@@ -11,10 +11,11 @@ namespace GenesisShellGtk3 {
       construct {
         this.get_style_context().add_class("genesis-shell-panel-applet-keyboard");
 
+        // FIXME: image should be centered but it is not
         this._button = new Gtk.Button();
-        this._button.image = new Icon.for_monitor("keyboard-layout", this.monitor, 0.85);
+        this._button.image = new Icon.for_monitor("keyboard-layout", this.monitor, PanelWidget.UNIT_SIZE);
         this._button.always_show_image = true;
-        this._button.image_position = Gtk.PositionType.LEFT;
+        this._button.image_position = Gtk.PositionType.TOP;
         this._button.halign = Gtk.Align.CENTER;
         this._button.valign = Gtk.Align.CENTER;
         this.add(this._button);
@@ -33,7 +34,7 @@ namespace GenesisShellGtk3 {
       }
 
       private int get_size() {
-        var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+        var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
         var monitor = this.monitor as Monitor;
         if (monitor != null) {
           var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;
@@ -47,7 +48,6 @@ namespace GenesisShellGtk3 {
       }
 
       public override void size_allocate(Gtk.Allocation alloc) {
-        alloc.width = this.get_size();
         alloc.height = this.get_size();
         base.size_allocate(alloc);
       }

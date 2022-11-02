@@ -17,8 +17,8 @@ namespace GenesisShellGtk3 {
       construct {
         GLib.debug(_("Found network device %s"), this.device.@interface);
 
-        this._icon             = new Icon.for_monitor("network-offline", this.monitor, 0.85);
-        this._icon.no_show_all = true;
+        this._icon = new Icon.for_monitor("network-offline", this.monitor, PanelWidget.UNIT_SIZE);
+        this.icon.no_show_all = true;
         this.add(this._icon);
 
         this._state_id = this.device.notify["state"].connect(() => this.update_state());
@@ -38,7 +38,9 @@ namespace GenesisShellGtk3 {
       }
 
       private int get_size() {
-        var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+        if (this._icon == null) return 0;
+        if (!this._icon.visible) return 0;
+        var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
         var monitor = this.monitor as Monitor;
         if (monitor != null) {
           var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;
@@ -49,12 +51,6 @@ namespace GenesisShellGtk3 {
           }
         }
         return value;
-      }
-
-      public override void size_allocate(Gtk.Allocation alloc) {
-        alloc.width = this.get_size();
-        alloc.height = this.get_size();
-        base.size_allocate(alloc);
       }
 
       public override void get_preferred_height(out int min_width, out int nat_width) {

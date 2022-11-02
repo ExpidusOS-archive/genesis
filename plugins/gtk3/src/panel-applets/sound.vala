@@ -55,9 +55,9 @@ namespace GenesisShellGtk3 {
 
         // FIXME: image should be centered but it is not
         this._button = new Gtk.Button();
-        this._button.image = new Icon.for_monitor(this.icon_name_format.printf("high"), this.monitor, 0.85);
+        this._button.image = new Icon.for_monitor(this.icon_name_format.printf("high"), this.monitor, PanelWidget.UNIT_SIZE);
         this._button.always_show_image = true;
-        this._button.image_position = Gtk.PositionType.BOTTOM;
+        this._button.image_position = Gtk.PositionType.TOP;
         this._button.halign = Gtk.Align.CENTER;
         this._button.valign = Gtk.Align.CENTER;
         this.add(this._button);
@@ -95,7 +95,7 @@ namespace GenesisShellGtk3 {
       }
 
       private int get_size() {
-        var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+        var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
         var monitor = this.monitor as Monitor;
         if (monitor != null) {
           var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;
@@ -198,7 +198,7 @@ namespace GenesisShellGtk3 {
       }
 
       private int get_size() {
-        var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+        var value = GenesisShell.Math.scale(this.monitor.dpi, 0.85);
         var monitor = this.monitor as Monitor;
         if (monitor != null) {
           var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;
@@ -209,16 +209,6 @@ namespace GenesisShellGtk3 {
           }
         }
         return value;
-      }
-
-      public override void size_allocate(Gtk.Allocation alloc) {
-        alloc.width = this.get_size();
-        alloc.height = this.get_size();
-        base.size_allocate(alloc);
-      }
-
-      public override void get_preferred_height(out int min_height, out int nat_height) {
-        min_height = nat_height = this.get_size();
       }
     }
   }

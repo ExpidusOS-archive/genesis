@@ -10,9 +10,8 @@ namespace GenesisShellGtk3 {
       construct {
         this.get_style_context().add_class("genesis-shell-panel-applet-apps");
 
-        // FIXME: image should be centered but it is not
         this._button = new Gtk.Button();
-        this._button.image = new Icon.for_monitor("view-app-grid", this.monitor, 0.85);
+        this._button.image = new Icon.for_monitor("view-app-grid", this.monitor, PanelWidget.UNIT_SIZE);
         this._button.always_show_image = true;
         this._button.image_position = Gtk.PositionType.BOTTOM;
         this._button.halign = Gtk.Align.CENTER;
@@ -31,7 +30,7 @@ namespace GenesisShellGtk3 {
       }
 
       private int get_size() {
-        var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+        var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
         var monitor = this.monitor as Monitor;
         if (monitor != null) {
           var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;

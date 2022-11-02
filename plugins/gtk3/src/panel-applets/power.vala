@@ -18,7 +18,7 @@ namespace GenesisShellGtk3 {
 
         GLib.debug(_("Found UPower device %s"), this.device.native_path);
 
-        this._icon = new Icon.for_monitor("battery-missing", this.monitor, 0.85);
+        this._icon = new Icon.for_monitor("battery-missing", this.monitor, PanelWidget.UNIT_SIZE);
         this.add(this._icon);
 
         this._energy_id     = this.device.notify["energy"].connect(() => this.update());
@@ -64,7 +64,7 @@ namespace GenesisShellGtk3 {
       }
 
       private int get_size() {
-        var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+        var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
         var monitor = this.monitor as Monitor;
         if (monitor != null) {
           var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;
@@ -75,12 +75,6 @@ namespace GenesisShellGtk3 {
           }
         }
         return value;
-      }
-
-      public override void size_allocate(Gtk.Allocation alloc) {
-        alloc.width = this.get_size();
-        alloc.height = this.get_size();
-        base.size_allocate(alloc);
       }
 
       public override void get_preferred_height(out int min_width, out int nat_width) {

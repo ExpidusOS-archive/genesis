@@ -41,7 +41,7 @@ namespace GenesisShellGtk3 {
         return this.get_size();
       }
       set {
-        this.dpi_size = (this.dpi / value) * 5.5;
+        this.dpi_size = (value / (this.dpi / GenesisShell.Math.NORM_DPI));
       }
     }
 
@@ -63,13 +63,7 @@ namespace GenesisShellGtk3 {
     }
 
     private int get_size() {
-      return GenesisShell.Math.em(this.dpi, this.dpi_size);
-    }
-
-    public override void size_allocate(Gtk.Allocation alloc) {
-      alloc.width = this.get_size();
-      alloc.height = this.get_size();
-      base.size_allocate(alloc);
+      return GenesisShell.Math.scale(this.dpi, this.dpi_size);
     }
 
     public override void get_preferred_height(out int min_width, out int nat_width) {

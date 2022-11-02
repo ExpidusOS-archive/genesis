@@ -42,6 +42,8 @@ namespace GenesisShellGtk3 {
   }
 
   public sealed class PanelWidget : Hdy.HeaderBar, GenesisShell.IUIElement {
+    public const double UNIT_SIZE = 20.0;
+
     private ulong _mode_id;
     private Gtk.Box _left;
     private Gtk.Box _center;
@@ -113,15 +115,16 @@ namespace GenesisShellGtk3 {
       this._applets     = new GLib.List <IPanelApplet>();
       this._applet_sigs = new GLib.HashTable <string, ulong>(GLib.str_hash, GLib.str_equal);
 
-      this._left         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
+      var spacing = GenesisShell.Math.scale(this.monitor.dpi, 0.05);
+      this._left         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
       this._left.halign  = Gtk.Align.START;
       this._left.hexpand = true;
 
-      this._center         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
+      this._center         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
       this._center.halign  = Gtk.Align.CENTER;
       this._center.hexpand = true;
 
-      this._right         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, GenesisShell.Math.em(this.monitor.dpi, 0.25));
+      this._right         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
       this._right.halign  = Gtk.Align.END;
       this._right.hexpand = true;
 
@@ -134,7 +137,7 @@ namespace GenesisShellGtk3 {
       }
 
       this.halign  = Gtk.Align.CENTER;
-      this.spacing = GenesisShell.Math.em(this.monitor.dpi, 1.0);
+      this.spacing = GenesisShell.Math.scale(this.monitor.dpi, spacing);
 
       this.pack_start(this._left);
       this.add(this._center);
@@ -189,7 +192,7 @@ namespace GenesisShellGtk3 {
     }
 
     private int get_height() {
-      var value = GenesisShell.Math.em(this.monitor.dpi, 0.85);
+      var value = GenesisShell.Math.scale(this.monitor.dpi, UNIT_SIZE);
       if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
         var style_ctx = this.get_style_context();
         var padding = style_ctx.get_padding(style_ctx.get_state());
