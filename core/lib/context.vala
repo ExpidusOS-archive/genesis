@@ -90,7 +90,6 @@ namespace GenesisShell {
           default:
             return null;
         }
-        return null;
       }
     }
 
@@ -235,6 +234,8 @@ namespace GenesisShell {
           case Gvc.MixerControlState.READY:
             result[0] = true;
             GLib.Idle.add((owned)callback);
+            break;
+          case Gvc.MixerControlState.CONNECTING:
             break;
         }
       });

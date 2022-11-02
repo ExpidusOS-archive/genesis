@@ -197,20 +197,6 @@ namespace GenesisShellGtk3 {
           this._box.remove(device);
         }
       }
-
-      private int get_size() {
-        var value = GenesisShell.Math.scale(this.monitor.dpi, 0.85);
-        var monitor = this.monitor as Monitor;
-        if (monitor != null) {
-          var panel = monitor.panel != null ? monitor.panel.widget : monitor.desktop.widget.panel;
-          if (panel != null) {
-            var style_ctx = panel.get_style_context();
-            var padding = style_ctx.get_padding(style_ctx.get_state());
-            value += padding.top + padding.bottom;
-          }
-        }
-        return value;
-      }
     }
   }
 }

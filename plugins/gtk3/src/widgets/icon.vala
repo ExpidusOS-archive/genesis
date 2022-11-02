@@ -27,7 +27,7 @@ namespace GenesisShellGtk3 {
       default = 1.0;
     }
 
-    public int icon_size {
+    public new int icon_size {
       get {
         return this.get_size();
       }

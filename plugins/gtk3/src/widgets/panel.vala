@@ -209,15 +209,6 @@ namespace GenesisShellGtk3 {
       min_height = nat_height = this.get_height();
     }
 
-    private static int applet_search_func(IPanelApplet a, string id) {
-      return GLib.strcmp(a.id, id);
-    }
-
-    private unowned GLib.List <IPanelApplet> find_applet_element_by_id(string id) {
-      // FIXME: why is this invalid: this._applets.search(id, (a, str) => GLib.strcmp(a.id, str));
-      return this._applets.search(id, applet_search_func);
-    }
-
     private unowned GLib.List <IPanelApplet> find_applet(IPanelApplet applet) {
       return this._applets.find_custom(applet, (a, b) => GLib.strcmp(a.id, b.id));
     }
