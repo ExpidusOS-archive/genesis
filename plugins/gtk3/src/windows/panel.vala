@@ -23,6 +23,16 @@ namespace GenesisShellGtk3 {
       }
     }
 
+    public bool is_x11 {
+      get {
+#if HAS_GTK3_X11
+        return this.get_display() is Gdk.X11.Display;
+#else
+        return false;
+#endif
+      }
+    }
+
     internal PanelWindow(GenesisShell.Monitor monitor) {
       Object(monitor: monitor);
     }
@@ -73,6 +83,29 @@ namespace GenesisShellGtk3 {
         GLib.debug(_("Gtk layer shell is active on %p"), this);
       }
 #endif
+
+      if (this.is_x11) {
+#if HAS_GTK3_X11
+        var display = (Gdk.X11.Display)this.get_display();
+        var win = (Gdk.X11.Window)this.get_window();
+
+        var edge = (int)(this.monitor.mode.width * 0.01);
+
+        int[] strut = new int[12];
+        strut[2] = this.get_height();
+        strut[8] = (edge / 2);
+        strut[9] = (edge / 2) + this.get_width() - 1;
+
+        var NET_WM_STRUT = Gdk.X11.get_xatom_by_name_for_display(display, "_NET_WM_STRUT");
+        var NET_WM_STRUT_PARTIAL = Gdk.X11.get_xatom_by_name_for_display(display, "_NET_WM_STRUT_PARTIAL");
+
+        unowned var xdis = display.get_xdisplay();
+        var xwin = win.get_xid();
+
+        xdis.change_property(xwin, NET_WM_STRUT_PARTIAL, X.XA_CARDINAL, 32, X.PropMode.Replace, (uchar[])strut, 12);
+        xdis.change_property(xwin, NET_WM_STRUT, X.XA_CARDINAL, 32, X.PropMode.Replace, (uchar[])strut, 4);
+#endif
+      }
 
       this.type_hint = Gdk.WindowTypeHint.DOCK;
 

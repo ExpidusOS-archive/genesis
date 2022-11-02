@@ -23,6 +23,16 @@ namespace GenesisShellGtk3 {
       }
     }
 
+    public bool is_x11 {
+      get {
+#if HAS_GTK3_X11
+        return this.get_display() is Gdk.X11.Display;
+#else
+        return false;
+#endif
+      }
+    }
+
     public bool should_resize {
       get {
 #if HAS_GTK_LAYER_SHELL

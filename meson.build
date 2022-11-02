@@ -125,7 +125,7 @@ gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found(), required: li
   libtokyo_gtk3]
 
 if gtk3_x11.found()
-  gtk3 += [gtk3_x11]
+  gtk3 += [gtk3_x11, dependency('x11', required: true)]
 endif
 
 if gtk3_wayland.found()
