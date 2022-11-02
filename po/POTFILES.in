@@ -8,6 +8,10 @@ core/lib/ui.vala
 core/lib/window-manager.vala
 core/lib/window.vala
 core/lib/workspace.vala
+core/lib/dbus/context.vala
+core/lib/dbus/monitor.vala
+core/lib/dbus/window.vala
+core/lib/dbus/workspace.vala
 core/lib/provider/monitor.vala
 core/lib/provider/ui.vala
 core/lib/provider/window.vala
@@ -23,6 +27,7 @@ plugins/gtk3/src/panel-applets/power.vala
 plugins/gtk3/src/panel-applets/sound.vala
 plugins/gtk3/src/provider/monitor.vala
 plugins/gtk3/src/widgets/desktop.vala
+plugins/gtk3/src/widgets/icon.vala
 plugins/gtk3/src/widgets/panel.vala
 plugins/gtk3/src/windows/desktop.vala
 plugins/gtk3/src/windows/panel.vala
