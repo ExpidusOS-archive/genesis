@@ -117,19 +117,10 @@ namespace GenesisShellGtk3 {
         var display = (Gdk.X11.Display)this.get_display();
         var win = (Gdk.X11.Window)this.get_window();
 
-        uint[] strut = new uint[12];
-        strut[0] = this.monitor.x; // left
-        strut[1] = this.monitor.x + this.get_width(); // right
-        strut[2] = this.monitor.y; // top
-        strut[3] = this.monitor.y + this.get_height(); // bottom
-        strut[4] = this.monitor.y; // left_start_y
-        strut[5] = this.monitor.y + this.get_height(); // left_end_y
-        strut[6] = this.monitor.y; // right_start_y
-        strut[7] = this.monitor.y + this.get_height(); // right_end_y
-        strut[8] = this.monitor.x; // top_start_x
-        strut[9] = this.monitor.x + this.get_width(); // top_end_x
-        strut[10] = this.monitor.x; // bottom_start_x
-        strut[11] = this.monitor.x + this.get_width(); // bottom_end_x
+        var strut = new ulong[12];
+        strut[2] = this.monitor.y + this.get_height();
+        strut[8] = this.monitor.x;
+        strut[9] = this.monitor.x + this.get_width() - 1;
 
         var NET_WM_STRUT = Gdk.X11.get_xatom_by_name_for_display(display, "_NET_WM_STRUT");
         var NET_WM_STRUT_PARTIAL = Gdk.X11.get_xatom_by_name_for_display(display, "_NET_WM_STRUT_PARTIAL");
