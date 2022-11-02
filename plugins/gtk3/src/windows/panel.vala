@@ -97,18 +97,28 @@ namespace GenesisShellGtk3 {
       });
 
       this._mode_id = this.monitor.notify["mode"].connect(() => {
-        var edge = this.monitor.mode.width * 0.01;
-        GtkLayerShell.set_margin(this, GtkLayerShell.Edge.LEFT, (int)(edge / 2));
-        GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, (int)(edge / 2));
+#if HAS_GTK_LAYER_SHELL
+        if (this.is_wayland) {
+          var edge = this.monitor.mode.width * 0.01;
+          GtkLayerShell.set_margin(this, GtkLayerShell.Edge.LEFT, (int)(edge / 2));
+          GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, (int)(edge / 2));
+        }
+#endif
+
+        this.update_size();
         this.queue_resize();
         this.update_strut();
       });
 
+      this.update_size();
       this.update_position();
 
       this.get_box().add(this.widget);
       this.show_all();
       this.header.hide();
+
+      this.default_width = this.get_width();
+      this.default_height = this.get_height();
     }
 
     private void update_strut() {
@@ -168,6 +178,12 @@ namespace GenesisShellGtk3 {
       base.size_allocate(alloc);
     }
 
+    private void update_size() {
+      if (this.is_x11) {
+        this.resize(this.get_width(), this.get_height());
+      }
+    }
+
     private void update_position() {
       var edge = this.monitor.mode.width * 0.01;
       this.move(this.monitor.x + (int)(edge / 2), this.monitor.y + 5);
@@ -175,6 +191,9 @@ namespace GenesisShellGtk3 {
 
     public override void map() {
       base.map();
+
+      this.update_size();
+      this.update_position();
       this.update_strut();
     }
   }
