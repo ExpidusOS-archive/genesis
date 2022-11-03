@@ -27,21 +27,19 @@ namespace GenesisShellGtk3 {
       default = 1.0;
     }
 
-    public new int icon_size {
-      get {
-        return this.get_size();
-      }
-      set {
-        this.dpi_size = (value / (this.dpi / GenesisShell.Math.NORM_DPI));
-      }
-    }
-
     public Icon(string icon_name, double dpi = 91.0, double dpi_size = 1.0) {
       Object(icon_name: icon_name, dpi: dpi, dpi_size: dpi_size);
     }
 
     public Icon.for_monitor(string icon_name, GenesisShell.Monitor monitor, double dpi_size = 1.0) {
       Object(icon_name: icon_name, monitor: monitor, dpi_size: dpi_size);
+    }
+
+    construct {
+      this.pixel_size = this.get_size();
+
+      this.notify["dpi"].connect(() => this.pixel_size = this.get_size());
+      this.notify["dpi_size"].connect(() => this.pixel_size = this.get_size());
     }
 
     private int get_size() {

@@ -40,7 +40,8 @@ plugin_gtk3_rel_sources = ['src/plugin.vala', 'src/monitor.vala',
 plugin_gtk3_sources = []
 
 if libnm.found()
-  plugin_gtk3_rel_sources += ['src/panel-applets/networks.vala']
+  plugin_gtk3_rel_sources += ['src/panel-applets/networks.vala',
+    'src/indicators/wifi.vala']
 endif
 
 if upower.found()

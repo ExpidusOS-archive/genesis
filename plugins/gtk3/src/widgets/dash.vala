@@ -21,9 +21,12 @@ namespace GenesisShellGtk3 {
     public Gtk.Image icon { get; }
 
     construct {
-      this._icon = new Icon.for_monitor("error", this.monitor, 30.0);
+      this.get_style_context().add_class("genesis-shell-dash-indicator");
+
+      this._icon = new Icon.for_monitor("error", this.monitor, 25.0);
       this._icon.halign = Gtk.Align.CENTER;
       this._icon.valign = Gtk.Align.CENTER;
+      this._icon.bind_property("visible", this, "visible", GLib.BindingFlags.BIDIRECTIONAL | GLib.BindingFlags.SYNC_CREATE);
       this.add(this._icon);
 
       this.halign = Gtk.Align.CENTER;
@@ -70,6 +73,16 @@ namespace GenesisShellGtk3 {
       Object(monitor: monitor);
     }
 
+    private async void init_async() {
+#if HAS_LIBNM
+      try {
+        this.add_indicator(yield new DashIndicators.WiFi(this.monitor, "wifi-0"));
+      } catch (GLib.Error e) {
+        GLib.warning(_("WiFi failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+      }
+#endif
+    }
+
     construct {
       this._scroll_adjust = new Gtk.Adjustment(0, 0, 100.0, 1.0, 10.0, 0.0);
       this._scroll = new Gtk.ScrolledWindow(null, this._scroll_adjust);
@@ -81,11 +94,20 @@ namespace GenesisShellGtk3 {
       this._scroll.add(this._scroll_view);
 
       var spacing = GenesisShell.Math.scale(this.monitor.dpi, 0.05);
+      var margin = GenesisShell.Math.scale(this.monitor.dpi, 1.0);
+
       this._content = new Gtk.Box(Gtk.Orientation.VERTICAL, spacing);
+      this._content.margin_top = margin;
+      this._content.margin_bottom = margin;
+      this._content.margin_start = margin;
+      this._content.margin_end = margin;
       this._scroll_view.add(this._content);
 
       this._indicators_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
+      this._indicators_box.halign = Gtk.Align.CENTER;
       this._content.add(this._indicators_box);
+
+      this.init_async.begin((obj, ctx) => this.init_async.end(ctx));
     }
 
     private unowned GLib.List <IDashIndicator> find_indicator(IDashIndicator indicator) {

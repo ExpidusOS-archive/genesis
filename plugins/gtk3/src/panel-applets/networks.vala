@@ -14,6 +14,23 @@ namespace GenesisShellGtk3 {
         Object(monitor: monitor, device: device);
       }
 
+      ~NetworkIcon() {
+        if (this._state_id > 0) {
+          ((GLib.Object)this.device).disconnect(this._state_id);
+          this._state_id = 0;
+        }
+
+        if (this._ap_id > 0) {
+          ((GLib.Object)this.device).disconnect(this._ap_id);
+          this._ap_id = 0;
+        }
+
+        if (this._ap_strength_id > 0) {
+          ((GLib.Object)this.device).disconnect(this._ap_strength_id);
+          this._ap_strength_id = 0;
+        }
+      }
+
       construct {
         GLib.debug(_("Found network device %s"), this.device.@interface);
 
@@ -154,7 +171,8 @@ namespace GenesisShellGtk3 {
       private NM.Client _client;
       private Gtk.Box _icons;
 
-      private ulong _wifi_enable_id;
+      private ulong _added_id;
+      private ulong _removed_id;
 
       public NetworkIcon ?wifi { get; }
       public NetworkIcon ?eth { get; }
@@ -162,6 +180,18 @@ namespace GenesisShellGtk3 {
       public async Networks(GenesisShell.Monitor monitor, string id, int io_pri = GLib.Priority.DEFAULT, GLib.Cancellable ?cancellable = null) throws GLib.Error {
         Object(monitor: monitor, id: id);
         yield this.init_async(io_pri, cancellable);
+      }
+
+      ~Networks() {
+        if (this._added_id > 0) {
+          this._client.disconnect(this._added_id);
+          this._added_id = 0;
+        }
+
+        if (this._removed_id > 0) {
+          this._client.disconnect(this._removed_id);
+          this._removed_id = 0;
+        }
       }
 
       construct {
@@ -176,8 +206,23 @@ namespace GenesisShellGtk3 {
       public async bool init_async(int io_pri = GLib.Priority.DEFAULT, GLib.Cancellable ?cancellable = null) throws GLib.Error {
         this._client = yield NM.Client.new_async(cancellable);
 
-        this._wifi_enable_id = this._client.notify["wireless-enabled"].connect(() => {
+        this._added_id = this._client.device_added.connect((device) => {
+          this.update_eth();
           this.update_wifi();
+        });
+
+        this._removed_id = this._client.device_removed.connect((device) => {
+          if (this._wifi != null) {
+            if (this._wifi.device.get_iface() == device.get_iface()) {
+              this._icons.remove(this._wifi);
+              this._wifi = null;
+            }
+          } else if (this._eth != null) {
+            if (this._eth.device.get_iface() == device.get_iface()) {
+              this._icons.remove(this._eth);
+              this._eth = null;
+            }
+          }
         });
 
         this.update_eth();
@@ -200,7 +245,7 @@ namespace GenesisShellGtk3 {
       }
 
       private void update_wifi() {
-        if (this._client.wireless_enabled && this._wifi == null) {
+        if (this._wifi == null) {
           foreach (var dev in this._client.get_all_devices()) {
             if (dev is NM.DeviceWifi) {
               this._wifi = new NetworkIcon(this.monitor, dev);
@@ -209,9 +254,6 @@ namespace GenesisShellGtk3 {
               break;
             }
           }
-        } else if (!this._client.wireless_enabled && this._wifi != null) {
-          this._icons.remove(this._wifi);
-          this._wifi = null;
         }
       }
     }
