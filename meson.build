@@ -82,6 +82,8 @@ libnm = dependency('libnm', required: false)
 upower = dependency('upower-glib', required: false)
 gio_unix = dependency('gio-unix-2.0', required: false)
 
+libcallaudio = dependency('libcallaudio-0.1', required: false)
+
 libtokyo = dependency('tokyo', fallback: ['libtokyo', 'libtokyo_core_dep'], required: false)
 libtokyo_gtk3 = dependency('tokyo-gtk3', fallback: ['libtokyo', 'libtokyo_gtk3_dep'], disabler: not libtokyo.found(), required: false)
 libtokyo_gtk4 = dependency('tokyo-gtk4', fallback: ['libtokyo', 'libtokyo_gtk4_dep'], disabler: not libtokyo.found(), required: false)
@@ -111,6 +113,37 @@ endif
 
 if gtk4_x11.found()
   add_project_arguments(['--define=HAS_GTK4_X11'], language: 'vala')
+endif
+
+if libtokyo_gtk3.found() and libcallaudio.found() 
+  libcall_ui_proj = subproject('libcall-ui', default_options: [
+    'examples=false',
+    'gtk_doc=true',
+    'tests=false',
+    'install-i18n=true'
+  ])
+
+  call_ui_lib = static_library('call-ui',
+    [libcall_ui_proj.get_variable('call_ui_sources'), libcall_ui_proj.get_variable('call_ui_enum_sources')],
+    c_args: libcall_ui_proj.get_variable('call_ui_c_args'),
+    include_directories: [ libcall_ui_proj.get_variable('root_inc'), libcall_ui_proj.get_variable('src_inc') ],
+    dependencies: libcall_ui_proj.get_variable('call_ui_deps'))
+
+  libcall_ui = declare_dependency(
+    include_directories: include_directories('subprojects/libcall-ui/src'),
+    dependencies: libcall_ui_proj.get_variable('call_ui_deps'),
+    link_with: call_ui_lib)
+
+  libcall_ui_vapi = gnome.generate_vapi('libcall-ui',
+    metadata_dirs: [join_paths(meson.project_source_root(), 'vapi')],
+    vapi_dirs: [join_paths(meson.project_source_root(), 'vapi')],
+    packages: ['gio-2.0', 'gtk+-3.0', 'libhandy-1', 'libcallaudio-0.1'],
+    sources: [libcall_ui_proj.get_variable('libcall_ui_gir')[0]],
+    install: true,
+    install_dir: join_paths(datadir, 'genesis-shell', 'libs'))
+  libcall_ui_inc = include_directories(join_paths('subprojects', 'libcall-ui'))
+else
+  libcall_ui = disabler()
 endif
 
 vadi = dependency('vadi-0.0', required: true)

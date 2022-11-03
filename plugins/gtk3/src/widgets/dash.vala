@@ -49,8 +49,11 @@ namespace GenesisShellGtk3 {
     private Gtk.Box _indicators_box;
     private GLib.List <IDashIndicator> _indicators;
     private Gtk.Box _actions;
+    private Hdy.ViewSwitcherTitle _calevents_title;
+    private Gtk.Stack _calevents_stack;
 
     public Gtk.Box content { get; }
+    public TokyoGtk.CalendarEvents calevents { get; }
 
     public GenesisShell.UIElementKind kind {
       get {
@@ -122,7 +125,7 @@ namespace GenesisShellGtk3 {
       this._actions.vexpand = true;
 
 #if HAS_GIO_UNIX
-      this.add_action_button("systemsettings").clicked.connect(() => {
+      this.add_action_button("settings-symbolic").clicked.connect(() => {
         try {
           var launch_ctx = this.get_display().get_app_launch_context();
           var app_info = new GLib.DesktopAppInfo("com.expidus.genesis.settings");
@@ -133,15 +136,21 @@ namespace GenesisShellGtk3 {
       });
 #endif
 
-      this.add_action_button("system-log-out").clicked.connect(() => this.context.shutdown());
+      this.add_action_button("system-log-out-symbolic").clicked.connect(() => this.context.shutdown());
 
       if (this.context.mode != GenesisShell.ContextMode.BIG_PICTURE) {
-        this.add_action_button("system-switch-user").clicked.connect(() => {});
-        this.add_action_button("system-shutdown").clicked.connect(() => {});
-        this.add_action_button("system-reboot").clicked.connect(() => {});
+        this.add_action_button("system-switch-user-symbolic").clicked.connect(() => {});
+        this.add_action_button("system-shutdown-symbolic").clicked.connect(() => {});
+        this.add_action_button("system-reboot-symbolic").clicked.connect(() => {});
       }
 
       this._content.pack_end(this._actions);
+
+      this._calevents = new TokyoGtk.CalendarEvents();
+      this._calevents.halign = Gtk.Align.FILL;
+      this._calevents.valign = Gtk.Align.END;
+      this._calevents.spacing = spacing;
+      this._content.pack_end(this._calevents);
 
       this.init_async.begin((obj, ctx) => this.init_async.end(ctx));
     }

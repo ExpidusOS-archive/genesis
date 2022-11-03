@@ -2,6 +2,7 @@
 /subprojects/*
 !/subprojects/gvc
 !/subprojects/gmobile
+!/subprojects/libcall-ui
 !/subprojects/*.wrap
 
 # Meson Directories

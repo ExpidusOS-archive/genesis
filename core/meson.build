@@ -16,6 +16,11 @@ if libgvc.found()
   libgenesis_core_vala_args += ['--define=HAS_LIBGVC']
 endif
 
+if libcallaudio.found()
+  conf_data_core.set('HAS_LIBCALLAUDIO', 'true')
+  libgenesis_core_vala_args += ['--define=HAS_LIBCALLAUDIO']
+endif
+
 build_conf_core = configure_file(input: 'lib/build.vala.in', output: 'build.vala',
   configuration: conf_data_core)
 
@@ -47,6 +52,11 @@ if libgvc.found()
   libgenesis_core_deps += [libgvc, libgvc_vapi]
   libgenesis_core_inc += [libgvc_inc]
   libgenesis_core_docs_args += ['--pkg=gvc']
+endif
+
+if libcallaudio.found()
+  libgenesis_core_deps += [libcallaudio]
+  libgenesis_core_docs_args += ['--pkg=libcallaudio-0.1']
 endif
 
 libgenesis_core_shlib = shared_library('genesis', build_conf_core, libgenesis_core_rel_sources,

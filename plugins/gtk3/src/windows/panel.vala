@@ -60,6 +60,10 @@ namespace GenesisShellGtk3 {
       this.skip_taskbar_hint = true;
       this._widget           = new PanelWidget(this.monitor);
 
+      var style_ctx = this.get_style_context();
+      style_ctx.add_class("genesis-shell-panel");
+      style_ctx.add_class("genesis-mode-%s".printf(this.context.mode.to_nick()));
+
 #if HAS_GTK_LAYER_SHELL
       if (this.is_wayland) {
         var monitor = this.monitor as Monitor;

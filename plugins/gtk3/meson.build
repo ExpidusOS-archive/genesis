@@ -18,6 +18,11 @@ if libgvc.found()
   conf_data_plugin_gtk3.set('HAS_LIBGVC', 'true')
 endif
 
+if libcall_ui.found()
+  plugin_gtk3_args += ['--define=HAS_LIBCALL_UI']
+  conf_data_plugin_gtk3.set('HAS_LIBCALL_UI', 'true')
+endif
+
 if ibus.found()
   plugin_gtk3_args += ['--define=HAS_IBUS']
   conf_data_plugin_gtk3.set('HAS_IBUS', 'true')
@@ -85,6 +90,11 @@ endif
 if libgvc.found()
   plugin_gtk3_deps += [libgvc, libgvc_vapi]
   plugin_gtk3_inc += [libgvc_inc]
+endif
+
+if libcall_ui.found()
+  plugin_gtk3_deps += [libcall_ui, libcall_ui_vapi]
+  plugin_gtk3_inc += [libcall_ui_inc]
 endif
 
 if ibus.found()
