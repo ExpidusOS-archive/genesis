@@ -45,6 +45,10 @@ namespace GenesisShellGtk3 {
     public const double UNIT_SIZE = 20.0;
 
     private ulong _mode_id;
+    private Gtk.Button _left_button;
+    private Gtk.Button _center_button;
+    private Gtk.Button _right_button;
+
     private Gtk.Box _left;
     private Gtk.Box _center;
     private Gtk.Box _right;
@@ -116,17 +120,45 @@ namespace GenesisShellGtk3 {
       this._applet_sigs = new GLib.HashTable <string, ulong>(GLib.str_hash, GLib.str_equal);
 
       var spacing = GenesisShell.Math.scale(this.monitor.dpi, 0.05);
-      this._left         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
-      this._left.halign  = Gtk.Align.START;
+
+      this._left   = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
+      this._left.halign  = Gtk.Align.CENTER;
+      this._left.valign  = Gtk.Align.CENTER;
       this._left.hexpand = true;
+      this._left.vexpand = true;
 
-      this._center         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
+      this._center = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
       this._center.halign  = Gtk.Align.CENTER;
+      this._center.valign  = Gtk.Align.CENTER;
       this._center.hexpand = true;
+      this._center.vexpand = true;
 
-      this._right         = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
-      this._right.halign  = Gtk.Align.END;
+      this._right  = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
+      this._right.halign  = Gtk.Align.CENTER;
+      this._right.valign  = Gtk.Align.CENTER;
       this._right.hexpand = true;
+      this._right.vexpand = true;
+
+      this._left_button  = new Button.for_monitor(this.monitor, UNIT_SIZE);
+      this._left_button.halign  = Gtk.Align.START;
+      this._left_button.valign  = Gtk.Align.CENTER;
+      this._left_button.hexpand = true;
+      this._left_button.vexpand = true;
+      this._left_button.add(this._left);
+
+      this._center_button = new Button.for_monitor(this.monitor, UNIT_SIZE);
+      this._center_button.halign  = Gtk.Align.CENTER;
+      this._center_button.valign  = Gtk.Align.CENTER;
+      this._center_button.hexpand = true;
+      this._center_button.vexpand = true;
+      this._center_button.add(this._center);
+
+      this._right_button = new Button.for_monitor(this.monitor, UNIT_SIZE);
+      this._right_button.halign  = Gtk.Align.END;
+      this._right_button.valign  = Gtk.Align.CENTER;
+      this._right_button.hexpand = true;
+      this._right_button.vexpand = true;
+      this._right_button.add(this._right);
 
       this._mode_id = this.monitor.notify["scale"].connect(() => this.queue_resize());
 
@@ -139,9 +171,9 @@ namespace GenesisShellGtk3 {
       this.halign  = Gtk.Align.CENTER;
       this.spacing = GenesisShell.Math.scale(this.monitor.dpi, spacing);
 
-      this.pack_start(this._left);
-      this.add(this._center);
-      this.pack_end(this._right);
+      this.pack_start(this._left_button);
+      this.add(this._center_button);
+      this.pack_end(this._right_button);
 
       if (!(this.parent is Gtk.Window)) {
         this.margin_top = this.margin_bottom = 5;
@@ -151,6 +183,18 @@ namespace GenesisShellGtk3 {
       apps.side = PanelAppletSide.LEFT;
       this.add_applet(apps);
       apps.show_all();
+
+      this._left_button.clicked.connect(() => {
+        var value = GLib.Value(typeof (GenesisShell.Monitor));
+        value.set_object(this.monitor);
+        this.context.ui_provider.action(GenesisShell.UIElementKind.APPS, GenesisShell.UIActionKind.TOGGLE_OPEN, {"monitor"}, {value});
+      });
+
+      this._right_button.clicked.connect(() => {
+        var value = GLib.Value(typeof (GenesisShell.Monitor));
+        value.set_object(this.monitor);
+        this.context.ui_provider.action(GenesisShell.UIElementKind.DASH, GenesisShell.UIActionKind.TOGGLE_OPEN, {"monitor"}, {value});
+      });
 
 #if HAS_IBUS
       var keyboard = new PanelApplets.Keyboard(this.monitor, "keyboard-0");
@@ -180,8 +224,8 @@ namespace GenesisShellGtk3 {
       if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
         var style_ctx = this.get_style_context();
         var padding = style_ctx.get_padding(style_ctx.get_state());
-        this._left.margin_start = padding.left;
-        this._right.margin_end = padding.right;
+        this._left_button.margin_start = padding.left;
+        this._right_button.margin_end = padding.right;
       }
 
       this.queue_resize();
@@ -203,6 +247,7 @@ namespace GenesisShellGtk3 {
         alloc.width = this.get_width();
         alloc.height = this.get_height();
       }
+
       base.size_allocate(alloc);
     }
 

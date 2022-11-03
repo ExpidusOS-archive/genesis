@@ -3,8 +3,10 @@ namespace GenesisShellGtk3 {
     private string _id;
     private GenesisShell.MonitorMode _mode;
     public Gdk.Monitor gdk_monitor { get; construct; }
+
     public DesktopWindow? desktop { get; }
     public PanelWindow ?panel { get; }
+    public DashboardWindow ?dash { get; }
 
     public PanelWidget? panel_widget {
       get {
@@ -12,6 +14,18 @@ namespace GenesisShellGtk3 {
         if (this._desktop != null) {
           if (this._desktop.widget != null) {
             return this._desktop.widget.panel;
+          }
+        }
+        return null;
+      }
+    }
+
+    public DashboardWidget? dash_widget {
+      get {
+        if (this._dash != null) return this._dash.widget;
+        if (this._desktop != null) {
+          if (this._desktop.widget != null) {
+            return this._desktop.widget.dash;
           }
         }
         return null;
@@ -125,6 +139,9 @@ namespace GenesisShellGtk3 {
       this._desktop = new DesktopWindow(this);
       if (this.context.mode == GenesisShell.ContextMode.GADGETS) {
         this._panel = new PanelWindow(this);
+
+        this._dash = new DashboardWindow(this);
+        this._dash.no_show_all = true;
       }
 
       if (this.is_primary) {
@@ -153,6 +170,30 @@ namespace GenesisShellGtk3 {
                       ));
       }
       return list;
+    }
+
+    public signal GLib.Value? action(GenesisShell.UIElementKind elem, GenesisShell.UIActionKind action, string[] names, GLib.Value[] values) {
+      var value = GLib.Value(GLib.Type.BOOLEAN);
+      value.set_boolean(false);
+
+      switch (elem) {
+        case GenesisShell.UIElementKind.DASH:
+          if (this.dash_widget != null) {
+            if (action == GenesisShell.UIActionKind.OPEN) {
+              this.dash_widget.show_all();
+              value.set_boolean(true);
+            } else if (action == GenesisShell.UIActionKind.CLOSE) {
+              this.dash_widget.hide();
+              value.set_boolean(true);
+            } else if (action == GenesisShell.UIActionKind.TOGGLE_OPEN) {
+              if (this.dash_widget.visible) this.dash_widget.hide();
+              else this.dash_widget.show_all();
+              value.set_boolean(true);
+            }
+          }
+          break;
+      }
+      return value;
     }
 
     internal static string name_for(Gdk.Monitor monitor) {

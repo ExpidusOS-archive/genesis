@@ -5,7 +5,7 @@ namespace GenesisShellGtk3 {
       private ulong _volume_id;
 
       public Gtk.Adjustment adjustment { get; }
-      public Gtk.Button button { get; }
+      public Gtk.Image icon { get; }
       public Gvc.MixerStream mixer { get; construct; }
 
       public unowned Gvc.MixerUIDevice device {
@@ -54,13 +54,10 @@ namespace GenesisShellGtk3 {
         this.get_style_context().add_class("genesis-shell-panel-applet-sound-device");
 
         // FIXME: image should be centered but it is not
-        this._button = new Gtk.Button();
-        this._button.image = new Icon.for_monitor(this.icon_name_format.printf("high"), this.monitor, PanelWidget.UNIT_SIZE);
-        this._button.always_show_image = true;
-        this._button.image_position = Gtk.PositionType.TOP;
-        this._button.halign = Gtk.Align.CENTER;
-        this._button.valign = Gtk.Align.CENTER;
-        this.add(this._button);
+        this._icon = new Icon.for_monitor(this.icon_name_format.printf("high"), this.monitor, PanelWidget.UNIT_SIZE);
+        this._icon.halign = Gtk.Align.CENTER;
+        this._icon.valign = Gtk.Align.CENTER;
+        this.add(this._icon);
 
         this._adjustment = new Gtk.Adjustment(this.mixer.volume * 1.0, 0.0, this.context.mixer_control.get_vol_max_norm(), this.context.mixer_control.get_vol_max_norm() / 100.0, this.context.mixer_control.get_vol_max_norm() / 10.0, 0.0);
         this._adjustment.value_changed.connect(() => {
@@ -84,43 +81,14 @@ namespace GenesisShellGtk3 {
       private void update() {
         if (this.mixer.is_muted) {
           this.tooltip_text = _("%s (Muted)").printf(this.device.description);
-          ((Gtk.Image)this._button.image).icon_name = this.icon_name_format.printf("muted");
+          this._icon.icon_name = this.icon_name_format.printf("muted");
         } else {
           this.tooltip_text = _("%s (%0.2f%%)").printf(this.device.description, this.volume * 100.0);
 
-          if (this.volume >= 0.7) ((Gtk.Image)this._button.image).icon_name = this.icon_name_format.printf("high");
-          else if (this.volume >= 0.4) ((Gtk.Image)this._button.image).icon_name = this.icon_name_format.printf("medium");
-          else ((Gtk.Image)this._button.image).icon_name = this.icon_name_format.printf("low");
+          if (this.volume >= 0.7) this._icon.icon_name = this.icon_name_format.printf("high");
+          else if (this.volume >= 0.4) this._icon.icon_name = this.icon_name_format.printf("medium");
+          else this._icon.icon_name = this.icon_name_format.printf("low");
         }
-      }
-
-      private int get_size() {
-        var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
-        var monitor = this.monitor as Monitor;
-        if (monitor != null) {
-          var panel = monitor.panel_widget;
-          if (panel != null) {
-            var style_ctx = panel.get_style_context();
-            var padding = style_ctx.get_padding(style_ctx.get_state());
-            value += padding.top + padding.bottom;
-          }
-        }
-        return value;
-      }
-
-      public override void size_allocate(Gtk.Allocation alloc) {
-        alloc.y = (this.get_size() / 4) - alloc.y;
-        alloc.width = this.get_size();
-        alloc.height = this.get_size();
-        base.size_allocate(alloc);
-      }
-
-      public override void get_preferred_width(out int min_width, out int nat_width) {
-        min_width = nat_width = this.get_size();
-      }
-
-      public override void get_preferred_height(out int min_height, out int nat_height) {
-        min_height = nat_height = this.get_size();
       }
     }
 

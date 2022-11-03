@@ -19,6 +19,8 @@ namespace GenesisShellGtk3 {
         GLib.debug(_("Found UPower device %s"), this.device.native_path);
 
         this._icon = new Icon.for_monitor("battery-missing", this.monitor, PanelWidget.UNIT_SIZE);
+        this._icon.halign = Gtk.Align.CENTER;
+        this._icon.valign = Gtk.Align.CENTER;
         this.add(this._icon);
 
         this._energy_id     = this.device.notify["energy"].connect(() => this.update());
@@ -62,28 +64,6 @@ namespace GenesisShellGtk3 {
 
         this.icon.icon_name = "battery-%s%s".printf(icon_level, icon_suffix);
       }
-
-      private int get_size() {
-        var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
-        var monitor = this.monitor as Monitor;
-        if (monitor != null) {
-          var panel = monitor.panel_widget;
-          if (panel != null) {
-            var style_ctx = panel.get_style_context();
-            var padding = style_ctx.get_padding(style_ctx.get_state());
-            value += padding.top + padding.bottom;
-          }
-        }
-        return value;
-      }
-
-      public override void get_preferred_height(out int min_width, out int nat_width) {
-        min_width = nat_width = this.get_size();
-      }
-
-      public override void get_preferred_width(out int min_width, out int nat_width) {
-        min_width = nat_width = this.get_size();
-      }
     }
 
     public class Power : GenesisShellGtk3.PanelApplet, GLib.AsyncInitable {
@@ -104,6 +84,8 @@ namespace GenesisShellGtk3 {
 
         this._entries = new GLib.HashTable <string, Battery>(GLib.str_hash, GLib.str_equal);
         this._icons   = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+        this._icons.halign = Gtk.Align.CENTER;
+        this._icons.valign = Gtk.Align.CENTER;
         this.add(this._icons);
       }
 

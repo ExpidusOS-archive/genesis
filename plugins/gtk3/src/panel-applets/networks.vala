@@ -18,8 +18,13 @@ namespace GenesisShellGtk3 {
         GLib.debug(_("Found network device %s"), this.device.@interface);
 
         this._icon = new Icon.for_monitor("network-offline", this.monitor, PanelWidget.UNIT_SIZE);
-        this.icon.no_show_all = true;
+        this._icon.no_show_all = true;
+        this._icon.halign = Gtk.Align.CENTER;
+        this._icon.valign = Gtk.Align.CENTER;
         this.add(this._icon);
+
+        this.halign = Gtk.Align.CENTER;
+        this.valign = Gtk.Align.CENTER;
 
         this._state_id = this.device.notify["state"].connect(() => this.update_state());
         this.update_state();
@@ -35,30 +40,6 @@ namespace GenesisShellGtk3 {
           this._ap_id          = wifi.notify["active-access-point"].connect(() => this.update_ap());
           this.update_ap();
         }
-      }
-
-      private int get_size() {
-        if (this._icon == null) return 0;
-        if (!this._icon.visible) return 0;
-        var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
-        var monitor = this.monitor as Monitor;
-        if (monitor != null) {
-          var panel = monitor.panel_widget;
-          if (panel != null) {
-            var style_ctx = panel.get_style_context();
-            var padding = style_ctx.get_padding(style_ctx.get_state());
-            value += padding.top + padding.bottom;
-          }
-        }
-        return value;
-      }
-
-      public override void get_preferred_height(out int min_width, out int nat_width) {
-        min_width = nat_width = this.get_size();
-      }
-
-      public override void get_preferred_width(out int min_width, out int nat_width) {
-        min_width = nat_width = this.get_size();
       }
 
       private void update_state() {
@@ -187,6 +168,8 @@ namespace GenesisShellGtk3 {
         this.get_style_context().add_class("genesis-shell-panel-applet-networks");
 
         this._icons = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+        this._icons.halign = Gtk.Align.CENTER;
+        this._icons.valign = Gtk.Align.CENTER;
         this.add(this._icons);
       }
 

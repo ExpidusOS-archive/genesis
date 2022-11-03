@@ -13,6 +13,40 @@ namespace GenesisShell {
       var enumc = (GLib.EnumClass)typeof(UIElementKind).class_ref();
       return enumc.n_values;
     }
+
+    public static bool try_parse_name(string name, out UIElementKind result = null) {
+      var enumc        = (GLib.EnumClass)(typeof(UIElementKind).class_ref());
+      unowned var eval = enumc.get_value_by_name(name);
+
+      if (eval == null) {
+        result = UIElementKind.CUSTOM;
+        return false;
+      }
+
+      result = (UIElementKind)eval.value;
+      return true;
+    }
+
+    public static bool try_parse_nick(string name, out UIElementKind result = null) {
+      var enumc        = (GLib.EnumClass)(typeof(UIElementKind).class_ref());
+      unowned var eval = enumc.get_value_by_nick(name);
+      return_val_if_fail(eval != null, false);
+
+      if (eval == null) {
+        result = UIElementKind.CUSTOM;
+        return false;
+      }
+
+      result = (UIElementKind)eval.value;
+      return true;
+    }
+
+    public string to_nick() {
+      var enumc = (GLib.EnumClass)(typeof(UIElementKind).class_ref());
+      var eval  = enumc.get_value(this);
+      return_val_if_fail(eval != null, null);
+      return eval.value_nick;
+    }
   }
 
   public enum UIActionKind {
@@ -27,6 +61,40 @@ namespace GenesisShell {
     public static uint n_values() {
       var enumc = (GLib.EnumClass)typeof(UIActionKind).class_ref();
       return enumc.n_values;
+    }
+
+    public static bool try_parse_name(string name, out UIActionKind result = null) {
+      var enumc        = (GLib.EnumClass)(typeof(UIActionKind).class_ref());
+      unowned var eval = enumc.get_value_by_name(name);
+
+      if (eval == null) {
+        result = UIActionKind.CUSTOM;
+        return false;
+      }
+
+      result = (UIActionKind)eval.value;
+      return true;
+    }
+
+    public static bool try_parse_nick(string name, out UIActionKind result = null) {
+      var enumc        = (GLib.EnumClass)(typeof(UIActionKind).class_ref());
+      unowned var eval = enumc.get_value_by_nick(name);
+      return_val_if_fail(eval != null, false);
+
+      if (eval == null) {
+        result = UIActionKind.CUSTOM;
+        return false;
+      }
+
+      result = (UIActionKind)eval.value;
+      return true;
+    }
+
+    public string to_nick() {
+      var enumc = (GLib.EnumClass)(typeof(UIActionKind).class_ref());
+      var eval  = enumc.get_value(this);
+      return_val_if_fail(eval != null, null);
+      return eval.value_nick;
     }
   }
 
@@ -47,8 +115,10 @@ namespace GenesisShell {
     public abstract GLib.List <string> monitor_list_ids_for_kind(Monitor monitor, UIElementKind kind);
     public abstract IUIElement ? for_monitor(Monitor monitor, UIElementKind kind, string ?id);
 
-    public virtual signal GLib.Value action(UIElementKind elem, UIActionKind action, string[] names, GLib.Value[] values) {
-      return false;
+    public virtual signal GLib.Value? action(UIElementKind elem, UIActionKind action, string[] names, GLib.Value[] values) {
+      var value = GLib.Value(GLib.Type.BOOLEAN);
+      value.set_boolean(false);
+      return value;
     }
   }
 

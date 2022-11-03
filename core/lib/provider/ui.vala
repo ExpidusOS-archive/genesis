@@ -41,5 +41,24 @@ namespace GenesisShell {
       }
       return null;
     }
+
+    public override GLib.Value? action(UIElementKind elem, UIActionKind action, string[] names, GLib.Value[] values) {
+      foreach (var plugin in this.context.plugins.get_values()) {
+        var ui_provider = plugin.container.get(typeof(IUIProvider)) as IUIProvider;
+        if (ui_provider == null) {
+          continue;
+        }
+
+        var result = ui_provider.action(elem, action, names, values);
+        if (result == null) {
+          continue;
+        }
+        return elem;
+      }
+
+      var value = GLib.Value(GLib.Type.BOOLEAN);
+      value.set_boolean(false);
+      return value;
+    }
   }
 }

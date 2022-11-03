@@ -27,6 +27,10 @@ namespace GenesisShellGtk3 {
           list.append("panel");
           break;
 
+        case GenesisShell.UIElementKind.DASH:
+          list.append("dashboard");
+          break;
+
         default:
           break;
         }
@@ -43,11 +47,35 @@ namespace GenesisShellGtk3 {
           return gtk_monitor.desktop.widget;
         case GenesisShell.UIElementKind.PANEL:
           return gtk_monitor.panel_widget;
+        case GenesisShell.UIElementKind.DASH:
+          return gtk_monitor.dash_widget;
         default:
           break;
         }
       }
       return null;
+    }
+
+    public override GLib.Value? action(GenesisShell.UIElementKind elem, GenesisShell.UIActionKind action, string[] names, GLib.Value[] values) {
+      switch (elem) {
+        case GenesisShell.UIElementKind.APPS:
+        case GenesisShell.UIElementKind.DASH:
+          for (var i = 0; i < names.length; i++) {
+            var name = names[i];
+            var value = values[i];
+
+            if (name == "monitor") {
+              var monitor = value.get_object() as Monitor;
+              if (monitor == null) continue;
+              return monitor.action(elem, action, names, values);
+            }
+          }
+          break;
+      }
+
+      var value = GLib.Value(GLib.Type.BOOLEAN);
+      value.set_boolean(false);
+      return value;
     }
   }
 }

@@ -19,6 +19,7 @@ namespace GenesisShellGtk3 {
     public Gdk.Pixbuf ?wallpaper { get; }
 
     public PanelWidget ?panel { get; }
+    public DashboardWidget? dash { get; }
 
     internal DesktopWidget(GenesisShell.Monitor monitor) {
       Object(monitor: monitor);
@@ -54,6 +55,10 @@ namespace GenesisShellGtk3 {
       if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
         this._panel = new PanelWidget(this.monitor);
         this.add(this.panel);
+
+        this._dash = new DashboardWidget(this.monitor);
+        this._dash.no_show_all = true;
+        this.add(this.dash);
       }
 
       this.orientation = Gtk.Orientation.VERTICAL;

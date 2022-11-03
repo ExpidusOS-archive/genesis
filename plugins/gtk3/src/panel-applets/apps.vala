@@ -1,7 +1,7 @@
 namespace GenesisShellGtk3 {
   namespace PanelApplets {
     public class Apps : GenesisShellGtk3.PanelApplet {
-      public Gtk.Button button { get; }
+      public Gtk.Image icon { get; }
 
       public Apps(GenesisShell.Monitor monitor, string id) {
         Object(monitor: monitor, id: id);
@@ -10,54 +10,13 @@ namespace GenesisShellGtk3 {
       construct {
         this.get_style_context().add_class("genesis-shell-panel-applet-apps");
 
-        this._button = new Gtk.Button();
-        this._button.image = new Icon.for_monitor("view-app-grid", this.monitor, PanelWidget.UNIT_SIZE);
-        this._button.image.halign = Gtk.Align.CENTER;
-        this._button.image.valign = Gtk.Align.CENTER;
-        this._button.always_show_image = true;
-        this._button.image_position = Gtk.PositionType.BOTTOM;
-        this._button.halign = Gtk.Align.CENTER;
-        this._button.valign = Gtk.Align.CENTER;
-        this._button.clicked.connect(() => this.click());
-        this.add(this._button);
+        this._icon = new Icon.for_monitor("view-app-grid", this.monitor, PanelWidget.UNIT_SIZE);
+        this._icon.halign = Gtk.Align.CENTER;
+        this._icon.valign = Gtk.Align.CENTER;
+        this.add(this._icon);
 
         this.halign = Gtk.Align.CENTER;
         this.valign = Gtk.Align.CENTER;
-      }
-
-      private void click() {
-        var value = GLib.Value(typeof (GenesisShell.Monitor));
-        value.set_object(this.monitor);
-        this.context.ui_provider.action(GenesisShell.UIElementKind.APPS, GenesisShell.UIActionKind.OPEN, {"monitor"}, {value});
-      }
-
-      private int get_size() {
-        var value = GenesisShell.Math.scale(this.monitor.dpi, PanelWidget.UNIT_SIZE);
-        var monitor = this.monitor as Monitor;
-        if (monitor != null) {
-          var panel = monitor.panel_widget;
-          if (panel != null) {
-            var style_ctx = panel.get_style_context();
-            var padding = style_ctx.get_padding(style_ctx.get_state());
-            value += padding.top + padding.bottom;
-          }
-        }
-        return value;
-      }
-
-      public override void size_allocate(Gtk.Allocation alloc) {
-        alloc.y = (this.get_size() / 2) - alloc.y;
-        alloc.width = this.get_size();
-        alloc.height = this.get_size();
-        base.size_allocate(alloc);
-      }
-
-      public override void get_preferred_height(out int min_height, out int nat_height) {
-        min_height = nat_height = this.get_size();
-      }
-
-      public override void get_preferred_width(out int min_width, out int nat_width) {
-        min_width = nat_width = this.get_size();
       }
     }
   }
