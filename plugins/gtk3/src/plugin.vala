@@ -25,7 +25,6 @@ namespace GenesisShellGtk3 {
 
     public override void deactivate(GLib.Cancellable ?cancellable = null) throws GLib.Error {
       if (this.context.mode != GenesisShell.ContextMode.OPTIONS) {
-        this._display.close();
         this._display = null;
       }
     }

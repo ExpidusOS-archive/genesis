@@ -38,8 +38,15 @@ namespace GenesisShellGtk3 {
     construct {
       this.pixel_size = this.get_size();
 
-      this.notify["dpi"].connect(() => this.pixel_size = this.get_size());
-      this.notify["dpi_size"].connect(() => this.pixel_size = this.get_size());
+      this.notify["dpi"].connect(() => {
+        this.pixel_size = this.get_size();
+        this.queue_resize();
+      });
+
+      this.notify["dpi_size"].connect(() => {
+        this.pixel_size = this.get_size();
+        this.queue_resize();
+      });
     }
 
     private int get_size() {

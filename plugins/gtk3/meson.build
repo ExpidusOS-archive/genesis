@@ -23,6 +23,11 @@ if ibus.found()
   conf_data_plugin_gtk3.set('HAS_IBUS', 'true')
 endif
 
+if gio_unix.found()
+  plugin_gtk3_args += ['--define=HAS_GIO_UNIX']
+  conf_data_plugin_gtk3.set('HAS_GIO_UNIX', 'true')
+endif
+
 build_conf_plugin_gtk3 = configure_file(input: 'src/build.vala.in', output: 'build.vala',
   configuration: conf_data_plugin_gtk3)
 configure_file(input: 'src/gtk3.plugin.in', output: 'genesis-shell-gtk3.plugin',
@@ -84,6 +89,10 @@ endif
 
 if ibus.found()
   plugin_gtk3_deps += [ibus]
+endif
+
+if gio_unix.found()
+  plugin_gtk3_deps += [gio_unix]
 endif
 
 plugin_gtk3_lib = static_library('libgenesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sources,

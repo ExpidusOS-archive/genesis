@@ -78,9 +78,9 @@ else
 endif
 
 ibus = dependency('ibus-1.0', required: false)
-
 libnm = dependency('libnm', required: false)
 upower = dependency('upower-glib', required: false)
+gio_unix = dependency('gio-unix-2.0', required: false)
 
 libtokyo = dependency('tokyo', fallback: ['libtokyo', 'libtokyo_core_dep'], required: false)
 libtokyo_gtk3 = dependency('tokyo-gtk3', fallback: ['libtokyo', 'libtokyo_gtk3_dep'], disabler: not libtokyo.found(), required: false)

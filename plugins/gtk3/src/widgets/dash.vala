@@ -40,12 +40,15 @@ namespace GenesisShellGtk3 {
 
   public class DashboardWidget : Gtk.Bin, GenesisShell.IUIElement {
     public const double UNIT_SIZE = 250.0;
+    public const double ACTION_BUTTON_UNIT_SIZE = 25.0;
+    public const double ACTION_BUTTON_ICON_UNIT_SIZE = 15.0;
 
     private Gtk.Adjustment _scroll_adjust;
     private Gtk.ScrolledWindow _scroll;
     private Gtk.Viewport _scroll_view;
     private Gtk.Box _indicators_box;
     private GLib.List <IDashIndicator> _indicators;
+    private Gtk.Box _actions;
 
     public Gtk.Box content { get; }
 
@@ -93,7 +96,7 @@ namespace GenesisShellGtk3 {
       this._scroll_view = new Gtk.Viewport(null, this._scroll_adjust);
       this._scroll.add(this._scroll_view);
 
-      var spacing = GenesisShell.Math.scale(this.monitor.dpi, 0.05);
+      var spacing = GenesisShell.Math.scale(this.monitor.dpi, 1.0);
       var margin = GenesisShell.Math.scale(this.monitor.dpi, 1.0);
 
       this._content = new Gtk.Box(Gtk.Orientation.VERTICAL, spacing);
@@ -101,13 +104,54 @@ namespace GenesisShellGtk3 {
       this._content.margin_bottom = margin;
       this._content.margin_start = margin;
       this._content.margin_end = margin;
+      this._content.hexpand = true;
+      this._content.vexpand = true;
       this._scroll_view.add(this._content);
 
       this._indicators_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
       this._indicators_box.halign = Gtk.Align.CENTER;
-      this._content.add(this._indicators_box);
+      this._indicators_box.valign = Gtk.Align.START;
+      this._indicators_box.hexpand = true;
+      this._indicators_box.vexpand = true;
+      this._content.pack_start(this._indicators_box);
+
+      this._actions = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
+      this._actions.halign = Gtk.Align.CENTER;
+      this._actions.valign = Gtk.Align.END;
+      this._actions.hexpand = true;
+      this._actions.vexpand = true;
+
+#if HAS_GIO_UNIX
+      this.add_action_button("systemsettings").clicked.connect(() => {
+        try {
+          var launch_ctx = this.get_display().get_app_launch_context();
+          var app_info = new GLib.DesktopAppInfo("com.expidus.genesis.settings");
+          if (app_info != null) app_info.launch_uris_as_manager(new GLib.List<string>(), launch_ctx, GLib.SpawnFlags.SEARCH_PATH_FROM_ENVP, null, null);
+        } catch (GLib.Error e) {
+          GLib.warning(_("Settings failed to open: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+        }
+      });
+#endif
+
+      this.add_action_button("system-log-out").clicked.connect(() => this.context.shutdown());
+
+      if (this.context.mode != GenesisShell.ContextMode.BIG_PICTURE) {
+        this.add_action_button("system-switch-user").clicked.connect(() => {});
+        this.add_action_button("system-shutdown").clicked.connect(() => {});
+        this.add_action_button("system-reboot").clicked.connect(() => {});
+      }
+
+      this._content.pack_end(this._actions);
 
       this.init_async.begin((obj, ctx) => this.init_async.end(ctx));
+    }
+
+    private Gtk.Button add_action_button(string icon_name) {
+      var button = new ButtonBox.for_monitor(this.monitor, ACTION_BUTTON_UNIT_SIZE);
+      button.image = new Icon.for_monitor(icon_name, this.monitor, ACTION_BUTTON_ICON_UNIT_SIZE);
+      button.always_show_image = true;
+      this._actions.add(button);
+      return button;
     }
 
     private unowned GLib.List <IDashIndicator> find_indicator(IDashIndicator indicator) {
