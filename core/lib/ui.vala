@@ -7,7 +7,8 @@ namespace GenesisShell {
     APPS,
     DASH,
     FILE_BROWSER,
-    APP_BROWSER;
+    APP_BROWSER,
+    CALL;
 
     public static uint n_values() {
       var enumc = (GLib.EnumClass)typeof(UIElementKind).class_ref();
