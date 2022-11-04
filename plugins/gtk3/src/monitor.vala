@@ -7,6 +7,7 @@ namespace GenesisShellGtk3 {
     public DesktopWindow? desktop { get; }
     public PanelWindow ?panel { get; }
     public DashboardWindow ?dash { get; }
+    public LockWindow ?lock { get; }
 
     public PanelWidget? panel_widget {
       get {
@@ -26,6 +27,18 @@ namespace GenesisShellGtk3 {
         if (this._desktop != null) {
           if (this._desktop.widget != null) {
             return this._desktop.widget.dash;
+          }
+        }
+        return null;
+      }
+    }
+
+    public LockWidget? lock_widget {
+      get {
+        if (this._lock != null) return this._lock.widget;
+        if (this._lock != null) {
+          if (this._lock.widget != null) {
+            return this._desktop.widget.lock;
           }
         }
         return null;
@@ -142,6 +155,9 @@ namespace GenesisShellGtk3 {
 
         this._dash = new DashboardWindow(this);
         this._dash.no_show_all = true;
+
+        this._lock = new LockWindow(this);
+        this._lock.no_show_all = true;
       }
 
       if (this.is_primary) {
@@ -191,6 +207,23 @@ namespace GenesisShellGtk3 {
               value.set_boolean(true);
             }
           }
+          break;
+        case GenesisShell.UIElementKind.LOCK:
+          if (this.lock_widget != null) {
+            if (action == GenesisShell.UIActionKind.OPEN) {
+              this.lock_widget.show_all();
+              value.set_boolean(true);
+            } else if (action == GenesisShell.UIActionKind.CLOSE) {
+              this.lock_widget.hide();
+              value.set_boolean(true);
+            } else if (action == GenesisShell.UIActionKind.TOGGLE_OPEN) {
+              if (this.lock_widget.visible) this.lock_widget.hide();
+              else this.lock_widget.show_all();
+              value.set_boolean(true);
+            }
+          }
+          break;
+        default:
           break;
       }
       return value;

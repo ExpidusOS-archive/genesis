@@ -20,6 +20,7 @@ namespace GenesisShellGtk3 {
 
     public PanelWidget ?panel { get; }
     public DashboardWidget? dash { get; }
+    public LockWidget? lock { get; }
 
     internal DesktopWidget(GenesisShell.Monitor monitor) {
       Object(monitor: monitor);
@@ -59,6 +60,10 @@ namespace GenesisShellGtk3 {
         this._dash = new DashboardWidget(this.monitor);
         this._dash.no_show_all = true;
         this.add(this.dash);
+
+        this._lock = new LockWidget(this.monitor);
+        this._lock.no_show_all = true;
+        this.add(this.lock);
       }
 
       this.orientation = Gtk.Orientation.VERTICAL;

@@ -49,8 +49,6 @@ namespace GenesisShellGtk3 {
     private Gtk.Box _indicators_box;
     private GLib.List <IDashIndicator> _indicators;
     private Gtk.Box _actions;
-    private Hdy.ViewSwitcherTitle _calevents_title;
-    private Gtk.Stack _calevents_stack;
 
     public Gtk.Box content { get; }
     public TokyoGtk.CalendarEvents calevents { get; }

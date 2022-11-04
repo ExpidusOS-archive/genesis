@@ -68,11 +68,8 @@ namespace GenesisShellGtk3 {
         case GenesisShell.UIElementKind.APPS:
         case GenesisShell.UIElementKind.DASH:
           for (var i = 0; i < names.length; i++) {
-            var name = names[i];
-            var value = values[i];
-
-            if (name == "monitor") {
-              var monitor = value.get_object() as Monitor;
+            if (names[i] == "monitor") {
+              var monitor = values[i].get_object() as Monitor;
               if (monitor == null) continue;
               return monitor.action(elem, action, names, values);
             }
@@ -86,6 +83,8 @@ namespace GenesisShellGtk3 {
           }
 
           value.set_boolean(true);
+          break;
+        default:
           break;
       }
       return value;
