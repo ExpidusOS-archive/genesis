@@ -11,10 +11,10 @@ namespace GenesisShellGtk3 {
       construct {
         this.get_style_context().add_class("genesis-shell-panel-applet-keyboard");
 
-        // FIXME: image should be centered but it is not
-        this._icon = new Icon.for_monitor("keyboard-layout", this.monitor, PanelWidget.UNIT_SIZE);
+        this._icon = new Icon.for_monitor("keyboard-layout-filled", this.monitor, PanelWidget.APPLET_ICON_UNIT_SIZE);
         this._icon.halign = Gtk.Align.CENTER;
         this._icon.valign = Gtk.Align.CENTER;
+        this._icon.no_show_all = true;
         this.add(this._icon);
 
         this.halign = Gtk.Align.CENTER;
@@ -26,6 +26,7 @@ namespace GenesisShellGtk3 {
       }
 
       private void update() {
+        this._icon.show();
         var desc = this.ibus.get_global_engine();
         stdout.printf("%s\n", desc.get_language());
       }

@@ -34,7 +34,7 @@ namespace GenesisShellGtk3 {
       construct {
         GLib.debug(_("Found network device %s"), this.device.@interface);
 
-        this._icon = new Icon.for_monitor("network-offline", this.monitor, PanelWidget.UNIT_SIZE);
+        this._icon = new Icon.for_monitor("network-offline", this.monitor, PanelWidget.APPLET_ICON_UNIT_SIZE);
         this._icon.no_show_all = true;
         this._icon.halign = Gtk.Align.CENTER;
         this._icon.valign = Gtk.Align.CENTER;

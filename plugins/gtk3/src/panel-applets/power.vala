@@ -18,7 +18,7 @@ namespace GenesisShellGtk3 {
 
         GLib.debug(_("Found UPower device %s"), this.device.native_path);
 
-        this._icon = new Icon.for_monitor("battery-missing", this.monitor, PanelWidget.UNIT_SIZE);
+        this._icon = new Icon.for_monitor("battery-missing", this.monitor, PanelWidget.APPLET_ICON_UNIT_SIZE);
         this._icon.halign = Gtk.Align.CENTER;
         this._icon.valign = Gtk.Align.CENTER;
         this.add(this._icon);

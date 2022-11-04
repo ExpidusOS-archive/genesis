@@ -1,5 +1,5 @@
 namespace GenesisShellGtk3 {
-  public sealed class PanelWindow : TokyoGtk.Window {
+  public sealed class PanelWindow : Gtk.Window {
     private ulong _x_id;
     private ulong _y_id;
     private ulong _mode_id;
@@ -117,9 +117,9 @@ namespace GenesisShellGtk3 {
       this.update_size();
       this.update_position();
 
-      this.get_box().add(this.widget);
+      this.child = this.widget;
+
       this.show_all();
-      this.header.hide();
 
       this.default_width = this.get_width();
       this.default_height = this.get_height();

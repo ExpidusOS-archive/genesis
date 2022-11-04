@@ -42,7 +42,8 @@ namespace GenesisShellGtk3 {
   }
 
   public sealed class PanelWidget : Hdy.HeaderBar, GenesisShell.IUIElement {
-    public const double UNIT_SIZE = 20.0;
+    public const double UNIT_SIZE = 25.0;
+    public const double APPLET_ICON_UNIT_SIZE = 15.0;
 
     private ulong _mode_id;
     private Gtk.Button _left_button;
@@ -175,7 +176,7 @@ namespace GenesisShellGtk3 {
       this.add(this._center_button);
       this.pack_end(this._right_button);
 
-      if (!(this.parent is Gtk.Window)) {
+      if (this.context.mode == GenesisShell.ContextMode.BIG_PICTURE) {
         this.margin_top = this.margin_bottom = 5;
       }
 

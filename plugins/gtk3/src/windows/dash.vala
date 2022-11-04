@@ -50,9 +50,9 @@ namespace GenesisShellGtk3 {
         assert(monitor != null);
 
         GtkLayerShell.init_for_window(this);
-        GtkLayerShell.auto_exclusive_zone_enable(this);
+        //GtkLayerShell.auto_exclusive_zone_enable(this);
         GtkLayerShell.set_monitor(this, monitor.gdk_monitor);
-        GtkLayerShell.set_layer(this, GtkLayerShell.Layer.OVERLAY);
+        GtkLayerShell.set_layer(this, GtkLayerShell.Layer.TOP);
         GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.RIGHT, true);
         GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.TOP, true);
         GtkLayerShell.set_anchor(this, GtkLayerShell.Edge.BOTTOM, true);
@@ -60,11 +60,6 @@ namespace GenesisShellGtk3 {
         var edge = this.monitor.mode.width * 0.01;
         GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, (int)(edge / 2));
         GtkLayerShell.set_margin(this, GtkLayerShell.Edge.BOTTOM, 5);
-
-        int min_height;
-        int nat_height;
-        monitor.panel_widget.get_preferred_height(out min_height, out nat_height);
-        GtkLayerShell.set_margin(this, GtkLayerShell.Edge.TOP, 10 + nat_height);
 
         GtkLayerShell.set_namespace(this, "genesis-shell-dash");
         GLib.debug(_("Gtk layer shell is active on %p"), this);
@@ -84,14 +79,6 @@ namespace GenesisShellGtk3 {
         if (this.is_wayland) {
           var edge = this.monitor.mode.width * 0.01;
           GtkLayerShell.set_margin(this, GtkLayerShell.Edge.RIGHT, (int)(edge / 2));
-
-          var monitor = this.monitor as Monitor;
-          assert(monitor != null);
-
-          int min_height;
-          int nat_height;
-          monitor.panel_widget.get_preferred_height(out min_height, out nat_height);
-          GtkLayerShell.set_margin(this, GtkLayerShell.Edge.TOP, 10 + nat_height);
         }
 #endif
 

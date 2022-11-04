@@ -10,7 +10,7 @@ namespace GenesisShellGtk3 {
       construct {
         this.get_style_context().add_class("genesis-shell-panel-applet-apps");
 
-        this._icon = new Icon.for_monitor("view-app-grid", this.monitor, PanelWidget.UNIT_SIZE);
+        this._icon = new Icon.for_monitor("view-app-grid", this.monitor, PanelWidget.APPLET_ICON_UNIT_SIZE);
         this._icon.halign = Gtk.Align.CENTER;
         this._icon.valign = Gtk.Align.CENTER;
         this.add(this._icon);
