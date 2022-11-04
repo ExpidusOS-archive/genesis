@@ -31,6 +31,10 @@ namespace GenesisShellGtk3 {
           list.append("dashboard");
           break;
 
+        case GenesisShell.UIElementKind.LOCK:
+          list.append("lock");
+          break;
+
         default:
           break;
         }
@@ -57,6 +61,9 @@ namespace GenesisShellGtk3 {
     }
 
     public override GLib.Value? action(GenesisShell.UIElementKind elem, GenesisShell.UIActionKind action, string[] names, GLib.Value[] values) {
+      var value = GLib.Value(GLib.Type.BOOLEAN);
+      value.set_boolean(false);
+
       switch (elem) {
         case GenesisShell.UIElementKind.APPS:
         case GenesisShell.UIElementKind.DASH:
@@ -71,10 +78,16 @@ namespace GenesisShellGtk3 {
             }
           }
           break;
-      }
+        case GenesisShell.UIElementKind.LOCK:
+          foreach (var id in this.context.monitor_provider.get_monitor_ids()) {
+            var monitor = this.context.monitor_provider.get_monitor(id) as Monitor;
+            if (monitor == null) continue;
+            monitor.action(elem, action, names, values);
+          }
 
-      var value = GLib.Value(GLib.Type.BOOLEAN);
-      value.set_boolean(false);
+          value.set_boolean(true);
+          break;
+      }
       return value;
     }
   }

@@ -137,6 +137,9 @@ namespace GenesisShellGtk3 {
 #endif
 
       this.add_action_button("system-log-out-symbolic").clicked.connect(() => this.context.shutdown());
+      this.add_action_button("system-lock-screen-symbolic").clicked.connect(() => {
+        this.context.ui_provider.action(GenesisShell.UIElementKind.LOCK, GenesisShell.UIActionKind.TOGGLE_OPEN, {}, {});
+      });
 
       if (this.context.mode != GenesisShell.ContextMode.BIG_PICTURE) {
         this.add_action_button("system-switch-user-symbolic").clicked.connect(() => {});
