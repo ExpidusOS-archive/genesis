@@ -26,7 +26,7 @@ namespace GenesisShell {
     }
 
     public static int scale(double dpi, double size) {
-      return round((int)((dpi / NORM_DPI) * size));
+      return round((int)((NORM_DPI / dpi) * size));
     }
   }
 }
