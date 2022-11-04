@@ -42,8 +42,8 @@ namespace GenesisShellGtk3 {
   }
 
   public sealed class PanelWidget : Hdy.HeaderBar, GenesisShell.IUIElement {
-    public const double UNIT_SIZE = 25.0;
-    public const double APPLET_ICON_UNIT_SIZE = 15.0;
+    public const double UNIT_SIZE = 35.0;
+    public const double APPLET_ICON_UNIT_SIZE = 20.0;
 
     private ulong _mode_id;
     private Gtk.Button _left_button;
@@ -120,7 +120,7 @@ namespace GenesisShellGtk3 {
       this._applets     = new GLib.List <IPanelApplet>();
       this._applet_sigs = new GLib.HashTable <string, ulong>(GLib.str_hash, GLib.str_equal);
 
-      var spacing = GenesisShell.Math.scale(this.monitor.dpi, 0.05);
+      var spacing = GenesisShell.Math.scale(this.monitor.dpi, 2.5);
 
       this._left   = new Gtk.Box(Gtk.Orientation.HORIZONTAL, spacing);
       this._left.halign  = Gtk.Align.CENTER;

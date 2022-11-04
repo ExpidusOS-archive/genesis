@@ -83,6 +83,7 @@ upower = dependency('upower-glib', required: false)
 gio_unix = dependency('gio-unix-2.0', required: false)
 
 libcallaudio = dependency('libcallaudio-0.1', required: false)
+libecal = dependency('libecal-2.0', required: false)
 
 libtokyo = dependency('tokyo', fallback: ['libtokyo', 'libtokyo_core_dep'], required: false)
 libtokyo_gtk3 = dependency('tokyo-gtk3', fallback: ['libtokyo', 'libtokyo_gtk3_dep'], disabler: not libtokyo.found(), required: false)

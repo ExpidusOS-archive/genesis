@@ -39,9 +39,9 @@ namespace GenesisShellGtk3 {
   }
 
   public class DashboardWidget : Gtk.Bin, GenesisShell.IUIElement {
-    public const double UNIT_SIZE = 250.0;
-    public const double ACTION_BUTTON_UNIT_SIZE = 25.0;
-    public const double ACTION_BUTTON_ICON_UNIT_SIZE = 15.0;
+    public const double UNIT_SIZE = 300.0;
+    public const double ACTION_BUTTON_UNIT_SIZE = 30.0;
+    public const double ACTION_BUTTON_ICON_UNIT_SIZE = 20.0;
 
     private Gtk.Adjustment _scroll_adjust;
     private Gtk.ScrolledWindow _scroll;
@@ -49,6 +49,11 @@ namespace GenesisShellGtk3 {
     private Gtk.Box _indicators_box;
     private GLib.List <IDashIndicator> _indicators;
     private Gtk.Box _actions;
+
+#if HAS_LIBECAL
+    public ECal.Client ecal { get; }
+    public ECal.ClientView ecal_view { get; }
+#endif
 
     public Gtk.Box content { get; }
     public TokyoGtk.CalendarEvents calevents { get; }
@@ -85,6 +90,21 @@ namespace GenesisShellGtk3 {
         GLib.warning(_("WiFi failed to initialize: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
       }
 #endif
+
+#if HAS_LIBECAL
+      try {
+        var registry = yield new E.SourceRegistry(null);
+        var calendar = registry.default_calendar;
+        if (calendar != null) {
+          this._ecal = (yield ECal.Client.connect(calendar, ECal.ClientSourceType.EVENTS, 0, null)) as ECal.Client;
+          if (this._ecal != null) {
+            yield this._ecal.get_view("", null, out this._ecal_view);
+          }
+        }
+      } catch (GLib.Error e) {
+        GLib.warning(_("Failed to connect to the Evolution Calendar: %s:%d: %s"), e.domain.to_string(), e.code, e.message);
+      }
+#endif
     }
 
     construct {
@@ -97,8 +117,8 @@ namespace GenesisShellGtk3 {
       this._scroll_view = new Gtk.Viewport(null, this._scroll_adjust);
       this._scroll.add(this._scroll_view);
 
-      var spacing = GenesisShell.Math.scale(this.monitor.dpi, 1.0);
-      var margin = GenesisShell.Math.scale(this.monitor.dpi, 1.0);
+      var spacing = GenesisShell.Math.scale(this.monitor.dpi, 10.0);
+      var margin = GenesisShell.Math.scale(this.monitor.dpi, 10.0);
 
       this._content = new Gtk.Box(Gtk.Orientation.VERTICAL, spacing);
       this._content.margin_top = margin;

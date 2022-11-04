@@ -33,6 +33,11 @@ if gio_unix.found()
   conf_data_plugin_gtk3.set('HAS_GIO_UNIX', 'true')
 endif
 
+if libecal.found()
+  plugin_gtk3_args += ['--define=HAS_LIBECAL']
+  conf_data_plugin_gtk3.set('HAS_LIBECAL', 'true')
+endif
+
 build_conf_plugin_gtk3 = configure_file(input: 'src/build.vala.in', output: 'build.vala',
   configuration: conf_data_plugin_gtk3)
 configure_file(input: 'src/gtk3.plugin.in', output: 'genesis-shell-gtk3.plugin',
@@ -106,8 +111,12 @@ if gio_unix.found()
   plugin_gtk3_deps += [gio_unix]
 endif
 
+if libecal.found()
+  plugin_gtk3_deps += [libecal]
+endif
+
 plugin_gtk3_lib = static_library('libgenesis-shell-gtk3', build_conf_plugin_gtk3, plugin_gtk3_rel_sources,
-  c_args: ['-DG_LOG_DOMAIN="GenesisShellGtk3"', '-DGETTEXT_PACKAGE="genesis-shell"'],
+  c_args: ['-DG_LOG_DOMAIN="GenesisShellGtk3"', '-DGETTEXT_PACKAGE="genesis-shell"', '-DLIBICAL_GLIB_UNSTABLE_API=1'],
   vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"', plugin_gtk3_args],
   vala_gir: 'GenesisShellGtk3-@0@.gir'.format(shortver.split('-')[0]),
   name_prefix: '',
@@ -122,7 +131,7 @@ plugin_gtk3 = declare_dependency(link_whole: [plugin_gtk3_lib],
   compile_args: ['-I' + join_paths(meson.project_build_root(), 'plugins', 'gtk3')])
 
 plugins += [shared_module('genesis-shell-gtk3', 'src/main.vala',
-  c_args: ['-DG_LOG_DOMAIN="GenesisShellGtk3"', '-DGETTEXT_PACKAGE="genesis-shell"'],
+  c_args: ['-DG_LOG_DOMAIN="GenesisShellGtk3"', '-DGETTEXT_PACKAGE="genesis-shell"', '-DLIBICAL_GLIB_UNSTABLE_API=1'],
   vala_args: ['--define=GETTEXT_PACKAGE="genesis-shell"'],
   dependencies: [plugin_gtk3],
   name_suffix: 'so',

@@ -16,7 +16,7 @@ namespace GenesisShell {
   }
 
   namespace Math {
-    public static double NORM_DPI = 140.0;
+    public static double NORM_DPI = 192.0;
 
     public static int round(int num) {
       while ((num % 10) > 0) {
