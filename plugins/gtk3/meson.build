@@ -28,7 +28,7 @@ if ibus.found()
   conf_data_plugin_gtk3.set('HAS_IBUS', 'true')
 endif
 
-if gio_unix.found()
+if gio_unix.found() and target_machine.system() == 'linux'
   plugin_gtk3_args += ['--define=HAS_GIO_UNIX']
   conf_data_plugin_gtk3.set('HAS_GIO_UNIX', 'true')
 endif
@@ -82,7 +82,7 @@ if uncrustify.found()
 endif
 
 plugin_gtk3_sources += [build_conf_plugin_gtk3]
-plugin_gtk3_deps = [libgenesis_core, gtk3, libtokyo]
+plugin_gtk3_deps = [libgenesis_core, gtk3, libtokyo, gio]
 plugin_gtk3_inc = []
 
 if libnm.found()
@@ -107,7 +107,7 @@ if ibus.found()
   plugin_gtk3_deps += [ibus]
 endif
 
-if gio_unix.found()
+if gio_unix.found() and target_machine.system() == 'linux'
   plugin_gtk3_deps += [gio_unix]
 endif
 
