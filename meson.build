@@ -183,7 +183,8 @@ endif
 
 has_gio_gdesktopappinfo_header = false
 if gio_unix.found()
-  has_gio_gdesktopappinfo_header = meson.get_compiler('c').check_header('gio/gdesktopappinfo.h', args: ['-I' + gio_unix.get_variable('includedir')])
+  has_gio_gdesktopappinfo_header = meson.get_compiler('c').check_header('gio/gdesktopappinfo.h', args: ['-I' + gio_unix.get_variable('includedir')],
+    dependencies: [gio, gio_unix])
 endif
 
 conf_data.set('PREFIX', prefix)
