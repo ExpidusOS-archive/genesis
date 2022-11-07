@@ -181,6 +181,11 @@ if gtk4_wayland.found()
   gtk4 += [gtk4_wayland]
 endif
 
+has_gio_gdesktopappinfo_header = false
+if gio_unix.found()
+  has_gio_gdesktopappinfo_header = meson.get_compiler('c').check_header('gio/gdesktopappinfo.h', args: ['-I' + gio_unix.get_variable('includedir')])
+endif
+
 conf_data.set('PREFIX', prefix)
 conf_data.set('BINDIR', bindir)
 conf_data.set('DATADIR', datadir)
