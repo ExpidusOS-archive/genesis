@@ -6,5 +6,16 @@
   };
 
   outputs = { self, expidus-sdk }:
-    expidus-sdk.libExpidus.mkFlake { inherit self; name = "genesis-shell"; };
+    expidus-sdk.libExpidus.mkFlake {
+      inherit self;
+      name = "genesis-shell";
+      systems = [
+        "aarch64-linux"
+        "i686-linux"
+        "x86_64-linux"
+
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
+    };
 }
