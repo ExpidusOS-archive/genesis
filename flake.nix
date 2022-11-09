@@ -6,5 +6,5 @@
   };
 
   outputs = { self, expidus-sdk }:
-    expidus-sdk.lib.mkFlake { inherit self; name = "genesis-shell"; };
+    expidus-sdk.libExpidus.mkFlake { inherit self; name = "genesis-shell"; };
 }
