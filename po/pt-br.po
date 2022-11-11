@@ -1,0 +1,90 @@
+# Brazilian Portuguese translations for genesis-shell package.
+# Copyright (C) 2021 THE genesis-shell'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the genesis-shell package.
+# Manually generated, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: genesis-shell\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-11 23:04-0700\n"
+"PO-Revision-Date: 2022-10-11 23:04-0700\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: pt-br\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/components/desktop/desktop.vala:23
+msgid "- Genesis Shell Desktop Component"
+msgstr "- Componente do Ambiente Genesis"
+
+#: src/components/desktop/desktop.vala:88
+msgid "Home"
+msgstr "Início"
+
+#: src/components/desktop/desktop.vala:89
+msgid "Cache"
+msgstr "Temporarios"
+
+#: src/components/desktop/desktop.vala:90
+msgid "Configuration"
+msgstr "Configurações"
+
+#: src/components/desktop/desktop.vala:91
+msgid "Data"
+msgstr "Dados"
+
+#: src/components/desktop/desktop.vala:92
+msgid "Desktop"
+msgstr "Área de Trabalho"
+
+#: src/components/desktop/desktop.vala:93
+msgid "Documents"
+msgstr "Documentos"
+
+#: src/components/desktop/desktop.vala:94
+msgid "Downloads"
+msgstr "Downloads"
+
+#: src/components/desktop/desktop.vala:95
+msgid "Music"
+msgstr "Músicas"
+
+#: src/components/desktop/desktop.vala:96
+msgid "Pictures"
+msgstr "Imagens"
+
+#: src/components/desktop/desktop.vala:97
+msgid "Public Share"
+msgstr "Pasta Pública"
+
+#: src/components/desktop/desktop.vala:98
+msgid "Templates"
+msgstr "Temas"
+
+#: src/components/desktop/desktop.vala:99
+msgid "Videos"
+msgstr "Vídeos"
+
+#: src/components/desktop/desktop.vala:109
+msgid "Settings"
+msgstr "Configurações"
+
+#: src/components/desktop/desktop.vala:110
+msgid "About"
+msgstr "Sobre"
+
+#: src/components/desktop/desktop.vala:127
+msgid "Genesis Shell"
+msgstr "Ambiente Genesis"
+
+#: src/components/panel/panel.vala:23
+msgid "- Genesis Shell Panel Component"
+msgstr "- Componente do Ambiente Genesis"
+
+#: src/libwidgets/user.vala:186
+msgid "Log Out"
+msgstr "Sair"
