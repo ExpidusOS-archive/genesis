@@ -6,7 +6,7 @@
   };
 
   outputs = { self, expidus-sdk }:
-    expidus-sdk.libExpidus.mkFlake {
+    expidus-sdk.libExpidus.flake.makeOverride {
       inherit self;
       name = "genesis-shell";
       systems = [
