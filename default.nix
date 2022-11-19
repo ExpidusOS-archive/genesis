@@ -8,4 +8,4 @@
     submodules = true;
     shallow = true;
   };
-}).defaultNix.legacyPackages.${builtins.currentSystem}.genesis-shell
+}).defaultNix.hydraJobs
