@@ -42,8 +42,8 @@ namespace GenesisShellGtk3 {
   }
 
   public sealed class PanelWidget : Hdy.HeaderBar, GenesisShell.IUIElement {
-    public const double UNIT_SIZE = 35.0;
-    public const double APPLET_ICON_UNIT_SIZE = 20.0;
+    public const double UNIT_SIZE = 80.0;
+    public const double APPLET_ICON_UNIT_SIZE = 42.5;
 
     private ulong _mode_id;
     private Gtk.Button _left_button;
@@ -239,7 +239,7 @@ namespace GenesisShellGtk3 {
     }
 
     private int get_height() {
-      return GenesisShell.Math.scale(this.monitor.dpi, UNIT_SIZE);
+      return GenesisShell.Math.scale(this.monitor.dpi, UNIT_SIZE).clamp(30, 120);
     }
 
     public override void size_allocate(Gtk.Allocation alloc) {

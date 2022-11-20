@@ -16,7 +16,7 @@ namespace GenesisShell {
   }
 
   namespace Math {
-    public static double NORM_DPI = 192.0;
+    public static double TARGET_DPI = 91.0;
 
     public static int round(int num) {
       while ((num % 10) > 0) {
@@ -26,7 +26,7 @@ namespace GenesisShell {
     }
 
     public static int scale(double dpi, double size) {
-      return round((int)((NORM_DPI / dpi) * size));
+      return round((int)((TARGET_DPI / dpi) * size));
     }
   }
 }

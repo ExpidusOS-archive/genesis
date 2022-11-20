@@ -23,7 +23,7 @@ namespace GenesisShellGtk3 {
     construct {
       this.get_style_context().add_class("genesis-shell-dash-indicator");
 
-      this._icon = new Icon.for_monitor("error", this.monitor, 25.0);
+      this._icon = new Icon.for_monitor("error", this.monitor, 100.0);
       this._icon.halign = Gtk.Align.CENTER;
       this._icon.valign = Gtk.Align.CENTER;
       this._icon.bind_property("visible", this, "visible", GLib.BindingFlags.BIDIRECTIONAL | GLib.BindingFlags.SYNC_CREATE);
@@ -39,9 +39,9 @@ namespace GenesisShellGtk3 {
   }
 
   public class DashboardWidget : Gtk.Bin, GenesisShell.IUIElement {
-    public const double UNIT_SIZE = 300.0;
-    public const double ACTION_BUTTON_UNIT_SIZE = 30.0;
-    public const double ACTION_BUTTON_ICON_UNIT_SIZE = 20.0;
+    public const double UNIT_SIZE = 700.0;
+    public const double ACTION_BUTTON_UNIT_SIZE = 80.0;
+    public const double ACTION_BUTTON_ICON_UNIT_SIZE = 50.0;
 
     private Gtk.Adjustment _scroll_adjust;
     private Gtk.ScrolledWindow _scroll;
