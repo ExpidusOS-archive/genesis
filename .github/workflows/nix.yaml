@@ -58,4 +58,4 @@ jobs:
           extraPullNames: nix-community
           skipPush: true
       - name: Build
-        run: nix-build
+        run: nix-build ./default.nix -A default
