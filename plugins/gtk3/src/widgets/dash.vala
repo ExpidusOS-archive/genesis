@@ -60,7 +60,7 @@ namespace GenesisShellGtk3 {
 
     public GenesisShell.UIElementKind kind {
       get {
-        return GenesisShell.UIElementKind.DESKTOP;
+        return GenesisShell.UIElementKind.DASH;
       }
     }
 

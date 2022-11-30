@@ -7,6 +7,7 @@ namespace GenesisShellGtk3 {
     public DesktopWindow? desktop { get; }
     public PanelWindow ?panel { get; }
     public DashboardWindow ?dash { get; }
+    public AppsWindow ?apps { get; }
     public LockWindow ?lock { get; }
 
     public PanelWidget? panel_widget {
@@ -27,6 +28,18 @@ namespace GenesisShellGtk3 {
         if (this._desktop != null) {
           if (this._desktop.widget != null) {
             return this._desktop.widget.dash;
+          }
+        }
+        return null;
+      }
+    }
+
+    public AppsWidget? apps_widget {
+      get {
+        if (this._apps != null) return this._apps.widget;
+        if (this._desktop != null) {
+          if (this._desktop.widget != null) {
+            return this._desktop.widget.apps;
           }
         }
         return null;
@@ -155,6 +168,9 @@ namespace GenesisShellGtk3 {
 
         this._dash = new DashboardWindow(this);
         this._dash.no_show_all = true;
+
+        this._apps = new AppsWindow(this);
+        this._apps.no_show_all = true;
 
         this._lock = new LockWindow(this);
         this._lock.no_show_all = true;

@@ -26,10 +26,17 @@ plugins/gtk3/src/panel-applets/networks.vala
 plugins/gtk3/src/panel-applets/power.vala
 plugins/gtk3/src/panel-applets/sound.vala
 plugins/gtk3/src/provider/monitor.vala
+plugins/gtk3/src/widgets/apps.vala
+plugins/gtk3/src/widgets/button.vala
+plugins/gtk3/src/widgets/dash.vala
 plugins/gtk3/src/widgets/desktop.vala
 plugins/gtk3/src/widgets/icon.vala
+plugins/gtk3/src/widgets/lock.vala
 plugins/gtk3/src/widgets/panel.vala
+plugins/gtk3/src/windows/apps.vala
+plugins/gtk3/src/windows/dash.vala
 plugins/gtk3/src/windows/desktop.vala
+plugins/gtk3/src/windows/lock.vala
 plugins/gtk3/src/windows/panel.vala
 
 shell/src/build.vala.in
