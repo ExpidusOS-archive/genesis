@@ -64,7 +64,7 @@ namespace GenesisShellGtk3 {
 
         this._apps = new AppsWidget(this.monitor);
         this._apps.no_show_all = true;
-        this.add(this.dash);
+        this.add(this.apps);
 
         this._lock = new LockWidget(this.monitor);
         this._lock.no_show_all = true;
