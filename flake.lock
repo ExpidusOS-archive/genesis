@@ -2,11 +2,11 @@
   "nodes": {
     "expidus-sdk": {
       "locked": {
-        "lastModified": 1669841197,
-        "narHash": "sha256-hDcw/Qk7LIE/KZJMcaVP9GCQUeb1jGcb0eJ7bLjz/ow=",
+        "lastModified": 1669931270,
+        "narHash": "sha256-y7uMIi2PRlCrGIz69p4l3uzqpGdfd7W8K6w+89Xg73c=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "28ea482609597382d26d74b64d8b1544875fb345",
+        "rev": "7003538b3ed613b1e26ec1ecd7703629d9e33874",
         "type": "github"
       },
       "original": {
@@ -15,9 +15,62 @@
         "type": "github"
       }
     },
+    "gmobile": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1664957248,
+        "narHash": "sha256-QxNLgfvpB9LkF3wyC3d7Y091Bkyb0xmjs2z1UjL2+OQ=",
+        "ref": "main",
+        "rev": "3035e22ff124ca7b80ac5a21fe114be442e4dde6",
+        "revCount": 13,
+        "type": "git",
+        "url": "https://gitlab.gnome.org/guidog/gmobile.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "https://gitlab.gnome.org/guidog/gmobile.git"
+      }
+    },
+    "gvc": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1642013245,
+        "narHash": "sha256-FosJwgTCp6/EI6WVbJhPisokRBA6oT0eo7d+Ya7fFX8=",
+        "ref": "master",
+        "rev": "8e7a5a4c3e51007ce6579292642517e3d3eb9c50",
+        "revCount": 73,
+        "type": "git",
+        "url": "https://gitlab.gnome.org/GNOME/libgnome-volume-control.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://gitlab.gnome.org/GNOME/libgnome-volume-control.git"
+      }
+    },
+    "libcall-ui": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1667390157,
+        "narHash": "sha256-7SKJkMSCEPZK8rcfF+8SxAbK3f2mMwlBTB5khzsa1fc=",
+        "ref": "main",
+        "rev": "fa7f939c3bc691dc8c0d354a1823c39ac107c8da",
+        "revCount": 301,
+        "type": "git",
+        "url": "https://gitlab.gnome.org/World/Phosh/libcall-ui.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "https://gitlab.gnome.org/World/Phosh/libcall-ui.git"
+      }
+    },
     "root": {
       "inputs": {
-        "expidus-sdk": "expidus-sdk"
+        "expidus-sdk": "expidus-sdk",
+        "gmobile": "gmobile",
+        "gvc": "gvc",
+        "libcall-ui": "libcall-ui"
       }
     }
   },

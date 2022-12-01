@@ -209,6 +209,21 @@ namespace GenesisShellGtk3 {
       value.set_boolean(false);
 
       switch (elem) {
+        case GenesisShell.UIElementKind.APPS:
+          if (this.apps_widget != null) {
+            if (action == GenesisShell.UIActionKind.OPEN) {
+              this.apps_widget.show_all();
+              value.set_boolean(true);
+            } else if (action == GenesisShell.UIActionKind.CLOSE) {
+              this.apps_widget.hide();
+              value.set_boolean(true);
+            } else if (action == GenesisShell.UIActionKind.TOGGLE_OPEN) {
+              if (this.apps_widget.visible) this.apps_widget.hide();
+              else this.apps_widget.show_all();
+              value.set_boolean(true);
+            }
+          }
+          break;
         case GenesisShell.UIElementKind.DASH:
           if (this.dash_widget != null) {
             if (action == GenesisShell.UIActionKind.OPEN) {
