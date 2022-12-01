@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          submodules: true
       - name: Install Nix
         uses: cachix/install-nix-action@v18
         with:
@@ -31,12 +29,12 @@ jobs:
           extraPullNames: nix-community
           skipPush: "${{ github.event_name == 'pull_request' }}"
       - name: Build Flake
-        run: nix build -L '.?submodules=1'
+        run: nix build -L
       - name: Check Flake
         run: nix flake check
       - name: Bundle Flake
         if: github.event_name != 'pull_request'
-        run: nix bundle '.?submodules=1'
+        run: nix bundle
   legacy:
     strategy:
       matrix:
