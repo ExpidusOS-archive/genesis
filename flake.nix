@@ -22,6 +22,10 @@
 
   outputs = { self, expidus-sdk, gvc, gmobile, libcall-ui }:
     with expidus-sdk.lib;
+    let
+      unsupportedSystems = builtins.map (name: "${name}-cygwin") [ "i686" "x86_64" ];
+      defaultSupported = lists.flatten (builtins.attrValues expidus.system.defaultSupported);
+    in
     expidus.flake.makeOverride {
       self = expidus.flake.makeSubmodules self {
         "subprojects/gvc" = gvc;
@@ -29,6 +33,8 @@
         "subprojects/libcall-ui" = libcall-ui;
       };
       name = "genesis-shell";
-      systems = lists.subtractLists (builtins.map (name: "${name}-cygwin") [ "i686" "x86_64" ]) (lists.flatten (builtins.attrValues expidus.system.defaultSupported));
+      sysconfig = expidus.system.make {
+        supported = lists.subtractLists unsupportedSystems defaultSupported;
+      };
     };
 }
