@@ -2,11 +2,11 @@
   "nodes": {
     "expidus-sdk": {
       "locked": {
-        "lastModified": 1670004141,
-        "narHash": "sha256-7fISb8iDVNWsbChgM5tTz8u5e0J9ykFDRRQ+WsDPDeI=",
+        "lastModified": 1672253283,
+        "narHash": "sha256-H1QsN1ZDV/EttYAOmX/kgpJV2AEs1VqaiYkV7Na81rk=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "6d793629e44d2d692b1d51f665f9286f4e0138db",
+        "rev": "8347c0fcfd6733c36f551404d597990e9e5122af",
         "type": "github"
       },
       "original": {
@@ -18,11 +18,11 @@
     "gmobile": {
       "flake": false,
       "locked": {
-        "lastModified": 1664957248,
-        "narHash": "sha256-QxNLgfvpB9LkF3wyC3d7Y091Bkyb0xmjs2z1UjL2+OQ=",
+        "lastModified": 1670238874,
+        "narHash": "sha256-MrSQkJ9/dQpEEDSfL4nZutHczkNOj5XH1myTB84EE9c=",
         "ref": "main",
-        "rev": "3035e22ff124ca7b80ac5a21fe114be442e4dde6",
-        "revCount": 13,
+        "rev": "1039e7808195d4de367ce2718481641ca8af2427",
+        "revCount": 19,
         "type": "git",
         "url": "https://gitlab.gnome.org/guidog/gmobile.git"
       },
@@ -37,7 +37,7 @@
       "locked": {
         "lastModified": 1642013245,
         "narHash": "sha256-FosJwgTCp6/EI6WVbJhPisokRBA6oT0eo7d+Ya7fFX8=",
-        "ref": "master",
+        "ref": "refs/heads/master",
         "rev": "8e7a5a4c3e51007ce6579292642517e3d3eb9c50",
         "revCount": 73,
         "type": "git",
@@ -51,11 +51,11 @@
     "libcall-ui": {
       "flake": false,
       "locked": {
-        "lastModified": 1667390157,
-        "narHash": "sha256-7SKJkMSCEPZK8rcfF+8SxAbK3f2mMwlBTB5khzsa1fc=",
+        "lastModified": 1671882951,
+        "narHash": "sha256-rRdH/B7PoLZncRqMqVAEBnyYt9iarkggsIoZ1oakGck=",
         "ref": "main",
-        "rev": "fa7f939c3bc691dc8c0d354a1823c39ac107c8da",
-        "revCount": 301,
+        "rev": "5103b83df4088e2a0bed39e235a4886f0496e0b2",
+        "revCount": 308,
         "type": "git",
         "url": "https://gitlab.gnome.org/World/Phosh/libcall-ui.git"
       },
