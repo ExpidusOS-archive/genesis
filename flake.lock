@@ -8,11 +8,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1672336189,
-        "narHash": "sha256-Uaiz68dotet8aPybYzJDkqq1/YDIpo1NyjqZRhXpBhE=",
+        "lastModified": 1672349717,
+        "narHash": "sha256-jX3nM7Y18Ve4H7jndzH/Y/mogTblxI+g1sPLs0CCBeQ=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "2f7a2d35f751445de60a5fad434130e8906a75b8",
+        "rev": "c1aa062873df48fae30143ccd31b72c8ed8538c1",
         "type": "github"
       },
       "original": {
@@ -74,11 +74,11 @@
     "libcall-ui": {
       "flake": false,
       "locked": {
-        "lastModified": 1671882951,
-        "narHash": "sha256-rRdH/B7PoLZncRqMqVAEBnyYt9iarkggsIoZ1oakGck=",
+        "lastModified": 1672340364,
+        "narHash": "sha256-hDyU/v5WmzvMRjGFZze8VIX51Np47W/vc0YG2Mj8Ed8=",
         "ref": "main",
-        "rev": "5103b83df4088e2a0bed39e235a4886f0496e0b2",
-        "revCount": 308,
+        "rev": "0a5bf80db0aa2dc7d3354c769852cdc017b95695",
+        "revCount": 309,
         "type": "git",
         "url": "https://gitlab.gnome.org/World/Phosh/libcall-ui.git"
       },
