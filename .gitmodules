@@ -1,3 +1,9 @@
-[submodule "vapi/vala-extra-vapis"]
-	path = vapi/vala-extra-vapis
-	url = https://github.com/GNOME/vala-extra-vapis
+[submodule "subprojects/gvc"]
+	path = subprojects/gvc
+	url = https://gitlab.gnome.org/GNOME/libgnome-volume-control.git
+[submodule "subprojects/gmobile"]
+	path = subprojects/gmobile
+	url = https://gitlab.gnome.org/guidog/gmobile.git
+[submodule "subprojects/libcall-ui"]
+	path = subprojects/libcall-ui
+	url = https://gitlab.gnome.org/World/Phosh/libcall-ui.git

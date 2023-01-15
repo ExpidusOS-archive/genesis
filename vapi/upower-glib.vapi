@@ -3,10 +3,13 @@
 [CCode (cprefix = "Up", gir_namespace = "UPowerGlib", gir_version = "1.0", lower_case_cprefix = "up__")]
 namespace Up {
 	[CCode (cheader_filename = "libupower-glib/upower.h", type_id = "up_client_get_type ()")]
-	public class Client : GLib.Object, GLib.Initable {
+	public class Client : GLib.Object, GLib.AsyncInitable, GLib.Initable {
 		[CCode (cname = "up_client_new", has_construct_function = false)]
 		[Version (since = "0.9.0")]
 		public Client ();
+		[CCode (cname = "up_client_new_finish", has_construct_function = false)]
+		[Version (since = "0.99.14")]
+		public Client.finish (GLib.AsyncResult res) throws GLib.Error;
 		[CCode (cname = "up_client_new_full", has_construct_function = false)]
 		[Version (since = "0.99.5")]
 		public Client.full (GLib.Cancellable? cancellable = null) throws GLib.Error;
@@ -22,6 +25,9 @@ namespace Up {
 		[CCode (cname = "up_client_get_devices2")]
 		[Version (since = "0.99.8")]
 		public GLib.GenericArray<Up.Device> get_devices2 ();
+		[CCode (cname = "up_client_get_devices_async")]
+		[Version (since = "0.99.14")]
+		public async GLib.GenericArray<Up.Device> get_devices_async (GLib.Cancellable? cancellable) throws GLib.Error;
 		[CCode (cname = "up_client_get_display_device")]
 		[Version (since = "1.0")]
 		public Up.Device get_display_device ();
@@ -104,6 +110,9 @@ namespace Up {
 		[NoAccessorMethod]
 		[Version (since = "0.9.0")]
 		public double capacity { get; set; }
+		[NoAccessorMethod]
+		[Version (since = "1.0")]
+		public int charge_cycles { get; set; }
 		[NoAccessorMethod]
 		[Version (since = "0.9.0")]
 		public double energy { get; set; }
@@ -347,6 +356,22 @@ namespace Up {
 		TABLET,
 		COMPUTER,
 		GAMING_INPUT,
+		PEN,
+		TOUCHPAD,
+		MODEM,
+		NETWORK,
+		HEADSET,
+		SPEAKERS,
+		HEADPHONES,
+		VIDEO,
+		OTHER_AUDIO,
+		REMOTE_CONTROL,
+		PRINTER,
+		SCANNER,
+		CAMERA,
+		WEARABLE,
+		TOY,
+		BLUETOOTH_GENERIC,
 		LAST
 	}
 	[CCode (cheader_filename = "libupower-glib/upower.h", cprefix = "UP_DEVICE_LEVEL_", has_type_id = false)]

@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=com.expidus.GenesisLock
-Exec=@BINDIR@/genesis-lock

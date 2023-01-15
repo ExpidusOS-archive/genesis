@@ -1,0 +1,4 @@
+core/examples
+core/tests
+
+plugins/gtk3/tests

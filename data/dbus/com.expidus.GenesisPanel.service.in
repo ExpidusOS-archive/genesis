@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=com.expidus.GenesisPanel
-Exec=@BINDIR@/genesis-panel

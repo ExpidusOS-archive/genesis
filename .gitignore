@@ -1,24 +1,31 @@
-*.ninja
-compile_commands.json
-meson-info
+# subproject directories
+/subprojects/*
+!/subprojects/gvc
+!/subprojects/gmobile
+!/subprojects/libcall-ui
+!/subprojects/*.wrap
+
+# Meson Directories
 meson-logs
 meson-private
-meson-uninstalled
-*.p
+
+# Meson Files
+meson_benchmark_setup.dat
+meson_test_setup.dat
+sanitycheckcpp.cc     # C++ specific
+sanitycheckcpp.exe    # C++ specific
+
+# Ninja
+build.ninja
 .ninja_deps
-.ninja_log
-*.so*
-*.a*
-*.pc
-*.gmo
-genesis-shell
-build.h
-build.vala
-*.vapi
-!vapi/*.vapi
-*.h
-*.glade~
-!src/**/*.h
-!src/**/*genesis-shell*
-leak.txt
-vgcore.*
+.ninja_logs
+
+# Misc
+compile_commands.json
+
+# nix
+result
+
+*.pot
+*.uncrustify
+*.qcow2

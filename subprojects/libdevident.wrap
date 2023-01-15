@@ -1,0 +1,4 @@
+[wrap-git]
+directory=libdevident
+url=https://github.com/ExpidusOS/libdevident.git
+revision=master

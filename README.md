@@ -1,43 +1,38 @@
 # Genesis
 
-Genesis Shell is a modular Wayland compositor based on Wayfire. The name "Genesis" was chosen as the shell is designed to be a "next-generation"
-desktop environment. It is designed to be modular, the core of the shell is designed to not rely on any display backends. This means Genesis can be ported
-between any display technology with little hassle. However, Genesis's component side depend on Wayland. This will be patched in the future to allow any
-display backend work between instances.
+**NOTE**: This branch is the WIP refactored version.
+
+Genesis Shell is the next-generation fully featured desktop environment for ExpidusOS. At its core,
+Genesis Shell can be ported to many different devices and display technologies due to its modular design.
+Another feature of Genesis Shell is it is able to work on mobile devices and not just desktops.
 
 Wallpaper free from **[unsplash.com](https://unsplash.com)**.
 
 ## Dependencies
-* `valac` (build)
-* `valadoc` (build)
-* `meson` (build)
-* Wayfire
-* Wayfire Plugins Extra
-* gtk4
-* gtk+3.0
-* gtk-layer-shell
-* [devident](https://github.com/ExpidusOS/libdevident)
-* NetworkManager
-* ModemManager
-* libgweather 3.0
-* accountsservice
-* libadwaita 1.0
-* Libhandy 1.0
-* Polkit Agent
-* libpeas
-* UPower
 
-**Note**: as of 2021-12-23, Genesis Shell requires the [ExpidusOS fork of Wayfire](https://github.com/ExpidusOS/wayfire) until pull request [1392](https://github.com/WayfireWM/wayfire/pull/1392) is merged.
+If building from source, **must** pull the git submodules or allow meson to use the wrap files.
 
-## Implemented Features & Components
-* IBus
-* XDG Desktop Portal
-* Panel
-* Desktop
-* Power menu
-* Application launcher
+### Host
 
-## Needed Features & Components
-* Notifications
-* Lock Screen
-* LightDM Greeter
+* `valac`
+* `meson`
+* `pkg-config`
+* `valadoc` (if `docs` is **enabled**)
+
+### Target
+
+* `libdevident`
+* `dbus-1` (if target is **linux**)
+* `gio-2.0`
+* `vadi`
+* `libtokyo` (if `libtokyo-gtk3` or `libtokyo-gtk4` is present)
+* `libtokyo-gtk3` (**optional**)
+* `libtokyo-gtk4` (**optional**)
+* `gtk+-wayland-3.0` (if `libtokyo-gtk3` is present, target is linux, and `wayland` is **enabled**)
+* `gtk+-x11-3.0` (if `libtokyo-gtk3` is present, target is linux, and `wayland` is **enabled**)
+* `gtk-layer-shell` (if `gtk+-wayland-3.0` is present)
+* `libcallaudio` (**optional**)
+* `libecal-2.0` (**optional**)
+* `libnm` (**optional**)
+* `upower-glib` (**optional**)
+* `ibus-1.0` (**optional**)

@@ -1,17 +1,9 @@
-project('genesis-shell', 'vala', 'c', 'cpp', license: 'GPL-3.0-only', version: '0.1.0-prealpha', default_options: [
-	'cpp_std=c++17',
-	'c_std=c11',
-	'warning_level=2',
-	'werror=false'
-])
-
-vapi_dir = meson.current_source_dir() / 'vapi'
-add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
-add_project_arguments(['--vapidir', vapi_dir / 'vala-extra-vapis'], language: 'vala')
-add_project_arguments(['--vapidir', '/usr/share/vala/vapi'], language: 'vala')
-add_project_arguments(['-DWLR_USE_UNSTABLE', '-DWAYFIRE_PLUGIN', '-DGWEATHER_I_KNOW_THIS_IS_UNSTABLE'], language: ['cpp', 'c'])
+project('genesis-shell', 'vala', 'c', license: 'GPL-3.0-only', version: '0.2.0-alpha')
 
 gnome = import('gnome')
+i18n = import('i18n')
+pkg = import('pkgconfig')
+fs = import('fs')
 
 prefix = get_option('prefix')
 bindir = prefix / get_option('bindir')
@@ -19,234 +11,207 @@ datadir = prefix / get_option('datadir')
 libdir = prefix / get_option('libdir')
 libexecdir = prefix / get_option('libexecdir')
 
-adwaita = dependency('libadwaita-1')
-accountsservice = dependency('accountsservice')
-gobject = dependency('gobject-2.0')
-gtk = [dependency('gtk+-3.0'), dependency('gtk-layer-shell-0')]
-gtk4 = dependency('gtk4')
-upower = dependency('upower-glib')
-gio = [dependency('gio-2.0'), dependency('gio-unix-2.0')]
-libpeas = dependency('libpeas-1.0')
-gweather = dependency('gweather-3.0')
-libpulse = [dependency('libpulse'), dependency('libpulse-mainloop-glib')]
-devident_client = dependency('devident-client-1.0')
-networkmanager = dependency('libnm')
-modemmanager = dependency('libmm-glib')
-polkit = [dependency('polkit-agent-1'), dependency('polkit-gobject-1')]
-libhandy = dependency('libhandy-1')
-wayfire = dependency('wayfire')
-wlroots = dependency('wlroots')
-giomm = dependency('giomm-2.4')
-posix = [meson.get_compiler('vala').find_library('posix'), meson.get_compiler('vala').find_library('linux')]
-math = meson.get_compiler('c').find_library('m')
-playerctl = dependency('playerctl')
-wayland_client = meson.get_compiler('c').find_library('wayland-client')
-
-add_project_arguments('-DPOLKIT_AGENT_I_KNOW_API_IS_SUBJECT_TO_CHANGE', language: 'c')
-
-version = '"@0@"'.format(meson.project_version())
+longver = '@0@'.format(meson.project_version())
+shortver = longver
 git = find_program('git', native: true, required: false)
+conf_data = configuration_data()
+i18n_args = ['--package-version=@0@'.format(longver), '--copyright-holder=Midstall Software']
+
+add_project_arguments([
+  '--hide-internal',
+  '--vapidir', join_paths(meson.project_source_root(), 'vapi'),
+  '--vapidir', meson.project_build_root()
+], language: 'vala')
+
 if git.found()
-	git_commit = run_command([git, 'rev-parse', '--short', 'HEAD'])
-	git_branch = run_command([git, 'rev-parse', '--abbrev-ref', 'HEAD'])
-	if git_commit.returncode() == 0 and git_branch.returncode() == 0
-		version = '"@0@-@1@ (branch \'@2@\')"'.format(meson.project_version(), git_commit.stdout().strip(), git_branch.stdout().strip())
-	endif
+  git_commit = run_command([git, 'rev-parse', '--short', 'HEAD'])
+  git_branch = run_command([git, 'rev-parse', '--abbrev-ref', 'HEAD'])
+  git_config_username = run_command([git, 'config', '--get', 'user.name'])
+
+  if git_commit.returncode() == 0 and git_branch.returncode() == 0
+    shortver = '@0@-@1@'.format(meson.project_version(), git_commit.stdout().strip())
+    longver = '@0@ (branch \'@1@\')'.format(shortver, git_branch.stdout().strip())
+  endif
+
+  if git_config_username.returncode() == 0
+    git_username = git_config_username.stdout().strip()
+    conf_data.set('BUILD_USER', git_username)
+  endif
 endif
 
-wayland_protocols = [
-	['wlr-layer-shell-unstable-v1', 'private'],
-	['xdg-shell', 'stable']
-]
+sdk = dependency('expidus-sdk', native: false, required: false, include_type: 'system', method: 'pkg-config')
+if sdk.found()
+  uncrustify = find_program('uncrustify', sdk.get_variable('bindir'))
+else
+  uncrustify = disabler()
+endif
 
-wayland_scanner = find_program('wayland-scanner')
-wayland_protocols_dep = dependency('wayland-protocols')
-wayland_protocol_server_headers = []
-wayland_protocol_client_headers = []
-wayland_protocol_private_sources = []
-wayland_protocol_public_sources = []
-protocols_dir = wayland_protocols_dep.get_pkgconfig_variable('pkgdatadir')
+enable_wayland = get_option('wayland').disable_auto_if(target_machine.system() != 'linux')
+enable_x11 = get_option('x11').disable_auto_if(target_machine.system() != 'linux')
 
-foreach p : wayland_protocols
-	protocol_name = p.get(0)
-	protocol_type = p.get(1)
+valadoc = find_program('valadoc', required: get_option('docs'), native: true)
 
-	if protocol_type == 'stable'
-		output_base = protocol_name
-		input = join_paths(protocols_dir, '@0@/@1@/@2@.xml'.format(protocol_type, protocol_name, output_base))
-	elif protocol_type == 'staging'
-		protocol_version = p.get(2)
-		output_base = '@0@-@1@'.format(protocol_name, protocol_version)
-		input = join_paths(protocols_dir, '@0@/@1@/@2@.xml'.format(protocol_type, protocol_name, output_base))
-	elif protocol_type == 'private'
-		output_base = protocol_name
-		input = 'protocols/@0@.xml'.format(protocol_name)
-	else
-		protocol_version = p.get(2)
-		output_base = '@0@-@1@-@2@'.format(protocol_name, protocol_type, protocol_version)
-		input = join_paths(protocols_dir, '@0@/@1@/@2@.xml'.format(protocol_type, protocol_name, output_base))
-	endif
+libmath = meson.get_compiler('c').find_library('m', required: false)
+libdevident = dependency('devident', fallback: ['libdevident', 'libdevident_core'], required: true)
 
-	client_header = custom_target('@0@ client header'.format(output_base),
-		input: input,
-		output: '@0@-client-protocol.h'.format(output_base),
-		command: [wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@'])
-	
-	wayland_protocol_public_sources += custom_target('@0@ public source'.format(output_base),
-		depends: client_header,
-		input: input,
-		output: '@0@-public-protocol.c'.format(output_base),
-		command: [wayland_scanner, 'public-code', '@INPUT@', '@OUTPUT@'])
+if dependency('libpulse', required: false).found()
+  gvc = subproject('gvc', default_options: [
+    'package_name=' + meson.project_name(),
+    'package_version=' + meson.project_version(),
+    'pkgdatadir=' + join_paths(datadir, 'genesis-shell', 'libs'),
+    'pkglibdir=' + join_paths(libdir, 'genesis-shell', 'libs'),
+    'alsa=false',
+    'static=false',
+    'introspection=true'
+  ])
 
-	wayland_protocol_client_headers += client_header
-endforeach
+  libgvc = gvc.get_variable('libgvc_dep')
+  libgvc_vapi = gnome.generate_vapi('gvc',
+    metadata_dirs: [join_paths(meson.project_source_root(), 'vapi')],
+    packages: ['gio-2.0'],
+    sources: [gvc.get_variable('libgvc_gir')[0]],
+    install: true,
+    install_dir: join_paths(datadir, 'genesis-shell', 'libs'))
+  libgvc_inc = include_directories(join_paths('subprojects', 'gvc'))
+else
+  libgvc = disabler()
+endif
 
-conf_data = configuration_data()
+ibus = dependency('ibus-1.0', required: false)
+libnm = dependency('libnm', required: false)
+upower = dependency('upower-glib', required: false)
+gio_unix = dependency('gio-unix-2.0', required: false)
+
+libcallaudio = dependency('libcallaudio-0.1', required: false)
+libecal = dependency('libecal-2.0', required: false)
+
+libtokyo = dependency('tokyo', fallback: ['libtokyo', 'libtokyo_core_dep'], required: false)
+libtokyo_gtk3 = dependency('tokyo-gtk3', fallback: ['libtokyo', 'libtokyo_gtk3_dep'], disabler: not libtokyo.found(), required: false)
+libtokyo_gtk4 = dependency('tokyo-gtk4', fallback: ['libtokyo', 'libtokyo_gtk4_dep'], disabler: not libtokyo.found(), required: false)
+
+gtk3_wayland = dependency('gtk+-wayland-3.0', disabler: not libtokyo_gtk3.found(), required: enable_wayland)
+gtk3_x11 = dependency('gtk+-x11-3.0', disabler: not libtokyo_gtk3.found(), required: enable_x11)
+gtk_layer_shell = dependency('gtk-layer-shell-0', disabler: not gtk3_wayland.found(), required: false)
+
+if gtk3_wayland.found()
+  add_project_arguments(['--define=HAS_GTK3_WAYLAND'], language: 'vala')
+endif
+
+if gtk3_x11.found()
+  add_project_arguments(['--define=HAS_GTK3_X11'], language: 'vala')
+endif
+
+if gtk_layer_shell.found()
+  add_project_arguments(['--define=HAS_GTK_LAYER_SHELL'], language: 'vala')
+endif
+
+gtk4_wayland = dependency('gtk4-wayland', disabler: not libtokyo_gtk4.found(), required: enable_wayland)
+gtk4_x11 = dependency('gtk4-x11', disabler: not libtokyo_gtk4.found(), required: enable_x11)
+
+if gtk4_wayland.found()
+  add_project_arguments(['--define=HAS_GTK4_WAYLAND'], language: 'vala')
+endif
+
+if gtk4_x11.found()
+  add_project_arguments(['--define=HAS_GTK4_X11'], language: 'vala')
+endif
+
+if libtokyo_gtk3.found() and libcallaudio.found() 
+  libcall_ui_proj = subproject('libcall-ui', default_options: [
+    'examples=false',
+    'gtk_doc=true',
+    'tests=false',
+    'install-i18n=true'
+  ])
+
+  call_ui_lib = static_library('call-ui',
+    [libcall_ui_proj.get_variable('call_ui_sources'), libcall_ui_proj.get_variable('call_ui_enum_sources')],
+    c_args: libcall_ui_proj.get_variable('call_ui_c_args'),
+    include_directories: [ libcall_ui_proj.get_variable('root_inc'), libcall_ui_proj.get_variable('src_inc') ],
+    dependencies: libcall_ui_proj.get_variable('call_ui_deps'))
+
+  libcall_ui = declare_dependency(
+    include_directories: include_directories('subprojects/libcall-ui/src'),
+    dependencies: libcall_ui_proj.get_variable('call_ui_deps'),
+    link_with: call_ui_lib)
+
+  libcall_ui_vapi = gnome.generate_vapi('libcall-ui',
+    metadata_dirs: [join_paths(meson.project_source_root(), 'vapi')],
+    vapi_dirs: [join_paths(meson.project_source_root(), 'vapi')],
+    packages: ['gio-2.0', 'gtk+-3.0', 'libhandy-1', 'libcallaudio-0.1'],
+    sources: [libcall_ui_proj.get_variable('libcall_ui_gir')[0]],
+    install: true,
+    install_dir: join_paths(datadir, 'genesis-shell', 'libs'))
+  libcall_ui_inc = include_directories(join_paths('subprojects', 'libcall-ui'))
+else
+  libcall_ui = disabler()
+endif
+
+vadi = dependency('vadi-0.0', required: true)
+gio = dependency('gio-2.0', required: true)
+libpeas = dependency('libpeas-1.0', required: true)
+
+dbus = dependency('dbus-1', required: get_option('dbus').disable_auto_if(target_machine.system() != 'linux'))
+
+libintl = meson.get_compiler('c').find_library('intl', required: false)
+
+gtk3 = [dependency('gtk+-3.0', disabler: not libtokyo_gtk3.found(), required: libtokyo_gtk3.found()),
+  libtokyo_gtk3]
+
+if gtk3_x11.found()
+  gtk3 += [gtk3_x11, dependency('x11', required: true)]
+endif
+
+if gtk3_wayland.found()
+  gtk3 += [gtk3_wayland]
+endif
+
+if gtk_layer_shell.found()
+  gtk3 += [gtk_layer_shell]
+endif
+
+gtk4 = [dependency('gtk4', disabler: not libtokyo_gtk4.found(), required: libtokyo_gtk4.found()),
+  libtokyo_gtk4]
+
+if gtk4_x11.found()
+  gtk4 += [gtk4_x11]
+endif
+
+if gtk4_wayland.found()
+  gtk4 += [gtk4_wayland]
+endif
+
+has_gio_gdesktopappinfo_header = false
+if gio_unix.found()
+  has_gio_gdesktopappinfo_header = meson.get_compiler('c').check_header('gio/gdesktopappinfo.h', args: ['-I' + gio_unix.get_variable('includedir')],
+    dependencies: [gio, gio_unix])
+endif
+
 conf_data.set('PREFIX', prefix)
 conf_data.set('BINDIR', bindir)
 conf_data.set('DATADIR', datadir)
 conf_data.set('LIBDIR', libdir)
 conf_data.set('LIBEXECDIR', libexecdir)
-conf_data.set('VERSION', version)
+conf_data.set('VERSION', longver)
+conf_data.set('LOCALDIR', join_paths(datadir, 'locale'))
+conf_data.set('BUILDDIR', meson.current_build_dir())
+conf_data.set('SOURCEDIR', meson.current_source_dir())
 
-configure_file(input: 'data/wayland-sessions/genesis.desktop.in', output: 'genesis.desktop',
-	configuration: conf_data,
-	install: true,
-	install_dir: join_paths(datadir, 'wayland-sessions'))
+plugins = []
 
-configure_file(input: 'data/org.freedesktop.impl.portal.desktop.genesis.service.in', output: 'org.freedesktop.impl.portal.desktop.genesis.service',
-	configuration: conf_data,
-	install: true,
-	install_dir: join_paths(datadir, 'dbus-1', 'services'))
-
+subdir('data')
 subdir('po')
+subdir('core')
+subdir('shell')
+subdir('plugins')
 
-build_conf_h = configure_file(input: 'src/build.h.in', output: 'build.h',
-	configuration: conf_data)
-build_conf = configure_file(input: 'src/build.vala.in', output: 'build.vala',
-	configuration: conf_data)
-configure_file(input: 'data/genesis-shell-helper.sh.in', output: 'genesis-shell',
-	configuration: conf_data,
-	install: true,
-	install_dir: bindir,
-	install_mode: 'rwxr--r--')
+gnome.post_install(glib_compile_schemas: true)
 
-libgenesis_bluetooth_files = files('src/lib/bluetooth/iface.vala', 'src/lib/bluetooth/manager.vala')
-libgenesis_bluetooth = shared_library('genesis-bluetooth', libgenesis_bluetooth_files,
-	dependencies: [gobject, gio],
-	vala_gir: 'GenesisBluetooth-1.0.gir',
-	install: true,
-	install_dir: [true, true, true, true])
-libgenesis_bluetooth_dep = declare_dependency(link_with: libgenesis_bluetooth, dependencies: [gobject, gio])
-
-libgenesis_common_files = files('src/lib/common/layout.vala', 'src/lib/common/module.vala', 'src/lib/common/monitor.vala', 'src/lib/common/shell.vala', 'src/lib/common/window.vala')
-libgenesis_common = shared_library('genesis-common', libgenesis_common_files, build_conf,
-	dependencies: [gobject, gio, gtk, libpeas, polkit, devident_client, math],
-	vala_gir: 'GenesisCommon-1.0.gir',
-	install: true,
-	install_dir: [true, true, true, true])
-libgenesis_common_dep = declare_dependency(link_with: libgenesis_common, dependencies: [gobject, gio, gtk, libpeas, polkit, devident_client])
-
-libgenesis_component_files = files('src/lib/component/module.vala', 'src/lib/component/monitor.vala', 'src/lib/component/shell.vala', 'src/lib/component/window.vala')
-libgenesis_component = shared_library('genesis-component', libgenesis_component_files,
-	dependencies: [gobject, gtk, libgenesis_common_dep],
-	vala_gir: 'GenesisComponent-1.0.gir',
-	install: true,
-	install_dir: [true, true, true, true])
-libgenesis_component_dep = declare_dependency(link_with: libgenesis_component, dependencies: [gobject, gtk, libgenesis_common_dep])
-
-libgenesis_logind_files = files('src/lib/logind/manager.vala')
-libgenesis_logind = shared_library('genesis-logind', libgenesis_logind_files,
-	dependencies: [gobject, gio],
-	vala_gir: 'GenesisLogind-1.0.gir',
-	install: true,
-	install_dir: [true, true, true, true])
-libgenesis_logind_dep = declare_dependency(link_with: libgenesis_logind, dependencies: [gobject, gio])
-
-libgenesis_shell_files = files('src/lib/shell/layout.vala', 'src/lib/shell/module.vala',
-	'src/lib/shell/monitor.vala', 'src/lib/shell/shell.vala', 'src/lib/shell/window.vala')
-libgenesis_shell = shared_library('genesis-shell', libgenesis_shell_files,
-	dependencies: [gobject, gtk, libgenesis_common_dep],
-	vala_gir: 'GenesisShell-1.0.gir',
-	install: true,
-	install_dir: [true, true, true, true])
-libgenesis_shell_dep = declare_dependency(link_with: libgenesis_shell, dependencies: [gobject, gtk, libgenesis_common_dep])
-
-libgenesis_widgets_res = gnome.compile_resources('genesis-widgets-res', 'data/res/lib/widgets/res.gresource.xml',
-	source_dir: 'data/res/lib/widgets',
-	export: true,
-	c_name: 'genesis_widgets')
-
-libgenesis_widgets_files = files('src/lib/widgets/application.vala', 'src/lib/widgets/apps.vala', 'src/lib/widgets/clock.vala', 'src/lib/widgets/global-menu.vala',
-		'src/lib/widgets/init.vala', 'src/lib/widgets/net.vala', 'src/lib/widgets/volume.vala', 'src/lib/widgets/wallpaper.vala',
-		'src/lib/widgets/widget.vala', 'src/lib/widgets/window.vala')
-libgenesis_widgets = shared_library('genesis-widgets', libgenesis_widgets_files, libgenesis_widgets_res,
-	dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libgenesis_component_dep, libgenesis_shell_dep, libpulse, networkmanager, modemmanager, devident_client],
-	vala_gir: 'GenesisWidgets-1.0.gir',
-	install: true,
-	install_dir: [true, true, true, true])
-libgenesis_widgets_dep = declare_dependency(link_with: libgenesis_widgets, dependencies: [gobject, gtk, libhandy, libgenesis_common_dep, libpulse, networkmanager, modemmanager, devident_client])
-
-shared_module('genesis-shell-wayfire', ['src/plugins/genesis-shell/decoration.cpp', 'src/plugins/genesis-shell/genesis-shell.cpp',
-		'src/plugins/genesis-shell/monitor.cpp', 'src/plugins/genesis-shell/window.cpp'],
-	dependencies: [giomm, gobject, libgenesis_shell_dep, wayfire, wlroots],
-	install: true,
-	install_dir: join_paths(libdir, 'wayfire'))
-
-executable('xdg-desktop-portal-genesis', ['src/portal/main.vala', 'src/portal/settings.vala'],
-	dependencies: [gio, gobject],
-	install: true,
-	install_dir: libexecdir)
-install_data('data/genesis.portal', install_dir: join_paths(datadir, 'xdg-desktop-portal', 'portals'))
-
-executable('genesis-shell-exec', ['src/shell/desktop.vala', 'src/shell/panel.vala', 'src/shell/polkit.vala', 'src/shell/shell.vala'],
-	dependencies: [gio, gobject, polkit, libgenesis_component_dep, posix, libgenesis_widgets_dep, gweather],
-	install: true,
-	install_dir: libexecdir)
-
-expidus_desktop_res = gnome.compile_resources('expidus-desktop-res', 'data/res/modules/expidus-desktop/res.gresource.xml',
-	source_dir: 'data/res/modules/expidus-desktop',
-	export: true,
-	c_name: 'expidus_desktop')
-
-modules = {
-	'expidus-desktop': [['src/modules/expidus-desktop/apps.vala', 'src/modules/expidus-desktop/layout.vala',
-		'src/modules/expidus-desktop/module.vala', 'src/modules/expidus-desktop/user.vala', expidus_desktop_res], [libgenesis_shell_dep,
-		libgenesis_component_dep, libgenesis_widgets_dep, gweather, playerctl, upower, libgenesis_logind_dep, libgenesis_bluetooth_dep]],
-	'expidus-mobile': [['src/modules/expidus-mobile/layout.vala', 'src/modules/expidus-mobile/module.vala'], [libgenesis_shell_dep,
-		libgenesis_component_dep, libgenesis_widgets_dep]]
-}
-
-foreach name, c : modules
-	sources = c[0]
-	deps = c[1]
-
-	configure_file(input: 'data/modules/' + name + '.plugin.in', output: name + '.plugin',
-		configuration: conf_data,
-		install: true,
-		install_dir: join_paths(libdir, 'genesis', 'modules', name))
-
-	shared_module(name, sources,
-		dependencies: deps,
-		install: true,
-		install_dir: join_paths(libdir, 'genesis', 'modules', name))
+plugin_names = []
+foreach tgt : plugins
+  plugin_names += [fs.name(tgt.full_path()).replace('lib', '').replace('.so', '')]
 endforeach
 
-genesis_about_res = gnome.compile_resources('genesis-about-res', 'data/res/applications/about/res.gresource.xml',
-	source_dir: 'data/res/applications/about',
-	c_name: 'genesis_about')
-
-executable('genesis-about', ['src/applications/about/application.vala', 'src/applications/about/window.vala', build_conf, genesis_about_res],
-	dependencies: [adwaita, gtk4],
-	install: true)
-
-install_subdir('data/wallpaper',
-	install_dir: join_paths(datadir, 'backgrounds', 'expidus'),
-	strip_directory: true)
-install_subdir('data/schemas/settings',
-	install_dir: gio[0].get_pkgconfig_variable('schemasdir'),
-	strip_directory: true)
-
-install_data('data/genesis-shell.xml', install_dir: join_paths(datadir, 'wayfire', 'metadata'))
-
-subdir('docs')
+summary({
+  'Plugins': ', '.join(plugin_names)
+})
