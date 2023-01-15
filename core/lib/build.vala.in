@@ -1,8 +1,0 @@
-namespace GenesisShell {
-  public const string VERSION = "@VERSION@";
-
-  internal const string LIBDIR = "@LIBDIR@";
-  internal const string LOCALDIR = "@LOCALDIR@";
-  internal const string DATADIR = "@DATADIR@";
-  internal const string GETTEXT_PACKAGE = "genesis-shell";
-}
