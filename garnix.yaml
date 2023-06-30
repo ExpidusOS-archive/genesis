@@ -1,5 +1,0 @@
-builds:
-  exclude: []
-  include:
-    - 'nixosConfigurations.x86_64-linux.*'
-    - 'packages.x86_64-linux.*'
