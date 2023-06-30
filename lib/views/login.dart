@@ -16,7 +16,7 @@ class _GenesisShellLogInState extends State<GenesisShellLogIn> {
         Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/wallpaper/desktop/default.jpg'),
+              image: AssetImage('assets/wallpaper/desktop/dark-sand.jpg'),
               fit: BoxFit.cover,
             ),
           ),
@@ -30,19 +30,22 @@ class _GenesisShellLogInState extends State<GenesisShellLogIn> {
             width: 608,
           ),
           body: Center(
-            child: Card(
-              child: Container(
-                width: 600,
-                height: 400,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Log In',
-                        style: Theme.of(context).textTheme.displayMedium,
-                      ),
-                    ],
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Card(
+                child: Container(
+                  width: 600,
+                  height: 400,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Log In',
+                          style: Theme.of(context).textTheme.displayMedium,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

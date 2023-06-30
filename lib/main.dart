@@ -1,8 +1,10 @@
 import 'package:libtokyo/libtokyo.dart' show ColorScheme;
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:genesis_shell/views.dart';
+import 'package:gokai/gokai.dart';
 
 void main() {
+  // TODO: init gokai
   runApp(const GenesisShell());
 }
 
