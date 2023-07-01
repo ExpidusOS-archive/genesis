@@ -117,11 +117,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1688160253,
-        "narHash": "sha256-evVyeNywrhG9p08vq90eFmj1C1IRCYsOBkMwicTyya4=",
+        "lastModified": 1688252787,
+        "narHash": "sha256-e8e2rGfFNLNclnPfoJsuSrJEhqrhzO2FXD8H366gopg=",
         "owner": "ExpidusOS",
         "repo": "gokai",
-        "rev": "47aed1f1b7bb85c7bf04108ce8c825ebd08c972e",
+        "rev": "cc460a0b5c897041108360a125df21fe1b7f1b3d",
         "type": "github"
       },
       "original": {

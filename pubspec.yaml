@@ -22,7 +22,7 @@ dependencies:
   gokai:
     git:
       url: https://github.com/ExpidusOS/gokai.git
-      ref: 8344d26b0782317cad19607afca9bd53213361be
+      ref: cc460a0b5c897041108360a125df21fe1b7f1b3d
       path: packages/gokai
   intl: ^0.18.0
 

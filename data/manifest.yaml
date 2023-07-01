@@ -2,4 +2,3 @@ id: com.expidusos.genesis_shell
 defaults:
   Gokai::Context::mode: compositor
   Gokai::Context::display-backend: wayland
-  Gokai::Services::Compositor::renderer: pixman
