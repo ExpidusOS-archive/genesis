@@ -26,6 +26,32 @@
           (_: _: { gokai = gokai.packages.${system}.sdk; })
         ];
       in {
+        packages.default = pkgs.flutter.buildFlutterApplication {
+          pname = "genesis-shell";
+          version = "1.0.0+git-${self.shortRev or "dirty"}";
+
+          src = cleanSource self;
+
+          depsListFile = ./deps.json;
+          vendorHash = "sha256-DZ35yA0uSNiQBS8lKDMYrQVboQrfMEhFrk8v09+gZcQ=";
+
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+          ];
+
+          buildInputs = with pkgs; [
+            pkgs.gokai
+          ] ++ pkgs.gokai.buildInputs;
+
+          meta = {
+            description = "Next-generation desktop environment for ExpidusOS.";
+            homepage = "https://expidusos.com";
+            license = licenses.gpl3;
+            maintainers = with maintainers; [ RossComputerGuy ];
+            platforms = [ "x86_64-linux" "aarch64-linux" ];
+          };
+        };
+
         devShells.default = pkgs.mkShell {
           name = "genesis-shell";
 
