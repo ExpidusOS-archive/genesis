@@ -23,7 +23,10 @@
     flake-utils.eachSystem flake-utils.allSystems (system:
       let
         pkgs = expidus-sdk.legacyPackages.${system}.appendOverlays [
-          (_: _: { gokai = gokai.packages.${system}.sdk; })
+          (_: _: {
+            gokai = gokai.packages.${system}.sdk;
+            gokai-debug = gokai.packages.${system}.sdk-debug;
+          })
         ];
       in {
         packages.default = pkgs.flutter.buildFlutterApplication {
@@ -33,7 +36,7 @@
           src = cleanSource self;
 
           depsListFile = ./deps.json;
-          vendorHash = "sha256-IwhLkfzNEQXoui7LdSD7GlLJoNP93mApC3oA5GRK5OU=";
+          vendorHash = "sha256-plkNSEDOD46dZJlZRlYHgAmYm1lIR7GAFXgnVzWYRX8=";
 
           nativeBuildInputs = with pkgs; [
             pkg-config
@@ -58,7 +61,7 @@
           packages = with pkgs; [
             flutter
             pkg-config
-            pkgs.gokai
+            pkgs.gokai-debug
             gdb
           ] ++ pkgs.gokai.buildInputs;
 
