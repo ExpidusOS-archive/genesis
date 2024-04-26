@@ -22,17 +22,23 @@ class _OutputLayoutState extends State<OutputLayout> {
       future: platform.invokeListMethod('list'),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          print(snapshot.data);
           return Stack(
             children: snapshot.data!.map(
-              (output) =>
-                Transform.translate(
-                  offset: Offset((output['geometry']['x'] as int).toDouble(), (output['geometry']['x'] as int).toDouble()),
+              (dynamic output) {
+                final scale = output['scale'] as int;
+                return Transform.translate(
+                  offset: Offset(
+                    ((output['geometry']['x'] as int) * scale).toDouble(),
+                    ((output['geometry']['x'] as int) * scale).toDouble()
+                  ),
                   child: SizedBox(
-                    width: (output['geometry']['width'] as int).toDouble(),
-                    height: (output['geometry']['height'] as int).toDouble(),
+                    width: ((output['geometry']['width'] as int) * scale).toDouble(),
+                    height: ((output['geometry']['height'] as int) * scale).toDouble(),
                     child: Builder(builder: widget.builder),
                   ),
-                )
+                );
+              }
             ).toList(),
           );
         }

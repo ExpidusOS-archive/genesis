@@ -56,6 +56,10 @@ void outputs_method_call_handler(FlMethodChannel* channel, FlMethodCall* method_
           result_monitor,
           fl_value_new_string("geometry"),
           result_geom);
+      fl_value_set(
+          result_monitor,
+          fl_value_new_string("scale"),
+          fl_value_new_int(gdk_monitor_get_scale_factor(monitor)));
 
       fl_value_append(result, result_monitor);
     }
