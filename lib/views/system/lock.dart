@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
-import '../../widgets/output_layout.dart';
-import '../../widgets/system_bar.dart';
+import 'package:intl/intl.dart';
+import '../../widgets/clock.dart';
+import '../../widgets/system_layout.dart';
 
 class SystemLockView extends StatefulWidget {
   const SystemLockView({ super.key });
@@ -13,17 +13,21 @@ class SystemLockView extends StatefulWidget {
 class _SystemLockViewState extends State<SystemLockView> {
   @override
   Widget build(BuildContext context) =>
-    OutputLayout(
-      builder: (context) =>
-        Scaffold(
-          appBar: const SystemBar(),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-              ],
+    SystemLayout(
+      body: Center(
+        child: Column(
+          children: [
+            const Spacer(),
+            DigitalClock(
+              format: DateFormat.yMMMd(),
+              style: Theme.of(context).textTheme.displayLarge,
             ),
-          ),
+            DigitalClock(
+              style: Theme.of(context).textTheme.displayLarge,
+            ),
+            const Spacer(),
+          ],
         ),
+      ),
     );
 }

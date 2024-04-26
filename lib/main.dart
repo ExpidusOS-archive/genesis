@@ -13,7 +13,6 @@ void main() async {
 
   doWhenWindowReady(() {
     const initialSize = Size(600, 450);
-    appWindow.minSize = initialSize;
     appWindow.size = initialSize;
     appWindow.alignment = Alignment.center;
     appWindow.show();

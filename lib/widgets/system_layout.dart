@@ -1,0 +1,75 @@
+import 'package:backdrop/backdrop.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
+import 'output_layout.dart';
+import 'system_bar.dart';
+
+class SystemLayout extends StatelessWidget {
+  const SystemLayout({
+    super.key,
+    required this.body,
+  });
+
+  final Widget body;
+
+  Widget _buildMobile(BuildContext context) =>
+    BackdropScaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kSystemBarHeight),
+        child: Builder(
+          builder: (context) =>
+            GestureDetector(
+              child: const SystemBar(),
+              onVerticalDragDown: (details) => Backdrop.of(context).fling(),
+            ),
+        ),
+      ),
+      backLayerBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      backLayer: Builder(
+        builder: (context) =>
+          GestureDetector(
+            child: ListView(),
+            onVerticalDragDown: (details) => Backdrop.of(context).fling(),
+          ),
+      ),
+      frontLayerScrim: Theme.of(context).colorScheme.background,
+      frontLayer: body,
+    );
+
+  Widget _buildDesktop(BuildContext context) =>
+    Scaffold(
+      appBar: const PreferredSize(
+        preferredSize: const Size(double.infinity, kSystemBarHeight + 4.0),
+        child: const Padding(
+          padding: EdgeInsets.all(4.0),
+          child: const SystemBar(),
+        ),
+      ),
+      endDrawer: Drawer(),
+      body: body,
+    );
+
+  @override
+  Widget build(BuildContext context) =>
+    OutputLayout(
+      builder: (context) =>
+        AdaptiveLayout(
+          body: SlotLayout(
+            config: {
+              Breakpoints.small: SlotLayout.from(
+                key: const Key('Body Small'),
+                builder: _buildMobile,
+              ),
+              Breakpoints.medium: SlotLayout.from(
+                key: const Key('Body Medium'),
+                builder: _buildDesktop,
+              ),
+              Breakpoints.large: SlotLayout.from(
+                key: const Key('Body Large'),
+                builder: _buildDesktop,
+              ),
+            },
+          ),
+        ),
+    );
+}
