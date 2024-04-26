@@ -22,7 +22,6 @@ class _OutputLayoutState extends State<OutputLayout> {
       future: platform.invokeListMethod('list'),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          print(snapshot.data);
           return Stack(
             children: snapshot.data!.map(
               (dynamic output) {

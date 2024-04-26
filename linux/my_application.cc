@@ -51,6 +51,16 @@ void outputs_method_call_handler(FlMethodChannel* channel, FlMethodCall* method_
           fl_value_new_string("height"),
           fl_value_new_int(geom.height));
 
+      g_autoptr(FlValue) result_size = fl_value_new_map();
+      fl_value_set(
+          result_size,
+          fl_value_new_string("width"),
+          fl_value_new_int(gdk_monitor_get_width_mm(monitor)));
+      fl_value_set(
+          result_size,
+          fl_value_new_string("height"),
+          fl_value_new_int(gdk_monitor_get_height_mm(monitor)));
+
       g_autoptr(FlValue) result_monitor = fl_value_new_map();
       fl_value_set(
           result_monitor,
@@ -58,8 +68,28 @@ void outputs_method_call_handler(FlMethodChannel* channel, FlMethodCall* method_
           result_geom);
       fl_value_set(
           result_monitor,
+          fl_value_new_string("size"),
+          result_size);
+      fl_value_set(
+          result_monitor,
+          fl_value_new_string("refreshRate"),
+          fl_value_new_int(gdk_monitor_get_refresh_rate(monitor)));
+      fl_value_set(
+          result_monitor,
           fl_value_new_string("scale"),
           fl_value_new_int(gdk_monitor_get_scale_factor(monitor)));
+      fl_value_set(
+          result_monitor,
+          fl_value_new_string("model"),
+          fl_value_new_string(gdk_monitor_get_model(monitor)));
+      fl_value_set(
+          result_monitor,
+          fl_value_new_string("manufacturer"),
+          fl_value_new_string(gdk_monitor_get_manufacturer(monitor)));
+      fl_value_set(
+          result_monitor,
+          fl_value_new_string("isPrimary"),
+          fl_value_new_bool(gdk_monitor_is_primary(monitor)));
 
       fl_value_append(result, result_monitor);
     }
