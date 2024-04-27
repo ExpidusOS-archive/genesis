@@ -1,16 +1,20 @@
 import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
+
 import 'output_layout.dart';
 import 'system_bar.dart';
+import 'system_drawer.dart';
 
 class SystemLayout extends StatelessWidget {
   const SystemLayout({
     super.key,
     required this.body,
+    this.bottomSheet,
   });
 
   final Widget body;
+  final Widget? bottomSheet;
 
   Widget _buildMobile(BuildContext context) =>
     BackdropScaffold(
@@ -28,12 +32,16 @@ class SystemLayout extends StatelessWidget {
       backLayer: Builder(
         builder: (context) =>
           GestureDetector(
-            child: ListView(),
+            child: ListTileTheme(
+              tileColor: Theme.of(context).colorScheme.background,
+              child: const SystemDrawer(),
+            ),
             onVerticalDragDown: (details) => Backdrop.of(context).fling(),
           ),
       ),
       frontLayerScrim: Theme.of(context).colorScheme.background,
       frontLayer: body,
+      bottomSheet: bottomSheet,
     );
 
   Widget _buildDesktop(BuildContext context) =>
@@ -45,8 +53,14 @@ class SystemLayout extends StatelessWidget {
           child: const SystemBar(),
         ),
       ),
-      endDrawer: Drawer(),
+      endDrawer: Drawer(
+        child: ListTileTheme(
+          tileColor: Theme.of(context).colorScheme.inversePrimary,
+          child: const SystemDrawer(),
+        ),
+      ),
       body: body,
+      bottomSheet: bottomSheet,
     );
 
   @override

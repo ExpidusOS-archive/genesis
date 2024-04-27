@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'clock.dart';
+import 'power.dart';
 
 const kSystemBarHeight = kToolbarHeight / 1.5;
 
@@ -12,6 +13,7 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildActions(BuildContext context) =>
     Row(
       children: [
+        const PowerBar(),
         const DigitalClock(),
       ],
     );

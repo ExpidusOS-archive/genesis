@@ -16,6 +16,7 @@ dependencies:
   bitsdojo_window: ^0.1.6
   intl: ^0.19.0
   backdrop: ^0.9.1
+  upower: ^0.7.0
 
 dev_dependencies:
   flutter_test:
