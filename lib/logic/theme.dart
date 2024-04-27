@@ -10,12 +10,16 @@ ThemeData buildThemeData({
   bool useMaterial3 = true,
 }) {
   final primary = brightness == Brightness.light ? accent.dark : accent.light;
+  final secondary = brightness == Brightness.light ? accent.darker : accent.lighter;
+  final tertiary = brightness == Brightness.light ? accent.darkest : accent.lightest;
 
   return ThemeData.from(
     colorScheme: ColorScheme.fromSeed(
       brightness: brightness,
       seedColor: accent.accent,
       primary: primary,
+      secondary: secondary,
+      tertiary: tertiary,
     ),
     useMaterial3: useMaterial3,
     textTheme: (textTheme ?? GoogleFonts.albertSansTextTheme()).apply(

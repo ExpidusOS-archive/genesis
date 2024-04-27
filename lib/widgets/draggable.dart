@@ -5,18 +5,22 @@ class VerticalDragContainer extends StatefulWidget {
   final double startHeight;
   final double expandedHeight;
   final Widget child;
-  final Widget handle;
-  final Color backgroundColor;
+  final VoidCallback? onExpanded;
+  final VoidCallback? onUnexpanded;
+  final Widget Function(BuildContext context, bool isExpanded) handleBuilder;
 
-  const VerticalDragContainer(
-      {required this.startHeight,
-      required this.minHeight,
-      required this.child,
-      required this.handle,
-      required this.expandedHeight,
-      this.backgroundColor = Colors.white,});
+  const VerticalDragContainer({
+    required this.startHeight,
+    required this.minHeight,
+    required this.child,
+    required this.handleBuilder,
+    required this.expandedHeight,
+    this.onExpanded = null,
+    this.onUnexpanded = null,
+  });
 
-  _VerticalDragContainerState createState() => _VerticalDragContainerState();
+  @override
+  State<VerticalDragContainer> createState() => _VerticalDragContainerState();
 }
 
 class _VerticalDragContainerState extends State<VerticalDragContainer> {
@@ -33,7 +37,6 @@ class _VerticalDragContainerState extends State<VerticalDragContainer> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: widget.backgroundColor,
       height: _currentHeight,
       child: Column(
         children: <Widget>[
@@ -43,10 +46,12 @@ class _VerticalDragContainerState extends State<VerticalDragContainer> {
               if (_currentHeight <= widget.minHeight) {
                 setState(() {
                   _currentHeight = widget.expandedHeight;
+                  if (widget.onExpanded != null) widget.onExpanded!();
                 });
               } else {
                 setState(() {
                   _currentHeight = widget.minHeight;
+                  if (widget.onUnexpanded != null) widget.onUnexpanded!();
                 });
               }
             },
@@ -62,16 +67,28 @@ class _VerticalDragContainerState extends State<VerticalDragContainer> {
                   _currentHeight = (_startHeight + newHeight);
                 } else {
                   _currentHeight = widget.minHeight;
+                  if (widget.onUnexpanded != null) widget.onUnexpanded!();
                 }
               });
             },
-            child: widget.handle,
+            onVerticalDragEnd: (_) {
+              setState(() {
+                if (_currentHeight > widget.minHeight) {
+                  _currentHeight = widget.expandedHeight;
+                  if (widget.onExpanded != null) widget.onExpanded!();
+                }
+              });
+            },
+            child: widget.handleBuilder(context, _currentHeight > widget.minHeight),
           ),
-
           Expanded(
-              child: SingleChildScrollView(
-            child: widget.child,
-          ))
+            child: SingleChildScrollView(
+              child: SizedBox(
+                height: widget.expandedHeight - (widget.minHeight + 7),
+                child: widget.child,
+              ),
+            ),
+          ),
         ],
       ),
     );
