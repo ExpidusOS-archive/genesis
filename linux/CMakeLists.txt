@@ -53,6 +53,7 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 # System-level dependencies.
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
+pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
 
 add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 
@@ -62,7 +63,8 @@ add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 # Any new source files that you add to the application should be added here.
 add_executable(${BINARY_NAME}
   "main.cc"
-  "my_application.cc"
+  "application.cc"
+  "channels/outputs.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )
 

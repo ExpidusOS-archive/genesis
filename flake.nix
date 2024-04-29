@@ -25,6 +25,8 @@
 
               src = lib.cleanSource self;
 
+              buildInputs = with s; [ pam ];
+
               pubspecLock = lib.importJSON ./pubspec.lock.json;
 
               meta = {
@@ -42,6 +44,7 @@
 
         devShells.default = pkgs.mkShell {
           inherit (self.packages.${system}.default) pname version name;
+          inputsFrom = [ self.packages.${system}.default ];
           packages = [ pkgs.flutter ];
         };
       })) // {
