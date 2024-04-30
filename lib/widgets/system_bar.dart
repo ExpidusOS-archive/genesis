@@ -22,6 +22,18 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) =>
     AppBar(
       automaticallyImplyLeading: false,
+      leading: Scaffold.of(context).hasDrawer
+        ? IconButton.filled(
+            onPressed: () {
+              final state = Scaffold.of(context);
+              if (state.isDrawerOpen) {
+                state.closeDrawer();
+              } else {
+                state.openDrawer();
+              }
+            },
+            icon: Icon(Icons.apps),
+          ) : null,
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       actions: [
         Scaffold.of(context).hasEndDrawer ?

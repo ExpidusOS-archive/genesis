@@ -10,10 +10,12 @@ class SystemLayout extends StatelessWidget {
   const SystemLayout({
     super.key,
     required this.body,
+    this.userMode = false,
     this.bottomSheet,
   });
 
   final Widget body;
+  final bool userMode;
   final Widget? bottomSheet;
 
   Widget _buildMobile(BuildContext context) =>
@@ -34,7 +36,16 @@ class SystemLayout extends StatelessWidget {
           GestureDetector(
             child: ListTileTheme(
               tileColor: Theme.of(context).colorScheme.background,
-              child: const SystemDrawer(),
+              child: IconButtonTheme(
+                data: IconButtonThemeData(
+                  style: IconButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.background,
+                  ),
+                ),
+                child: SystemDrawer(
+                  userMode: userMode,
+                ),
+              ),
             ),
             onVerticalDragDown: (details) => Backdrop.of(context).fling(),
           ),
@@ -56,7 +67,16 @@ class SystemLayout extends StatelessWidget {
       endDrawer: Drawer(
         child: ListTileTheme(
           tileColor: Theme.of(context).colorScheme.inversePrimary,
-          child: const SystemDrawer(),
+          child: IconButtonTheme(
+            data: IconButtonThemeData(
+              style: IconButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              ),
+            ),
+            child: SystemDrawer(
+              userMode: userMode,
+            ),
+          ),
         ),
       ),
       body: body,

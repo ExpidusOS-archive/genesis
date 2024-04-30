@@ -13,6 +13,7 @@ class _DesktopViewState extends State<DesktopView> {
   @override
   Widget build(BuildContext context) =>
     SystemLayout(
+      userMode: true,
       body: Container(),
     );
 }
