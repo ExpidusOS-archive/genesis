@@ -17,7 +17,7 @@
     flake-utils,
     ...
   }@inputs:
-    (flake-utils.lib.eachDefaultSystem (system:
+    (flake-utils.lib.eachSystem (flake-utils.lib.defaultSystems ++ [ "riscv64-linux" ]) (system:
       let
         pkgs = import nixpkgs { inherit system; };
         inherit (pkgs) lib;
