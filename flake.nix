@@ -92,12 +92,6 @@
           qemu-aarch64 = mkQemu "aarch64-linux";
           qemu-x86_64 = mkQemu "x86_64-linux";
 
-          starfive-visionfive-2 = mkSystem [
-            nixos-hardware.nixosModules.starfive-visionfive-2
-            "${nixos-hardware}/starfive/visionfive/v2/sd-image-installer.nix"
-            { config.system.name = "starfive-visionfive-2"; }
-          ] "riscv64-linux";
-
           pine64-pinephone = mkMobileSystem "pine64-pinephone" "aarch64-linux";
         };
       };
