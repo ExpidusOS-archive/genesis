@@ -21,6 +21,7 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) =>
     AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       actions: [
         Scaffold.of(context).hasEndDrawer ?

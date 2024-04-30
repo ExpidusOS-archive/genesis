@@ -8,20 +8,20 @@ import '../../widgets/draggable.dart';
 import '../../widgets/keypad.dart';
 import '../../widgets/system_layout.dart';
 
-class SystemLockView extends StatefulWidget {
-  const SystemLockView({ super.key });
+class LockView extends StatefulWidget {
+  const LockView({ super.key });
 
   @override
-  State<SystemLockView> createState() => _SystemLockViewState();
+  State<LockView> createState() => _LockViewState();
 }
 
-class _SystemLockViewState extends State<SystemLockView> {
+class _LockViewState extends State<LockView> {
   static const platform = MethodChannel('com.expidusos.genesis.shell/auth');
 
   TextEditingController passcodeController = TextEditingController();
   String? errorText = null;
 
-  void _onSubmitted(String input) {
+  void _onSubmitted(BuildContext context, String input) {
     setState(() {
       errorText = null;
     });
@@ -34,7 +34,9 @@ class _SystemLockViewState extends State<SystemLockView> {
         errorText = null;
       });
 
-      // TODO: jump to desktop
+      final nav = Navigator.of(context);
+      if (nav.canPop()) nav.pop();
+      else nav.pushReplacementNamed('/');
     }).catchError((err) => setState(() {
       if (err is PlatformException) {
         errorText = '${err.code}: ${err.message}: ${err.details.toString()}';
@@ -127,7 +129,7 @@ class _SystemLockViewState extends State<SystemLockView> {
                                 errorText: errorText,
                               ),
                               style: Theme.of(context).textTheme.displayMedium,
-                              onSubmitted: _onSubmitted,
+                              onSubmitted: (input) => _onSubmitted(context, input),
                             ),
                           ),
                           Keypad(
@@ -145,7 +147,7 @@ class _SystemLockViewState extends State<SystemLockView> {
                                   }
                                 });
                               } else if (icon == Icons.keyboard_return) {
-                                _onSubmitted(passcodeController.text);
+                                _onSubmitted(context, passcodeController.text);
                               }
                             },
                           ),

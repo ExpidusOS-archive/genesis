@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:system_theme/system_theme.dart';
 
 import 'logic/theme.dart' show buildThemeData;
-import 'views/system/lock.dart';
+import 'views/desktop.dart';
+import 'views/lock.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +38,11 @@ class MyApp extends StatelessWidget {
             brightness: Brightness.dark,
           ),
           themeMode: ThemeMode.dark,
-          home: const SystemLockView(),
+          routes: {
+            '/': (_) => const DesktopView(),
+            '/lock': (_) => const LockView(),
+          },
+          initialRoute: '/lock',
         ),
       );
   }
