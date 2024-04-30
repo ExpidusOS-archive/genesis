@@ -1,13 +1,16 @@
 { config, lib, pkgs, ... }:
 {
   config = {
-    services.cage = {
-      enable = true;
-      program = lib.getExe pkgs.expidus.genesis-shell;
+    services = {
+      cage = {
+        enable = true;
+        program = lib.getExe pkgs.expidus.genesis-shell;
+      };
+      accounts-daemon.enable = true;
     };
 
     users.users.${config.services.cage.user} = {
-      initialPassword = config.services.cage.user;
+      initialPassword = "123456";
       isNormalUser = true;
     };
 

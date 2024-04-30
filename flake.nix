@@ -2,6 +2,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nixos-mobile = {
+      url = "github:RossComputerGuy/mobile-nixos/fix/impure";
+      flake = false;
+    };
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -9,6 +13,7 @@
     self,
     nixpkgs,
     nixos-hardware,
+    nixos-mobile,
     flake-utils,
     ...
   }@inputs:
@@ -53,27 +58,46 @@
         };
       })) // {
         nixosConfigurations = let
-          mkQemu = system:
+          mkSystem = modules: system:
             let
               pkgs = self.legacyPackages.${system};
               inherit (nixpkgs) lib;
             in lib.nixosSystem {
               inherit system lib pkgs;
 
-              modules = [
-                "${nixpkgs}/nixos/modules/virtualisation/qemu-vm.nix"
+              modules = modules ++ [
                 ./nix/module.nix
-                {
-                  config = {
-                    system.name = "qemu-${pkgs.targetPlatform.qemuArch}";
-                    boot.kernelParams = lib.mkAfter [ "console=ttyS0" ];
-                  };
-                }
               ];
             };
+
+          mkMobileSystem = device: system:
+            let
+              pkgs = self.legacyPackages.${system};
+              inherit (nixpkgs) lib;
+            in import "${nixos-mobile}" {
+              inherit system pkgs device;
+              configuration = import ./nix/module.nix;
+            };
+
+          mkQemu = system: mkSystem [
+            "${nixpkgs}/nixos/modules/virtualisation/qemu-vm.nix"
+            {
+              config = {
+                system.name = "qemu-${self.legacyPackages.${system}.targetPlatform.qemuArch}";
+                boot.kernelParams = nixpkgs.lib.mkAfter [ "console=ttyS0" ];
+              };
+            }
+          ] system;
         in {
           qemu-aarch64 = mkQemu "aarch64-linux";
           qemu-x86_64 = mkQemu "x86_64-linux";
+
+          starfive-visionfive-2 = mkSystem [
+            nixos-hardware.nixosModules.starfive-visionfive-2
+            { config.system.name = "starfive-visionfive-2"; }
+          ] "riscv64-linux";
+
+          pine64-pinephone = mkMobileSystem "pine64-pinephone" "aarch64-linux";
         };
       };
 }
