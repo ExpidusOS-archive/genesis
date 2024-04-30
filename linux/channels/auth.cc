@@ -3,55 +3,45 @@
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
 
+#include <pwd.h>
+
 #include "outputs.h"
 #include "../application-priv.h"
 
-static void message_callback(GObject* obj, GAsyncResult* result, gpointer user_data) {
-  GArray* array_resp = (GArray*)user_data;
-
-  g_autoptr(FlMethodResponse) response = fl_method_channel_invoke_method_finish(FL_METHOD_CHANNEL(obj), result, nullptr);
-  g_autoptr(FlValue) resp_value = fl_method_response_get_result(response, nullptr);
-
-  struct pam_response resp;
-  resp.resp_retcode = 0;
-  resp.resp = g_strdup(fl_value_get_string(resp_value));
-  g_array_append_val(array_resp, resp);
-}
-
 static int conversation(int num_msg, const struct pam_message** msg, struct pam_response** resp, void* appdata_ptr) {
-  GenesisShellApplication* self = GENESIS_SHELL_APPLICATION(appdata_ptr);
-
-  GArray* array_resp = g_array_new(false, true, sizeof (struct pam_response));
-
+  struct pam_response* array_resp = (struct pam_response*)malloc(num_msg * sizeof(struct pam_response));
   for (int i = 0; i < num_msg; i++) {
-		const char* msg_content = msg[i]->msg;
-
-    fl_method_channel_invoke_method(self->auth, "ask", fl_value_new_string(msg_content), nullptr, message_callback, array_resp);
+    array_resp[i].resp_retcode = 0;
+    array_resp[i].resp = g_strdup((const gchar*)appdata_ptr);
   }
 
-  while (true) {
-    if ((array_resp->len / sizeof (struct pam_response)) == num_msg) {
-      break;
-    }
-  }
-
-  *resp = static_cast<struct pam_response*>(g_array_steal(array_resp, nullptr));
+  *resp = array_resp;
   return PAM_SUCCESS;
 }
 
 void auth_method_call_handler(FlMethodChannel* channel, FlMethodCall* method_call, gpointer user_data) {
   g_autoptr(FlMethodResponse) response = nullptr;
-  if (strcmp(fl_method_call_get_name(method_call), "start") == 0) {
+  if (strcmp(fl_method_call_get_name(method_call), "auth") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
     
     gchar* username = nullptr;
     if (fl_value_lookup_string(args, "username") != nullptr) {
       username = (gchar*)fl_value_get_string(fl_value_lookup_string(args, "username"));
+    } else {
+      struct passwd* pw = nullptr;
+      if ((pw = getpwuid(getuid())) == NULL) {
+        fl_method_call_respond_error(method_call, "shadow", "failed to get the username", NULL, NULL);
+        return;
+      }
+
+      username = pw->pw_name;
     }
+
+    const gchar* password = fl_value_get_string(fl_value_lookup_string(args, "password"));
 
     struct pam_conv* conv = (struct pam_conv*)malloc(sizeof(struct pam_conv));
     conv->conv = conversation;
-    conv->appdata_ptr = user_data;
+    conv->appdata_ptr = (void*)password;
 
     pam_handle_t* handle = NULL;
     int r = pam_start("genesis-shell", username, conv, &handle);
@@ -70,7 +60,7 @@ void auth_method_call_handler(FlMethodChannel* channel, FlMethodCall* method_cal
       return;
     }
 
-    r = pam_acct_mgmt(handle, PAM_SILENT);
+    r = pam_setcred(handle, PAM_REFRESH_CRED);
     if (r != PAM_SUCCESS) {
       fl_method_call_respond_error(method_call, "PAM", "pam_acct_mgmt failed", fl_value_new_string(pam_strerror(handle, r)), NULL);
       pam_end(handle, r);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:intl/intl.dart';
 
@@ -15,11 +16,27 @@ class SystemLockView extends StatefulWidget {
 }
 
 class _SystemLockViewState extends State<SystemLockView> {
+  static const platform = MethodChannel('com.expidusos.genesis.shell/auth');
+
   TextEditingController passcodeController = TextEditingController();
+  String? errorText = null;
 
   void _onSubmitted(String input) {
-    passcodeController.clear();
-    print(input);
+    setState(() {
+      errorText = null;
+    });
+
+    platform.invokeMethod('auth', {
+      'password': input,
+    }).then((user) {
+      setState(() {
+        passcodeController.clear();
+        errorText = null;
+      });
+      print(user);
+    }).catchError((err) => setState(() {
+      errorText = '${err.code}: ${err.message}: ${err.details.toString()}';
+    }));
   }
 
   @override
@@ -98,9 +115,11 @@ class _SystemLockViewState extends State<SystemLockView> {
                             child: TextField(
                               controller: passcodeController,
                               obscureText: true,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                                errorMaxLines: 5,
+                                errorText: errorText,
                               ),
                               style: Theme.of(context).textTheme.displayMedium,
                               onSubmitted: _onSubmitted,

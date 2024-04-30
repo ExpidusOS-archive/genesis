@@ -11,6 +11,8 @@
       isNormalUser = true;
     };
 
+    security.pam.services.genesis-shell = {};
+
     nix.enable = false;
 
     system.stateVersion = lib.version;

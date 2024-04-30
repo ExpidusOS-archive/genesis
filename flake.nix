@@ -29,8 +29,12 @@
 
               pubspecLock = lib.importJSON ./pubspec.lock.json;
 
+              postInstall = ''
+                mv $out/bin/genesis_shell $out/bin/genesis-shell
+              '';
+
               meta = {
-                mainProgram = "genesis_shell";
+                mainProgram = "genesis-shell";
               };
             };
           };
