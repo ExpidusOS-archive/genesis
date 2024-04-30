@@ -26,16 +26,21 @@ class _SystemLockViewState extends State<SystemLockView> {
       errorText = null;
     });
 
-    platform.invokeMethod('auth', {
+    platform.invokeMethod<void>('auth', <String, dynamic>{
       'password': input,
-    }).then((user) {
+    }).then((_) {
       setState(() {
         passcodeController.clear();
         errorText = null;
       });
-      print(user);
+
+      // TODO: jump to desktop
     }).catchError((err) => setState(() {
-      errorText = '${err.code}: ${err.message}: ${err.details.toString()}';
+      if (err is PlatformException) {
+        errorText = '${err.code}: ${err.message}: ${err.details.toString()}';
+      } else {
+        errorText = err.toString();
+      }
     }));
   }
 

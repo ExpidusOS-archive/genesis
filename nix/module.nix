@@ -11,7 +11,7 @@
       isNormalUser = true;
     };
 
-    security.pam.services.genesis-shell = {};
+    security.pam.services.genesis-shell.text = lib.readFile ../linux/data/pam;
 
     nix.enable = false;
 

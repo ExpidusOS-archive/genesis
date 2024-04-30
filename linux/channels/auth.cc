@@ -68,11 +68,10 @@ void auth_method_call_handler(FlMethodChannel* channel, FlMethodCall* method_cal
       return;
     }
 
-    pam_get_item(handle, PAM_USER, (const void**)&username);
     pam_end(handle, r);
     free(conv);
 
-    response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(username)));
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }
