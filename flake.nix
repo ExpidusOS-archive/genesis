@@ -49,7 +49,7 @@
         devShells.default = pkgs.mkShell {
           inherit (self.packages.${system}.default) pname version name;
           inputsFrom = [ self.packages.${system}.default ];
-          packages = [ pkgs.flutter ];
+          packages = [ pkgs.flutter pkgs.yq ];
         };
       })) // {
         nixosConfigurations = let
