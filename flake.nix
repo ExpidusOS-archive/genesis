@@ -94,6 +94,7 @@
 
           starfive-visionfive-2 = mkSystem [
             nixos-hardware.nixosModules.starfive-visionfive-2
+            "${nixos-hardware}/starfive/visionfive/v2/sd-image-installer.nix"
             { config.system.name = "starfive-visionfive-2"; }
           ] "riscv64-linux";
 
