@@ -3,13 +3,24 @@ import 'package:flutter/services.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:intl/intl.dart';
 
-import '../../widgets/clock.dart';
-import '../../widgets/draggable.dart';
-import '../../widgets/keypad.dart';
-import '../../widgets/system_layout.dart';
+import '../logic/wallpaper.dart';
+
+import '../widgets/clock.dart';
+import '../widgets/draggable.dart';
+import '../widgets/keypad.dart';
+import '../widgets/system_layout.dart';
 
 class LockView extends StatefulWidget {
-  const LockView({ super.key });
+  const LockView({
+    super.key,
+    this.wallpaper = null,
+    this.desktopWallpaper = null,
+    this.mobileWallpaper = null,
+  });
+
+  final String? wallpaper;
+  final String? desktopWallpaper;
+  final String? mobileWallpaper;
 
   @override
   State<LockView> createState() => _LockViewState();
@@ -57,15 +68,10 @@ class _LockViewState extends State<LockView> {
     SystemLayout(
       body: Container(
         decoration: BoxDecoration(
-          image: Breakpoints.small.isActive(context)
-            ? const DecorationImage(
-                image: AssetImage('assets/wallpaper/mobile/default.jpg'),
-                fit: BoxFit.fitHeight,
-              )
-            : const DecorationImage(
-                image: AssetImage('assets/wallpaper/desktop/default.jpg'),
-                fit: BoxFit.cover,
-              ),
+          image: getWallpaper(
+            path: (Breakpoints.small.isActive(context) ? widget.mobileWallpaper : widget.desktopWallpaper) ?? widget.wallpaper,
+            fallback: AssetImage('assets/wallpaper/${Breakpoints.small.isActive(context) ? 'mobile' : 'desktop'}/default.jpg'),
+          ),
         ),
         child: Stack(
           children: [

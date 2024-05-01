@@ -4,7 +4,7 @@
     services = {
       cage = {
         enable = true;
-        program = lib.getExe pkgs.expidus.genesis-shell;
+        program = "${lib.getExe pkgs.expidus.genesis-shell} --init-locked";
       };
       accounts-daemon.enable = true;
     };
@@ -12,6 +12,11 @@
     users.users.${config.services.cage.user} = {
       initialPassword = "123456";
       isNormalUser = true;
+      extraGroups = [
+        "dialout"
+        "video"
+        "wheel"
+      ];
     };
 
     security.pam.services.genesis-shell.text = lib.readFile ../linux/data/pam;
