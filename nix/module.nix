@@ -4,7 +4,7 @@
     services = {
       cage = {
         enable = true;
-        program = "${lib.getExe pkgs.expidus.genesis-shell} --init-locked";
+        program = "${lib.getExe pkgs.expidus.genesis-shell} --display-manager";
       };
       accounts-daemon.enable = true;
     };

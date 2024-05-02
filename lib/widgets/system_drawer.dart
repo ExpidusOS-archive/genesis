@@ -31,7 +31,7 @@ class _SystemDrawerState extends State<SystemDrawer> {
         shrinkWrap: true,
         children: [
           widget.userMode && !Breakpoints.small.isActive(context) ? const AccountProfile() : null,
-          widget.userMode ? Row(
+          Row(
             children: [
               Expanded(
                 child: ButtonBar(),
@@ -68,7 +68,7 @@ class _SystemDrawerState extends State<SystemDrawer> {
                 ),
               ),
             ],
-          ) : null,
+          ),
           StatefulBuilder(
             builder: (context, setState) =>
               PowerBar(

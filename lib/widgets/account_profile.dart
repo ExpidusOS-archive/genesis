@@ -3,12 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AccountProfile extends StatefulWidget {
-  const AccountProfile({ super.key }) : uid = null, name = null;
-  const AccountProfile.uid({ super.key, required this.uid }) : name = null;
-  const AccountProfile.name({ super.key, required this.name }) : uid = null;
+  const AccountProfile({
+    super.key,
+    this.direction = Axis.horizontal,
+    this.iconSize = 40,
+    this.textStyle,
+  }) : uid = null, name = null;
+
+  const AccountProfile.uid({
+    super.key,
+    required this.uid,
+    this.direction = Axis.horizontal,
+    this.iconSize = 40,
+    this.textStyle,
+  }) : name = null;
+
+  const AccountProfile.name({
+    super.key,
+    required this.name,
+    this.direction = Axis.horizontal,
+    this.iconSize = 40,
+    this.textStyle,
+  }) : uid = null;
 
   final int? uid;
   final String? name;
+  final Axis direction;
+  final double iconSize;
+  final TextStyle? textStyle;
 
   @override
   State<AccountProfile> createState() => _AccountProfileState();
@@ -39,25 +61,26 @@ class _AccountProfileState extends State<AccountProfile> {
   }
 
   Widget build(BuildContext context) =>
-    Row(
+    Flex(
+      direction: widget.direction,
       children: [
         icon == null
-          ? const Icon(Icons.account_circle, size: 40)
+          ? Icon(Icons.account_circle, size: widget.iconSize)
           : ClipRRect(
               borderRadius: BorderRadius.circular(360.0),
               child: Image.file(
                 File(icon!),
-                width: 40,
-                height: 40,
+                width: widget.iconSize,
+                height: widget.iconSize,
                 errorBuilder: (context, err, stackTrace) =>
-                  const Icon(Icons.account_circle, size: 40),
+                  Icon(Icons.account_circle, size: widget.iconSize),
               ),
             ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
           child: Text(
             displayName ?? '',
-            style: Theme.of(context).textTheme.titleLarge,
+            style: widget.textStyle ?? Theme.of(context).textTheme.titleLarge,
           ),
         ),
       ],
