@@ -7,8 +7,7 @@ import '../logic/wallpaper.dart';
 
 import '../widgets/account_profile.dart';
 import '../widgets/clock.dart';
-import '../widgets/draggable.dart';
-import '../widgets/keypad.dart';
+import '../widgets/login.dart';
 import '../widgets/system_layout.dart';
 
 class LoginView extends StatefulWidget {
@@ -28,10 +27,10 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  static const authChannel = MethodChannel('com.expidusos.genesis.shell/auth');
   static const accChannel = MethodChannel('com.expidusos.genesis.shell/account');
 
   List<String> users = List.empty(growable: true);
+  String? _selectedUser = null;
 
   @override
   void initState() {
@@ -44,6 +43,75 @@ class _LoginViewState extends State<LoginView> {
       print(err);
     });
   }
+
+  Widget _buildPicker(BuildContext context) =>
+    Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Log In',
+              style: Theme.of(context).textTheme.displayLarge,
+            ),
+          ],
+        ),
+        const Spacer(),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: users.map(
+              (name) =>
+                InkWell(
+                  onTap: () =>
+                    setState(() {
+                      _selectedUser = name;
+                    }),
+                  child: AccountProfile.name(
+                    name: name,
+                    direction: Axis.vertical,
+                    iconSize: 140,
+                    textStyle: Theme.of(context).textTheme.displaySmall,
+                  ),
+                ),
+            ).toList(),
+          ),
+        ),
+        const Spacer(),
+      ],
+    );
+
+  Widget _buildPrompt(BuildContext context) =>
+    Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                onPressed: () =>
+                  setState(() {
+                    _selectedUser = null;
+                  }),
+                icon: Icon(Icons.navigate_before),
+              ),
+            ),
+            const Spacer(),
+            AccountProfile.name(name: _selectedUser!),
+            const Spacer(),
+          ],
+        ),
+        const Spacer(),
+        LoginPrompt(
+          onLogin: () {
+            final nav = Navigator.of(context);
+            nav.pushNamed('/');
+          },
+        ),
+        const Spacer(),
+      ],
+    );
 
   @override
   Widget build(BuildContext context) =>
@@ -62,35 +130,7 @@ class _LoginViewState extends State<LoginView> {
             margin: const EdgeInsets.all(36),
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Log In',
-                        style: Theme.of(context).textTheme.displayLarge,
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: users.map(
-                        (name) =>
-                          AccountProfile.name(
-                            name: name,
-                            direction: Axis.vertical,
-                            iconSize: 140,
-                            textStyle: Theme.of(context).textTheme.displaySmall,
-                          ),
-                      ).toList(),
-                    ),
-                  ),
-                  const Spacer(),
-                ],
-              ),
+              child: _selectedUser != null ? _buildPrompt(context) : _buildPicker(context),
             ),
           ),
         ),
