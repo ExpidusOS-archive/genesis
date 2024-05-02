@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../logic/power.dart';
 
 class PowerDialog extends StatelessWidget {
@@ -39,7 +40,13 @@ class PowerDialog extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            final nav = Navigator.of(context);
+                            nav.popUntil(ModalRoute.withName(nav.widget.initialRoute ?? '/'));
+
+                            if (nav.canPop()) nav.pop();
+                            else SystemNavigator.pop();
+                          },
                           icon: Icon(Icons.logout),
                         ),
                         Text('Log Out'),

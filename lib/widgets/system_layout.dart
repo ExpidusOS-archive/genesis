@@ -14,12 +14,14 @@ class SystemLayout extends StatelessWidget {
     this.userMode = false,
     this.isLocked = false,
     this.bottomSheet,
+    this.bottomNavigationBar,
   });
 
   final Widget body;
   final bool userMode;
   final bool isLocked;
   final Widget? bottomSheet;
+  final Widget? bottomNavigationBar;
 
   Widget _buildMobile(BuildContext context) =>
     BackdropScaffold(
@@ -33,16 +35,16 @@ class SystemLayout extends StatelessWidget {
             ),
         ),
       ),
-      backLayerBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      backLayerBackgroundColor: Theme.of(context).colorScheme.background,
       backLayer: Builder(
         builder: (context) =>
           GestureDetector(
             child: ListTileTheme(
-              tileColor: Theme.of(context).colorScheme.background,
+              tileColor: Theme.of(context).colorScheme.inversePrimary,
               child: IconButtonTheme(
                 data: IconButtonThemeData(
                   style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.background,
+                    backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                   ),
                 ),
                 child: Column(
@@ -51,11 +53,10 @@ class SystemLayout extends StatelessWidget {
                       ? Row(
                           children: [
                             Expanded(
-                              child: Container(
-                                decoration: ShapeDecoration(
-                                  shape: const LinearBorder(),
-                                  color: Theme.of(context).colorScheme.background,
-                                ),
+                              child: Card(
+                                shape: const LinearBorder(),
+                                color: Theme.of(context).colorScheme.background,
+                                margin: EdgeInsets.zero,
                                 child: const Padding(
                                   padding: const EdgeInsets.all(8),
                                   child: AccountProfile(),
@@ -78,6 +79,7 @@ class SystemLayout extends StatelessWidget {
       frontLayerScrim: Theme.of(context).colorScheme.background,
       frontLayer: body,
       bottomSheet: bottomSheet,
+      bottomNavigationBar: bottomNavigationBar,
     );
 
   Widget _buildDesktop(BuildContext context) =>
@@ -113,6 +115,7 @@ class SystemLayout extends StatelessWidget {
       ),
       body: body,
       bottomSheet: bottomSheet,
+      bottomNavigationBar: bottomNavigationBar,
     );
 
   @override

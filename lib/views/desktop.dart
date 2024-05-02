@@ -5,6 +5,7 @@ import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import '../logic/wallpaper.dart';
 
 import '../widgets/system_layout.dart';
+import '../widgets/system_navbar.dart';
 
 class DesktopView extends StatefulWidget {
   const DesktopView({
@@ -59,5 +60,7 @@ class _DesktopViewState extends State<DesktopView> {
           ),
         ),
       ),
+      bottomNavigationBar: Breakpoints.small.isActive(context)
+        ? SystemNavbar() : null,
     );
 }
