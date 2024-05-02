@@ -27,7 +27,11 @@ class PowerDialog extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          onPressed: () => Navigator.of(context).pushNamed('/lock'),
+                          onPressed: () {
+                            final nav = Navigator.of(context);
+                            nav.popUntil(ModalRoute.withName('/'));
+                            nav.pushNamed('/lock');
+                          },
                           icon: Icon(Icons.lock),
                         ),
                         Text('Lock'),

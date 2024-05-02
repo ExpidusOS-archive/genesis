@@ -48,9 +48,11 @@ class _DesktopViewState extends State<DesktopView> {
   void dispose() {
     super.dispose();
 
-    sessionChannel.invokeMethod('close', sessionName).catchError((err) {
-      print(err);
-    });
+    if (sessionName != null) {
+      sessionChannel.invokeMethod('close', sessionName!).catchError((err) {
+        print(err);
+      });
+    }
 
     if (widget.isSession && widget.userName != null) {
       authChannel.invokeMethod('deauth', widget.userName).catchError((err) {

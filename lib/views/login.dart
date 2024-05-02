@@ -115,6 +115,10 @@ class _LoginViewState extends State<LoginView> {
                 isSession: true,
               ),
             );
+
+            setState(() {
+              _selectedUser = null;
+            });
           },
         ),
         const Spacer(),
