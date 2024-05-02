@@ -15,6 +15,7 @@ class SystemLayout extends StatelessWidget {
     this.isLocked = false,
     this.bottomSheet,
     this.bottomNavigationBar,
+    this.userName = null,
   });
 
   final Widget body;
@@ -22,6 +23,7 @@ class SystemLayout extends StatelessWidget {
   final bool isLocked;
   final Widget? bottomSheet;
   final Widget? bottomNavigationBar;
+  final String? userName;
 
   Widget _buildMobile(BuildContext context) =>
     BackdropScaffold(
@@ -57,9 +59,9 @@ class SystemLayout extends StatelessWidget {
                                 shape: const LinearBorder(),
                                 color: Theme.of(context).colorScheme.background,
                                 margin: EdgeInsets.zero,
-                                child: const Padding(
+                                child: Padding(
                                   padding: const EdgeInsets.all(8),
-                                  child: AccountProfile(),
+                                  child: userName == null ? AccountProfile() : AccountProfile.name(name: userName!),
                                 ),
                               ),
                             ),
@@ -108,6 +110,7 @@ class SystemLayout extends StatelessWidget {
               child: SystemDrawer(
                 userMode: userMode,
                 isLocked: isLocked,
+                userName: userName,
               ),
             ),
           ),

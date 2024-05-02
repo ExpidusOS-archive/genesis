@@ -11,10 +11,12 @@ class SystemDrawer extends StatefulWidget {
     super.key,
     this.userMode = false,
     this.isLocked = false,
+    this.userName = null,
   });
 
   final bool userMode;
   final bool isLocked;
+  final String? userName;
 
   @override
   State<SystemDrawer> createState() => _SystemDrawerState();
@@ -30,7 +32,8 @@ class _SystemDrawerState extends State<SystemDrawer> {
       child: ListView(
         shrinkWrap: true,
         children: [
-          widget.userMode && !Breakpoints.small.isActive(context) ? const AccountProfile() : null,
+          widget.userMode && !Breakpoints.small.isActive(context)
+            ? (widget.userName == null ? AccountProfile() : AccountProfile.name(name: widget.userName!)) : null,
           Row(
             children: [
               Expanded(

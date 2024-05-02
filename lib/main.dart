@@ -43,6 +43,15 @@ void main(List<String> argsList) async {
   });
 }
 
+String? _getUserName(BuildContext context) {
+  final route = ModalRoute.of(context);
+  if (route == null) return null;
+  if (route.settings.arguments == null) return null;
+
+  final args = route.settings.arguments as Map<String, dynamic>;
+  return args['userName'];
+}
+
 class GenesisShellApp extends StatelessWidget {
   const GenesisShellApp({
     super.key,
@@ -69,8 +78,8 @@ class GenesisShellApp extends StatelessWidget {
           ),
           themeMode: ThemeMode.dark,
           routes: {
-            '/': (_) => const DesktopView(),
-            '/lock': (_) => const LockView(),
+            '/': (context) => DesktopView(userName: _getUserName(context)),
+            '/lock': (context) => LockView(userName: _getUserName(context)),
             '/login': (_) => const LoginView(),
           },
           initialRoute: initLocked ? '/lock' : (displayManager ? '/login' : '/'),

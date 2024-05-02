@@ -16,17 +16,20 @@ class LockView extends StatelessWidget {
     this.wallpaper = null,
     this.desktopWallpaper = null,
     this.mobileWallpaper = null,
+    this.userName = null,
   });
 
   final String? wallpaper;
   final String? desktopWallpaper;
   final String? mobileWallpaper;
+  final String? userName;
 
   @override
   Widget build(BuildContext context) =>
     SystemLayout(
       userMode: true,
       isLocked: true,
+      userName: userName,
       body: Container(
         decoration: BoxDecoration(
           image: getWallpaper(

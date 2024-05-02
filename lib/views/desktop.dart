@@ -13,11 +13,13 @@ class DesktopView extends StatefulWidget {
     this.wallpaper = null,
     this.desktopWallpaper = null,
     this.mobileWallpaper = null,
+    this.userName = null,
   });
 
   final String? wallpaper;
   final String? desktopWallpaper;
   final String? mobileWallpaper;
+  final String? userName;
 
   @override
   State<DesktopView> createState() => _DesktopViewState();
@@ -52,6 +54,7 @@ class _DesktopViewState extends State<DesktopView> {
   Widget build(BuildContext context) =>
     SystemLayout(
       userMode: true,
+      userName: widget.userName,
       body: Container(
         decoration: BoxDecoration(
           image: getWallpaper(

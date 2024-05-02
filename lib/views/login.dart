@@ -106,7 +106,12 @@ class _LoginViewState extends State<LoginView> {
         LoginPrompt(
           onLogin: () {
             final nav = Navigator.of(context);
-            nav.pushNamed('/');
+            nav.pushNamed(
+              '/',
+              arguments: {
+                'userName': _selectedUser!,
+              },
+            );
           },
         ),
         const Spacer(),
