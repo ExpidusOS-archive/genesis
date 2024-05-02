@@ -52,6 +52,7 @@ static void genesis_shell_application_activate(GApplication* application) {
     fl_method_channel_set_method_call_handler(self->auth, auth_method_call_handler, self, nullptr);
   }
 
+  session_channel_init(&self->session, view);
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }
 
@@ -98,6 +99,8 @@ static void genesis_shell_application_dispose(GObject* object) {
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
   g_clear_object(&self->outputs);
   g_clear_object(&self->auth);
+  g_clear_object(&self->account);
+  session_channel_deinit(&self->session);
   G_OBJECT_CLASS(genesis_shell_application_parent_class)->dispose(object);
 }
 

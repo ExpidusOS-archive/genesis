@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 
 import '../logic/wallpaper.dart';
@@ -22,6 +23,30 @@ class DesktopView extends StatefulWidget {
 }
 
 class _DesktopViewState extends State<DesktopView> {
+  static const sessionChannel = MethodChannel('com.expidusos.genesis.shell/session');
+
+  String? sessionName = null;
+
+  @override
+  void initState() {
+    super.initState();
+
+    sessionChannel.invokeMethod('open').then((name) => setState(() {
+      sessionName = name;
+    })).catchError((err) {
+      print(err);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    sessionChannel.invokeMethod('close', sessionName).catchError((err) {
+      print(err);
+    });
+  }
+
   @override
   Widget build(BuildContext context) =>
     SystemLayout(
