@@ -33,7 +33,6 @@ class _AccountProfileState extends State<AccountProfile> {
     platform.invokeMethod('get', _getData()).then((user) => setState(() {
       displayName = user['displayName'];
       icon = user['icon'];
-      print(user);
     })).catchError((err) {
       print(err);
     });
@@ -43,13 +42,15 @@ class _AccountProfileState extends State<AccountProfile> {
     Row(
       children: [
         icon == null
-          ? Icon(Icons.account_circle, size: 40)
+          ? const Icon(Icons.account_circle, size: 40)
           : ClipRRect(
               borderRadius: BorderRadius.circular(360.0),
               child: Image.file(
                 File(icon!),
                 width: 40,
                 height: 40,
+                errorBuilder: (context, err, stackTrace) =>
+                  const Icon(Icons.account_circle, size: 40),
               ),
             ),
         Padding(

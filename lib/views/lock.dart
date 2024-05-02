@@ -27,9 +27,11 @@ class LockView extends StatefulWidget {
 }
 
 class _LockViewState extends State<LockView> {
-  static const platform = MethodChannel('com.expidusos.genesis.shell/auth');
+  static const authChannel = MethodChannel('com.expidusos.genesis.shell/auth');
+  static const accChannel = MethodChannel('com.expidusos.genesis.shell/account');
 
   TextEditingController passcodeController = TextEditingController();
+  String? passwordHint = null;
   String? errorText = null;
 
   void _onSubmitted(BuildContext context, String input) {
@@ -37,7 +39,7 @@ class _LockViewState extends State<LockView> {
       errorText = null;
     });
 
-    platform.invokeMethod<void>('auth', <String, dynamic>{
+    authChannel.invokeMethod<void>('auth', <String, dynamic>{
       'password': input,
     }).then((_) {
       setState(() {
@@ -58,6 +60,17 @@ class _LockViewState extends State<LockView> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    accChannel.invokeMethod('get', null).then((user) => setState(() {
+      passwordHint = user['passwordHint'];
+    })).catchError((err) {
+      print(err);
+    });
+  }
+
+  @override
   void dispose() {
     super.dispose();
     passcodeController.dispose();
@@ -66,6 +79,8 @@ class _LockViewState extends State<LockView> {
   @override
   Widget build(BuildContext context) =>
     SystemLayout(
+      userMode: true,
+      isLocked: true,
       body: Container(
         decoration: BoxDecoration(
           image: getWallpaper(
@@ -131,6 +146,7 @@ class _LockViewState extends State<LockView> {
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                                hintText: passwordHint,
                                 errorMaxLines: 5,
                                 errorText: errorText,
                               ),

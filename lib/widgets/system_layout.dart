@@ -12,11 +12,13 @@ class SystemLayout extends StatelessWidget {
     super.key,
     required this.body,
     this.userMode = false,
+    this.isLocked = false,
     this.bottomSheet,
   });
 
   final Widget body;
   final bool userMode;
+  final bool isLocked;
   final Widget? bottomSheet;
 
   Widget _buildMobile(BuildContext context) =>
@@ -64,6 +66,7 @@ class SystemLayout extends StatelessWidget {
                         ) : null,
                     SystemDrawer(
                       userMode: userMode,
+                      isLocked: isLocked,
                     ),
                   ].where((e) => e != null).toList().cast<Widget>(),
                 ),
@@ -86,17 +89,24 @@ class SystemLayout extends StatelessWidget {
           child: const SystemBar(),
         ),
       ),
-      endDrawer: Drawer(
-        child: ListTileTheme(
-          tileColor: Theme.of(context).colorScheme.inversePrimary,
-          child: IconButtonTheme(
-            data: IconButtonThemeData(
-              style: IconButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      endDrawer: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Drawer(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          child: ListTileTheme(
+            tileColor: Theme.of(context).colorScheme.inversePrimary,
+            child: IconButtonTheme(
+              data: IconButtonThemeData(
+                style: IconButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                ),
               ),
-            ),
-            child: SystemDrawer(
-              userMode: userMode,
+              child: SystemDrawer(
+                userMode: userMode,
+                isLocked: isLocked,
+              ),
             ),
           ),
         ),

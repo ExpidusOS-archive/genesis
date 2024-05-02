@@ -11,7 +11,7 @@ extern "C" {
 #include "../application-priv.h"
 
 static FlValue* new_string(const gchar* str) {
-  if (str == nullptr) return fl_value_new_null();
+  if (str == nullptr || g_utf8_strlen(str, -1) == 0) return fl_value_new_null();
   return fl_value_new_string(str);
 }
 
@@ -22,6 +22,8 @@ static FlValue* from_user(ActUser* usr) {
   fl_value_set(value, fl_value_new_string("name"), new_string(act_user_get_user_name(usr)));
   fl_value_set(value, fl_value_new_string("displayName"), new_string(act_user_get_real_name(usr)));
   fl_value_set(value, fl_value_new_string("icon"), new_string(act_user_get_icon_file(usr)));
+  fl_value_set(value, fl_value_new_string("home"), new_string(act_user_get_home_dir(usr)));
+  fl_value_set(value, fl_value_new_string("passwordHint"), new_string(act_user_get_password_hint(usr)));
   return value;
 }
 

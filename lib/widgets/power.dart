@@ -2,6 +2,88 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../logic/power.dart';
 
+class PowerDialog extends StatelessWidget {
+  const PowerDialog({
+    super.key,
+    this.isLocked = false,
+  });
+
+  final bool isLocked;
+
+  @override
+  Widget build(BuildContext context) =>
+    Dialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          !isLocked
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pushNamed('/lock'),
+                          icon: Icon(Icons.lock),
+                        ),
+                        Text('Lock'),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () {},
+                          icon: Icon(Icons.logout),
+                        ),
+                        Text('Log Out'),
+                      ],
+                    ),
+                  ),
+                ],
+              ) : null,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(Icons.restart_alt),
+                    ),
+                    Text('Restart'),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(Icons.power),
+                    ),
+                    Text('Shutdown'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ].where((e) => e != null).toList().cast<Widget>(),
+      ),
+    );
+}
+
 class PowerBar extends StatefulWidget {
   const PowerBar({
     super.key,
