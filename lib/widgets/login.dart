@@ -7,10 +7,12 @@ class LoginPrompt extends StatefulWidget {
   const LoginPrompt({
     super.key,
     this.name,
+    this.isSession = false,
     required this.onLogin,
   });
 
   final String? name;
+  final bool isSession;
   final VoidCallback onLogin;
 
   @override
@@ -32,6 +34,7 @@ class _LoginPromptState extends State<LoginPrompt> {
 
     var args = <String, dynamic>{
       'password': input,
+      'session': widget.isSession,
     };
 
     if (widget.name != null) {

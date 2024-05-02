@@ -19,7 +19,11 @@
       ];
     };
 
-    security.pam.services.genesis-shell.text = lib.readFile ../linux/data/pam;
+    security.pam.services.genesis-shell = {
+      allowNullPassword = true;
+      startSession = true;
+      enableGnomeKeyring = lib.mkDefault config.services.gnome.gnome-keyring.enable;
+    };
 
     nix.enable = false;
 

@@ -1,3 +1,6 @@
 # Genesis Shell login management
 
-auth include login
+auth substack login
+account include login
+password substack login
+session include login

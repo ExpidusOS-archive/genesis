@@ -1,5 +1,5 @@
 #pragma once
-
+#include "channels/auth.h"
 #include "channels/session.h"
 
 struct _GenesisShellApplication {
@@ -7,7 +7,7 @@ struct _GenesisShellApplication {
   char** dart_entrypoint_arguments;
   FlMethodChannel* outputs;
   FlMethodChannel* account;
-  FlMethodChannel* auth;
+  AuthChannel auth;
   SessionChannel session;
   GtkWindow* win;
 };

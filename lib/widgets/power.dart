@@ -42,7 +42,7 @@ class PowerDialog extends StatelessWidget {
                         IconButton(
                           onPressed: () {
                             final nav = Navigator.of(context);
-                            nav.popUntil(ModalRoute.withName(nav.widget.initialRoute ?? '/'));
+                            nav.popUntil(ModalRoute.withName('/'));
 
                             if (nav.canPop()) nav.pop();
                             else SystemNavigator.pop();

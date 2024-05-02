@@ -4,4 +4,10 @@
 
 #include "../application.h"
 
-void auth_method_call_handler(FlMethodChannel* channel, FlMethodCall* method_call, gpointer user_data);
+typedef struct _AuthChannel {
+  GHashTable* sessions;
+  FlMethodChannel* channel;
+} AuthChannel;
+
+void auth_channel_init(AuthChannel* self, FlView* view);
+void auth_channel_deinit(AuthChannel* self);

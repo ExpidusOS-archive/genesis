@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:intl/intl.dart';
 
+import '../logic/route_args.dart';
 import '../logic/wallpaper.dart';
 
 import '../widgets/account_profile.dart';
@@ -104,13 +105,15 @@ class _LoginViewState extends State<LoginView> {
         ),
         const Spacer(),
         LoginPrompt(
+          isSession: true,
           onLogin: () {
             final nav = Navigator.of(context);
             nav.pushNamed(
               '/',
-              arguments: {
-                'userName': _selectedUser!,
-              },
+              arguments: AuthedRouteArguments(
+                userName: _selectedUser!,
+                isSession: true,
+              ),
             );
           },
         ),

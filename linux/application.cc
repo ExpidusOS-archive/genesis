@@ -2,7 +2,6 @@
 
 #include "application.h"
 #include "application-priv.h"
-#include "channels/auth.h"
 #include "channels/account.h"
 #include "channels/outputs.h"
 
@@ -46,12 +45,7 @@ static void genesis_shell_application_activate(GApplication* application) {
     fl_method_channel_set_method_call_handler(self->account, account_method_call_handler, self, nullptr);
   }
 
-  {
-    g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
-    self->auth = fl_method_channel_new(fl_engine_get_binary_messenger(fl_view_get_engine(view)), "com.expidusos.genesis.shell/auth", FL_METHOD_CODEC(codec));
-    fl_method_channel_set_method_call_handler(self->auth, auth_method_call_handler, self, nullptr);
-  }
-
+  auth_channel_init(&self->auth, view);
   session_channel_init(&self->session, view);
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }
@@ -98,8 +92,8 @@ static void genesis_shell_application_dispose(GObject* object) {
   GenesisShellApplication* self = GENESIS_SHELL_APPLICATION(object);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
   g_clear_object(&self->outputs);
-  g_clear_object(&self->auth);
   g_clear_object(&self->account);
+  auth_channel_deinit(&self->auth);
   session_channel_deinit(&self->session);
   G_OBJECT_CLASS(genesis_shell_application_parent_class)->dispose(object);
 }

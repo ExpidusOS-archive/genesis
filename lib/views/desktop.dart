@@ -14,18 +14,21 @@ class DesktopView extends StatefulWidget {
     this.desktopWallpaper = null,
     this.mobileWallpaper = null,
     this.userName = null,
+    this.isSession = false,
   });
 
   final String? wallpaper;
   final String? desktopWallpaper;
   final String? mobileWallpaper;
   final String? userName;
+  final bool isSession;
 
   @override
   State<DesktopView> createState() => _DesktopViewState();
 }
 
 class _DesktopViewState extends State<DesktopView> {
+  static const authChannel = MethodChannel('com.expidusos.genesis.shell/auth');
   static const sessionChannel = MethodChannel('com.expidusos.genesis.shell/session');
 
   String? sessionName = null;
@@ -48,6 +51,12 @@ class _DesktopViewState extends State<DesktopView> {
     sessionChannel.invokeMethod('close', sessionName).catchError((err) {
       print(err);
     });
+
+    if (widget.isSession && widget.userName != null) {
+      authChannel.invokeMethod('deauth', widget.userName).catchError((err) {
+        print(err);
+      });
+    }
   }
 
   @override
