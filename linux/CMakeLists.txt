@@ -52,6 +52,7 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 
 # System-level dependencies.
 find_package(PkgConfig REQUIRED)
+pkg_check_modules(ACCOUNTSSERVICE REQUIRED IMPORTED_TARGET accountsservice)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
 
@@ -64,6 +65,7 @@ add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 add_executable(${BINARY_NAME}
   "main.cc"
   "application.cc"
+  "channels/account.cc"
   "channels/auth.cc"
   "channels/outputs.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
@@ -75,7 +77,7 @@ apply_standard_settings(${BINARY_NAME})
 
 # Add dependency libraries. Add any application-specific dependencies here.
 target_link_libraries(${BINARY_NAME} PRIVATE flutter)
-target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GTK PkgConfig::PAM)
+target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::ACCOUNTSSERVICE PkgConfig::GTK PkgConfig::PAM)
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)

@@ -30,7 +30,7 @@
 
               src = lib.cleanSource self;
 
-              buildInputs = with s; [ pam ];
+              buildInputs = with s; [ pam accountsservice polkit ];
 
               pubspecLock = lib.importJSON ./pubspec.lock.json;
 

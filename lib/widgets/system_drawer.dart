@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 
 import '../logic/power.dart';
 
+import 'account_profile.dart';
 import 'power.dart';
 
 class SystemDrawer extends StatelessWidget {
@@ -17,7 +19,9 @@ class SystemDrawer extends StatelessWidget {
     Padding(
       padding: const EdgeInsets.all(8.0),
       child: ListView(
+        shrinkWrap: true,
         children: [
+          userMode && !Breakpoints.small.isActive(context) ? const AccountProfile() : null,
           userMode ? Row(
             children: [
               Expanded(

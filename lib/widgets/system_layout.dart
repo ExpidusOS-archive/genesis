@@ -2,6 +2,7 @@ import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 
+import 'account_profile.dart';
 import 'output_layout.dart';
 import 'system_bar.dart';
 import 'system_drawer.dart';
@@ -42,8 +43,29 @@ class SystemLayout extends StatelessWidget {
                     backgroundColor: Theme.of(context).colorScheme.background,
                   ),
                 ),
-                child: SystemDrawer(
-                  userMode: userMode,
+                child: Column(
+                  children: [
+                    userMode && Breakpoints.small.isActive(context)
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                decoration: ShapeDecoration(
+                                  shape: const LinearBorder(),
+                                  color: Theme.of(context).colorScheme.background,
+                                ),
+                                child: const Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: AccountProfile(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ) : null,
+                    SystemDrawer(
+                      userMode: userMode,
+                    ),
+                  ].where((e) => e != null).toList().cast<Widget>(),
                 ),
               ),
             ),
