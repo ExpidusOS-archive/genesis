@@ -28,7 +28,12 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 
   if (strcmp(fl_method_call_get_name(method_call), "open") == 0) {
     struct libseat* seat = libseat_open_seat(&listener, user_data);
-    const char* name = libseat_seat_name(seat);
+    if (seat == nullptr) {
+      fl_method_call_respond_error(method_call, "libseat", "libseat_open_seat returned null", nullptr, nullptr);
+      return;
+    }
+
+    const char* name = g_strdup(libseat_seat_name(seat));
     g_hash_table_insert(self->seats, (gpointer)name, (gpointer)seat);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(name)));
   } else if (strcmp(fl_method_call_get_name(method_call), "close") == 0) {
@@ -36,9 +41,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     const gchar* name = fl_value_get_string(args);
 
     if (g_hash_table_contains(self->seats, name)) {
-      struct libseat* seat = (struct libseat*)g_hash_table_lookup(self->seats, name);
       g_hash_table_remove(self->seats, name);
-      libseat_close_seat(seat);
       response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_bool(true)));
     } else {
       response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_bool(false)));
