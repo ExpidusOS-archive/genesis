@@ -92,7 +92,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
         return;
       }
 
-      g_hash_table_insert(self->sessions, (gpointer)username, (gpointer)handle);
+      g_hash_table_insert(self->sessions, (gpointer)g_strdup(username), (gpointer)handle);
     } else {
       pam_end(handle, r);
       free(conv);
