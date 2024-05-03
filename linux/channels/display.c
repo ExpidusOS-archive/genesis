@@ -4,6 +4,11 @@
 #include "session.h"
 #include "../application-priv.h"
 
+static gchar* get_string(FlValue* value) {
+  if (fl_value_get_type(value) != FL_VALUE_TYPE_STRING) return g_strdup("Unknown");
+  return g_strdup(fl_value_get_string(value));
+}
+
 static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_call, gpointer user_data) {
   DisplayChannel* self = (DisplayChannel*)user_data;
 
@@ -46,6 +51,8 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       return;
     }
 
+    disp->outputs = NULL;
+
     disp->compositor = wlr_compositor_create(disp->display, 5, NULL);
     wlr_subcompositor_create(disp->display);
     wlr_data_device_manager_create(disp->display);
@@ -77,6 +84,45 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 
     g_hash_table_remove(self->displays, name);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
+  } else if (strcmp(fl_method_call_get_name(method_call), "setOutputs") == 0) {
+    FlValue* args = fl_method_call_get_args(method_call);
+    const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
+
+    if (!g_hash_table_contains(self->displays, name)) {
+      fl_method_call_respond_error(method_call, "Linux", "Display server does not exist", NULL, NULL);
+      return;
+    }
+
+    DisplayChannelDisplay* disp = g_hash_table_lookup(self->displays, name);
+    g_clear_list(&disp->outputs, (GDestroyNotify)wlr_output_destroy_global);
+
+    FlValue* list = fl_value_lookup_string(args, "list");
+    for (size_t i = 0; i < fl_value_get_length(list); i++) {
+      FlValue* item = fl_value_get_list_value(list, i);
+      FlValue* item_geom = fl_value_lookup_string(item, "geometry");
+
+      g_message("%s", fl_value_to_string(item));
+
+      int64_t width = fl_value_get_int(fl_value_lookup_string(item_geom, "width"));
+      int64_t height = fl_value_get_int(fl_value_lookup_string(item_geom, "height"));
+
+      int64_t refresh = fl_value_get_int(fl_value_lookup_string(item, "refreshRate"));
+      int64_t scale = fl_value_get_int(fl_value_lookup_string(item, "scale"));
+
+      struct wlr_output* output = wlr_headless_add_output(disp->backend, width, height);
+      output->model = get_string(fl_value_lookup_string(item, "model"));
+      output->make = get_string(fl_value_lookup_string(item, "manufacturer"));
+
+      wlr_output_create_global(output);
+      wlr_output_set_custom_mode(output, width, height, refresh);
+      wlr_output_set_scale(output, scale);
+      wlr_output_enable(output, true);
+      wlr_output_commit(output);
+
+      disp->outputs = g_list_append(disp->outputs, (gpointer)output);
+    }
+
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }
@@ -90,6 +136,8 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 static void destory_display(DisplayChannelDisplay* self) {
   wl_display_terminate(self->display);
   pthread_join(self->thread, NULL);
+
+  g_clear_list(&self->outputs, (GDestroyNotify)wlr_output_destroy_global);
 
   wlr_backend_destroy(self->backend);
   wl_display_destroy(self->display);

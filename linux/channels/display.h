@@ -38,6 +38,8 @@ typedef struct _DisplayChannelDisplay {
 
   const gchar* prev_wl_disp;
   pthread_t thread;
+
+  GList* outputs;
 } DisplayChannelDisplay;
 
 typedef struct _DisplayChannel {
