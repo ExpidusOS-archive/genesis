@@ -131,7 +131,7 @@
       "version": "3.0.3"
     },
     "dbus": {
-      "dependency": "transitive",
+      "dependency": "direct main",
       "description": {
         "name": "dbus",
         "sha256": "365c771ac3b0e58845f39ec6deebc76e3276aa9922b0cc60840712094d9047ac",

@@ -24,4 +24,14 @@ class DummyPowerManager extends PowerManager {
   Future<List<PowerDevice>> devices() async {
     return List.empty();
   }
+
+  @override
+  Future<bool> canAction(PowerAction action) async {
+    return false;
+  }
+
+  @override
+  Future<void> doAction(PowerAction action) async {
+    throw Exception('Unimplemented action: ${action.name}');
+  }
 }

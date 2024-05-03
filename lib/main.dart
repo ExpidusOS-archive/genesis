@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'logic/account.dart';
 import 'logic/outputs.dart';
+import 'logic/power.dart';
 import 'logic/route_args.dart';
 
 import 'views/desktop.dart';
@@ -63,6 +64,7 @@ class GenesisShellApp extends StatefulWidget {
 class _GenesisShellAppState extends State<GenesisShellApp> {
   late AccountManager _accountManager;
   late OutputManager _outputManager;
+  late PowerManager _powerManager;
 
   @override
   void initState() {
@@ -70,6 +72,14 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
 
     _accountManager = AccountManager();
     _outputManager = OutputManager();
+    _powerManager = PowerManager.auto();
+    _powerManager.connect();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _powerManager.disconnect();
   }
 
   @override
@@ -78,6 +88,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
       providers: [
         ChangeNotifierProvider(create: (_) => _accountManager),
         ChangeNotifierProvider(create: (_) => _outputManager),
+        Provider(create: (_) => _powerManager),
       ],
       child: TokyoApp(
         title: 'Genesis Shell',

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../logic/power.dart';
 
 class PowerDialog extends StatelessWidget {
@@ -60,36 +61,52 @@ class PowerDialog extends StatelessWidget {
                   ),
                 ],
               ) : null,
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.arrowsRotate),
-                    ),
-                    Text('Restart'),
-                  ],
-                ),
+          Consumer<PowerManager>(
+            builder: (context, mngr, _) =>
+              FutureBuilder(
+                future: Future.wait([
+                  mngr.canAction(PowerAction.reboot),
+                  mngr.canAction(PowerAction.shutdown),
+                ]),
+                builder: (context, snapshot) {
+                  final data = snapshot.data ?? [ false, false ];
+                  final canReboot = data[0];
+                  final canShutdown = data[1];
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                  canReboot
+                    ? Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              onPressed: () => mngr.doAction(PowerAction.reboot),
+                              icon: Icon(Icons.arrowsRotate),
+                            ),
+                            Text('Restart'),
+                          ],
+                        ),
+                      ) : null,
+                  canShutdown
+                    ? Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              onPressed: () => mngr.doAction(PowerAction.shutdown),
+                              icon: Icon(Icons.powerOff),
+                            ),
+                            Text('Shutdown'),
+                          ],
+                        ),
+                      ) : null,
+                    ].where((e) => e != null).toList().cast<Widget>(),
+                  );
+                },
               ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.powerOff),
-                    ),
-                    Text('Shutdown'),
-                  ],
-                ),
-              ),
-            ],
           ),
         ].where((e) => e != null).toList().cast<Widget>(),
       ),

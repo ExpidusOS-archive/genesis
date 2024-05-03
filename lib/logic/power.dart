@@ -21,6 +21,9 @@ abstract class PowerManager {
   Future<void> connect();
   void disconnect();
   Future<List<PowerDevice>> devices();
+
+  Future<bool> canAction(PowerAction action);
+  Future<void> doAction(PowerAction action);
 }
 
 abstract class PowerDevice {
@@ -49,4 +52,9 @@ enum PowerDeviceType {
   mouse,
   keyboard,
   unknown,
+}
+
+enum PowerAction {
+  shutdown,
+  reboot,
 }

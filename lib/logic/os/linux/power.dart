@@ -1,16 +1,20 @@
 import 'dart:async';
+import 'package:dbus/dbus.dart';
 import 'package:upower/upower.dart';
 import '../../power.dart';
 
 class LinuxPowerManager extends PowerManager {
   LinuxPowerManager() : super() {}
 
+  final DBusClient _sysbus = DBusClient.system();
   final UPowerClient _client = UPowerClient();
 
   StreamController<PowerDevice> _deviceAddedCtrl = StreamController();
   StreamController<PowerDevice> _deviceRemovedCtrl = StreamController();
   late StreamSubscription<UPowerDevice> _deviceAddedSub;
   late StreamSubscription<UPowerDevice> _deviceRemovedSub;
+  bool? _canReboot;
+  bool? _canShutdown;
 
   @override
   Stream<PowerDevice> get deviceAdded {
@@ -28,6 +32,10 @@ class LinuxPowerManager extends PowerManager {
     _deviceRemovedSub = _client.deviceRemoved.listen((dev) => _deviceRemovedCtrl.add(LinuxPowerDevice(dev)));
 
     await _client.connect();
+
+    for (final value in PowerAction.values) {
+      canAction(value);
+    }
   }
 
   @override
@@ -35,11 +43,46 @@ class LinuxPowerManager extends PowerManager {
     _deviceAddedSub.cancel();
     _deviceRemovedSub.cancel();
     _client.close();
+    _sysbus.close();
   }
 
   @override
   Future<List<LinuxPowerDevice>> devices() async {
     return List.empty();
+  }
+
+  @override
+  Future<bool> canAction(PowerAction action) async {
+    switch (action) {
+      case PowerAction.reboot:
+        if (_canReboot == null) {
+          _canReboot = (await _sysbus.callMethod(
+            destination: 'org.freedesktop.login1',
+            path: DBusObjectPath('/org/freedesktop/login1'),
+            interface: 'org.freedesktop.login1.Manager',
+            name: 'CanReboot',
+          )).returnValues[0].asString() == 'yes';
+        }
+        return _canReboot ?? false;
+      case PowerAction.shutdown:
+        if (_canShutdown == null) {
+          _canShutdown = (await _sysbus.callMethod(
+            destination: 'org.freedesktop.login1',
+            path: DBusObjectPath('/org/freedesktop/login1'),
+            interface: 'org.freedesktop.login1.Manager',
+            name: 'CanPowerOff',
+          )).returnValues[0].asString() == 'yes';
+        }
+        return _canShutdown ?? false;
+      default:
+        break;
+    }
+    return false;
+  }
+
+  @override
+  Future<void> doAction(PowerAction action) async {
+    throw Exception('Unimplemented action: ${action.name}');
   }
 }
 
