@@ -2,8 +2,6 @@
 
 #include "application.h"
 #include "application-priv.h"
-#include "channels/account.h"
-#include "channels/outputs.h"
 
 #include <flutter_linux/flutter_linux.h>
 #ifdef GDK_WINDOWING_X11
@@ -33,16 +31,12 @@ static void genesis_shell_application_activate(GApplication* application) {
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
-  {
-    g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
-    self->account = fl_method_channel_new(fl_engine_get_binary_messenger(fl_view_get_engine(view)), "com.expidusos.genesis.shell/account", FL_METHOD_CODEC(codec));
-    fl_method_channel_set_method_call_handler(self->account, account_method_call_handler, self, nullptr);
-  }
-
+  account_channel_init(&self->account, view);
   auth_channel_init(&self->auth, view);
   display_channel_init(&self->display, view);
   outputs_channel_init(&self->outputs, view);
   session_channel_init(&self->session, view);
+
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }
 
@@ -87,8 +81,8 @@ static void genesis_shell_application_shutdown(GApplication* application) {
 static void genesis_shell_application_dispose(GObject* object) {
   GenesisShellApplication* self = GENESIS_SHELL_APPLICATION(object);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
-  g_clear_object(&self->account);
 
+  account_channel_deinit(&self->account);
   auth_channel_deinit(&self->auth);
   display_channel_deinit(&self->display);
   outputs_channel_deinit(&self->outputs);

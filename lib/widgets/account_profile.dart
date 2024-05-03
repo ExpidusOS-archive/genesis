@@ -1,8 +1,12 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
-class AccountProfile extends StatefulWidget {
+import '../logic/account.dart';
+
+class AccountProfile extends StatelessWidget {
   const AccountProfile({
     super.key,
     this.direction = Axis.horizontal,
@@ -33,56 +37,41 @@ class AccountProfile extends StatefulWidget {
   final TextStyle? textStyle;
 
   @override
-  State<AccountProfile> createState() => _AccountProfileState();
-}
-
-class _AccountProfileState extends State<AccountProfile> {
-  static const platform = MethodChannel('com.expidusos.genesis.shell/account');
-
-  String? displayName = null;
-  String? icon = null;
-
-  dynamic _getData() {
-    if (widget.uid != null) return widget.uid;
-    if (widget.name != null) return widget.name;
-    return null;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    platform.invokeMethod('get', _getData()).then((user) => setState(() {
-      displayName = user['displayName'];
-      icon = user['icon'];
-    })).catchError((err) {
-      print(err);
-    });
-  }
-
   Widget build(BuildContext context) =>
-    Flex(
-      direction: widget.direction,
-      children: [
-        icon == null
-          ? Icon(Icons.account_circle, size: widget.iconSize)
-          : ClipRRect(
-              borderRadius: BorderRadius.circular(360.0),
-              child: Image.file(
-                File(icon!),
-                width: widget.iconSize,
-                height: widget.iconSize,
-                errorBuilder: (context, err, stackTrace) =>
-                  Icon(Icons.account_circle, size: widget.iconSize),
+    Consumer<AccountManager>(
+      builder: (context, mngr, _) {
+        final account = mngr.find(
+          uid: uid,
+          name: name,
+        );
+
+        final icon = account == null ? null : account.icon;
+        final displayName = account == null ? null : account.displayName;
+
+        return Flex(
+          direction: direction,
+          children: [
+            icon == null
+              ? Icon(Icons.account_circle, size: iconSize)
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(360.0),
+                  child: Image.file(
+                    File(icon!),
+                    width: iconSize,
+                    height: iconSize,
+                    errorBuilder: (context, err, stackTrace) =>
+                      Icon(Icons.account_circle, size: iconSize),
+                  ),
+                ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Text(
+                displayName ?? '',
+                style: textStyle ?? Theme.of(context).textTheme.titleLarge,
               ),
             ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: Text(
-            displayName ?? '',
-            style: widget.textStyle ?? Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:system_theme/system_theme.dart';
 
+import 'logic/account.dart';
 import 'logic/outputs.dart';
 import 'logic/route_args.dart';
 import 'logic/theme.dart' show buildThemeData;
@@ -62,12 +63,14 @@ class GenesisShellApp extends StatefulWidget {
 }
 
 class _GenesisShellAppState extends State<GenesisShellApp> {
+  late AccountManager _accountManager;
   late OutputManager _outputManager;
 
   @override
   void initState() {
     super.initState();
 
+    _accountManager = AccountManager();
     _outputManager = OutputManager();
   }
 
@@ -77,6 +80,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
       builder: (context, accent) =>
         MultiProvider(
           providers: [
+            ChangeNotifierProvider(create: (_) => _accountManager),
             ChangeNotifierProvider(create: (_) => _outputManager),
           ],
           child: MaterialApp(

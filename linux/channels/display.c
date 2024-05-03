@@ -101,8 +101,6 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       FlValue* item = fl_value_get_list_value(list, i);
       FlValue* item_geom = fl_value_lookup_string(item, "geometry");
 
-      g_message("%s", fl_value_to_string(item));
-
       int64_t width = fl_value_get_int(fl_value_lookup_string(item_geom, "width"));
       int64_t height = fl_value_get_int(fl_value_lookup_string(item_geom, "height"));
 
