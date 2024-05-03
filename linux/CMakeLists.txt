@@ -59,7 +59,7 @@ pkg_check_modules(ACCOUNTSSERVICE REQUIRED IMPORTED_TARGET accountsservice)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 pkg_check_modules(LIBSEAT REQUIRED IMPORTED_TARGET libseat)
 pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
-pkg_check_modules(WLROOTS REQUIRED IMPORTED_TARGET wlroots wayland-server)
+pkg_check_modules(WLROOTS REQUIRED IMPORTED_TARGET wlroots wayland-server xkbcommon)
 
 add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}" -DWLR_USE_UNSTABLE)
 

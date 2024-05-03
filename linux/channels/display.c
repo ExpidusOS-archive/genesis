@@ -20,10 +20,22 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     const char* socket = wl_display_add_socket_auto(disp->display);
     if (socket == NULL) {
       fl_method_call_respond_error(method_call, "wayland", "failed to create socket", NULL, NULL);
+      wlr_backend_destroy(disp->backend);
       wl_display_destroy(disp->display);
       free(disp);
       return;
     }
+
+    if (!wlr_backend_start(disp->backend)) {
+      fl_method_call_respond_error(method_call, "wlroots", "failed to start backend", NULL, NULL);
+      wlr_backend_destroy(disp->backend);
+      wl_display_destroy(disp->display);
+      free(disp);
+      return;
+    }
+
+    wlr_subcompositor_create(disp->display);
+    wlr_data_device_manager_create(disp->display);
 
     pthread_create(&disp->thread, NULL, (void *(*)(void*))wl_display_run, disp->display);
     g_hash_table_insert(self->displays, (gpointer)g_strdup(socket), (gpointer)disp);

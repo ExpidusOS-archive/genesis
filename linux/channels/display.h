@@ -14,6 +14,8 @@ extern "C" {
 #endif
 
 #include <wlr/backend/headless.h>
+#include <wlr/types/wlr_data_device.h>
+#include <wlr/types/wlr_subcompositor.h>
 #include <wayland-server.h>
 
 #ifdef __cplusplus

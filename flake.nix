@@ -31,7 +31,8 @@
               src = lib.cleanSource self;
 
               buildInputs = with s; lib.optionalAttrs (stdenv.isLinux) [
-                pam accountsservice polkit seatd wlroots_0_17 libdrm libGL
+                pam accountsservice polkit seatd wlroots_0_17 libdrm libGL libxkbcommon
+                mesa vulkan-loader
               ];
 
               pubspecLock = lib.importJSON ./pubspec.lock.json;
