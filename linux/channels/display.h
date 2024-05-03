@@ -14,8 +14,12 @@ extern "C" {
 #endif
 
 #include <wlr/backend/headless.h>
+#include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_data_device.h>
+#include <wlr/types/wlr_seat.h>
+#include <wlr/types/wlr_shm.h>
 #include <wlr/types/wlr_subcompositor.h>
+#include <wlr/types/wlr_xdg_shell.h>
 #include <wayland-server.h>
 
 #ifdef __cplusplus
@@ -27,6 +31,12 @@ extern "C" {
 typedef struct _DisplayChannelDisplay {
   struct wl_display* display;
   struct wlr_backend* backend;
+  struct wlr_compositor* compositor;
+  struct wlr_shm* shm;
+  struct wlr_seat* seat;
+  struct wlr_xdg_shell* xdg_shell;
+
+  const gchar* prev_wl_disp;
   pthread_t thread;
 } DisplayChannelDisplay;
 

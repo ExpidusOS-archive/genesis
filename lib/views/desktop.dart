@@ -39,16 +39,20 @@ class _DesktopViewState extends State<DesktopView> {
   void initState() {
     super.initState();
 
-    sessionChannel.invokeMethod('open').then((name) => setState(() {
-      sessionName = name;
-    })).catchError((err) {
-      print(err);
-    });
+    sessionChannel.invokeMethod('open').then((name) {
+      setState(() {
+        sessionName = name;
+      });
 
-    displayChannel.invokeMethod('start').then((name) => setState(() {
-      displayName = name;
-      print(name);
-    })).catchError((err) {
+      displayChannel.invokeMethod('start', <String, dynamic>{
+        'sessionName': name,
+      }).then((name) => setState(() {
+        displayName = name;
+        print(name);
+      })).catchError((err) {
+        print(err);
+      });
+    }).catchError((err) {
       print(err);
     });
   }
@@ -64,7 +68,6 @@ class _DesktopViewState extends State<DesktopView> {
     }
 
     if (displayName != null) {
-      print('Stopping $displayName');
       displayChannel.invokeMethod('stop', displayName!).catchError((err) {
         print(err);
       });

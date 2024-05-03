@@ -32,7 +32,8 @@
 
               buildInputs = with s; lib.optionalAttrs (stdenv.isLinux) [
                 pam accountsservice polkit seatd wlroots_0_17 libdrm libGL libxkbcommon
-                mesa vulkan-loader
+                mesa vulkan-loader libdisplay-info libliftoff libinput xorg.xcbutilwm
+                xorg.libX11 xorg.xcbutilerrors xorg.xcbutilimage xorg.xcbutilrenderutil
               ];
 
               pubspecLock = lib.importJSON ./pubspec.lock.json;

@@ -54,12 +54,35 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+find_program(WAYLAND_SCANNER_EXECUTABLE REQUIRED NAMES wayland-scanner)
+pkg_get_variable(WAYLAND_PROTOS_DIR wayland-protocols pkgdatadir)
+
+function(WAYLAND_ADD_PROTOCOL_SERVER _sources _protocol _basename)
+  get_filename_component(_infile ${_protocol} ABSOLUTE)
+  set(_server_header "${CMAKE_CURRENT_BINARY_DIR}/${_basename}-protocol.h")
+  set(_code "${CMAKE_CURRENT_BINARY_DIR}/${_basename}-protocol.c")
+
+  add_custom_command(OUTPUT "${_server_header}"
+    COMMAND ${WAYLAND_SCANNER_EXECUTABLE} server-header < ${_infile} > ${_server_header}
+    DEPENDS ${_infile} VERBATIM)
+
+  add_custom_command(OUTPUT "${_code}"
+    COMMAND ${WAYLAND_SCANNER_EXECUTABLE} code < ${_infile} > ${_code}
+    DEPENDS ${_infile} VERBATIM)
+
+  list(APPEND ${_sources} "${_server_header}" "${_code}")
+  set(${_sources} ${${_sources}} PARENT_SCOPE)
+endfunction()
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(ACCOUNTSSERVICE REQUIRED IMPORTED_TARGET accountsservice)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 pkg_check_modules(LIBSEAT REQUIRED IMPORTED_TARGET libseat)
 pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
-pkg_check_modules(WLROOTS REQUIRED IMPORTED_TARGET wlroots wayland-server xkbcommon)
+pkg_check_modules(WLROOTS REQUIRED IMPORTED_TARGET wlroots wayland-server xkbcommon libdrm)
+
+wayland_add_protocol_server(proto-server-xdg-shell "${WAYLAND_PROTOS_DIR}/stable/xdg-shell/xdg-shell.xml" xdg-shell)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}" -DWLR_USE_UNSTABLE)
 
@@ -76,6 +99,7 @@ add_executable(${BINARY_NAME}
   "channels/outputs.cc"
   "channels/session.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
+  ${proto-server-xdg-shell}
 )
 
 # Apply the standard set of build settings. This can be removed for applications

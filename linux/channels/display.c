@@ -1,4 +1,7 @@
+#include <drm_fourcc.h>
+
 #include "display.h"
+#include "session.h"
 #include "../application-priv.h"
 
 static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_call, gpointer user_data) {
@@ -6,6 +9,15 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 
   g_autoptr(FlMethodResponse) response = NULL;
   if (strcmp(fl_method_call_get_name(method_call), "start") == 0) {
+    FlValue* args = fl_method_call_get_args(method_call);
+    const gchar* session_name = fl_value_get_string(fl_value_lookup_string(args, "sessionName"));
+
+    GenesisShellApplication* app = wl_container_of(self, app, display);
+    if (!g_hash_table_contains(app->session.seats, session_name)) {
+      fl_method_call_respond_error(method_call, "libseat", "seat does not exist", NULL, NULL);
+      return;
+    }
+
     DisplayChannelDisplay* disp = (DisplayChannelDisplay*)malloc(sizeof (DisplayChannelDisplay));
 
     disp->display = wl_display_create();
@@ -34,8 +46,21 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       return;
     }
 
+    disp->compositor = wlr_compositor_create(disp->display, 5, NULL);
     wlr_subcompositor_create(disp->display);
     wlr_data_device_manager_create(disp->display);
+
+    size_t n_formats = 2;
+    uint32_t* formats = malloc(sizeof (uint32_t) * n_formats);
+    formats[0] = DRM_FORMAT_ARGB8888;
+    formats[1] = DRM_FORMAT_XRGB8888;
+
+    disp->shm = wlr_shm_create(disp->display, 1, formats, n_formats);
+    disp->seat = wlr_seat_create(disp->display, session_name);
+    disp->xdg_shell = wlr_xdg_shell_create(disp->display, 3);
+
+    disp->prev_wl_disp = getenv("WAYLAND_DISPLAY");
+    setenv("WAYLAND_DISPLAY", socket, true);
 
     pthread_create(&disp->thread, NULL, (void *(*)(void*))wl_display_run, disp->display);
     g_hash_table_insert(self->displays, (gpointer)g_strdup(socket), (gpointer)disp);
@@ -68,6 +93,8 @@ static void destory_display(DisplayChannelDisplay* self) {
 
   wlr_backend_destroy(self->backend);
   wl_display_destroy(self->display);
+
+  setenv("WAYLAND_DISPLAY", self->prev_wl_disp, true);
   free(self);
 }
 
