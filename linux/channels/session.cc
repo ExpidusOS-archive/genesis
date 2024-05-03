@@ -34,6 +34,13 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     const char* name = g_strdup(libseat_seat_name(seat));
+
+    if (g_hash_table_contains(self->seats, name)) {
+      fl_method_call_respond_error(method_call, "libseat", "seat already exists", fl_value_new_string(name), nullptr);
+      libseat_close_seat(seat);
+      return;
+    }
+
     g_hash_table_insert(self->seats, (gpointer)name, (gpointer)seat);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(name)));
   } else if (strcmp(fl_method_call_get_name(method_call), "close") == 0) {

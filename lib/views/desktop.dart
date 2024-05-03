@@ -5,6 +5,7 @@ import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:provider/provider.dart';
 
+import '../logic/display.dart';
 import '../logic/outputs.dart';
 import '../logic/wallpaper.dart';
 
@@ -33,55 +34,44 @@ class DesktopView extends StatefulWidget {
 
 class _DesktopViewState extends State<DesktopView> {
   static const authChannel = MethodChannel('com.expidusos.genesis.shell/auth');
-  static const displayChannel = MethodChannel('com.expidusos.genesis.shell/display');
-  static const outputsChannel = MethodChannel('com.expidusos.genesis.shell/outputs');
   static const sessionChannel = MethodChannel('com.expidusos.genesis.shell/session');
 
   String? sessionName = null;
-  String? displayName = null;
+  DisplayServer? _displayServer = null;
   GlobalKey _key = GlobalKey();
 
   void _syncOutputs() {
-    if (displayName != null) {
-      outputsChannel.invokeListMethod('list').then(
-        (list) => displayChannel.invokeMethod('setOutputs', <String, dynamic>{
-          'name': displayName!,
-          'list': list,
-        })
-      ).catchError((err) {
-        print(err);
-      });
+    final outputs = Provider.of<OutputManager>(_key.currentContext!, listen: false);
+    _displayServer!.setOutputs(outputs.outputs);
+  }
+
+  void _init() async {
+    try {
+      sessionName = await sessionChannel.invokeMethod('open');
+    } on PlatformException catch (e) {
+      if (e.details is String) {
+        sessionName = e.details as String;
+      }
     }
+
+    final displayManager = Provider.of<DisplayManager>(_key.currentContext!, listen: false);
+
+    _displayServer = await displayManager.start(
+      sessionName: sessionName!,
+    );
+
+    final outputs = Provider.of<OutputManager>(_key.currentContext!, listen: false);
+    outputs.addListener(_syncOutputs);
+
+    _syncOutputs();
   }
 
   @override
   void initState() {
     super.initState();
 
-    sessionChannel.invokeMethod('open').then((name) {
-      setState(() {
-        sessionName = name;
-      });
-
-      displayChannel.invokeMethod('start', <String, dynamic>{
-        'sessionName': name,
-      }).then((name) {
-        setState(() {
-          displayName = name;
-          print(name);
-        });
-
-        _syncOutputs();
-      }).catchError((err) {
-        print(err);
-      });
-    }).catchError((err) {
-      print(err);
-    });
-
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      final outputs = Provider.of<OutputManager>(_key.currentContext!, listen: false);
-      outputs.addListener(_syncOutputs);
+      _init();
     });
   }
 
@@ -95,10 +85,8 @@ class _DesktopViewState extends State<DesktopView> {
       });
     }
 
-    if (displayName != null) {
-      displayChannel.invokeMethod('stop', displayName!).catchError((err) {
-        print(err);
-      });
+    if (_displayServer != null) {
+      _displayServer!.stop();
     }
 
     if (widget.isSession && widget.userName != null) {

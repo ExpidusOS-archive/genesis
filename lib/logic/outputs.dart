@@ -62,6 +62,15 @@ class OutputGeometry {
   final int y;
   final int width;
   final int height;
+
+  Map<String, Object?> toJSON() {
+    return {
+      'x': x,
+      'y': y,
+      'width': width,
+      'height': height,
+    };
+  }
 }
 
 class Output {
@@ -78,4 +87,14 @@ class Output {
   final OutputGeometry geometry;
   final int scale;
   final int refreshRate;
+
+  Map<String, Object?> toJSON() {
+    return {
+      'model': model,
+      'manufacturer': manufacturer,
+      'geometry': geometry.toJSON(),
+      'scale': scale,
+      'refreshRate': refreshRate,
+    };
+  }
 }
