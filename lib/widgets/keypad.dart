@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'rounded_button.dart';
 
 class KeypadKey extends StatelessWidget {
@@ -70,7 +71,7 @@ class Keypad extends StatelessWidget {
       [
         Icons.backspace,
         '0',
-        Icons.keyboard_return,
+        Icons.arrowRight,
       ],
     ];
 

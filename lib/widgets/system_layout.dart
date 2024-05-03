@@ -1,6 +1,7 @@
 import 'package:backdrop/backdrop.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
 
 import 'account_profile.dart';
 import 'output_layout.dart';
@@ -42,11 +43,11 @@ class SystemLayout extends StatelessWidget {
         builder: (context) =>
           GestureDetector(
             child: ListTileTheme(
-              tileColor: Theme.of(context).colorScheme.inversePrimary,
+              tileColor: Theme.of(context).colorScheme.surface,
               child: IconButtonTheme(
                 data: IconButtonThemeData(
                   style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                   ),
                 ),
                 child: Column(
@@ -100,11 +101,11 @@ class SystemLayout extends StatelessWidget {
             borderRadius: BorderRadius.circular(16.0),
           ),
           child: ListTileTheme(
-            tileColor: Theme.of(context).colorScheme.inversePrimary,
+            tileColor: Theme.of(context).colorScheme.surface,
             child: IconButtonTheme(
               data: IconButtonThemeData(
                 style: IconButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                 ),
               ),
               child: SystemDrawer(

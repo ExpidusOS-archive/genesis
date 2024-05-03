@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 
 import '../widgets/keypad.dart';
 
@@ -108,7 +109,7 @@ class _LoginPromptState extends State<LoginPrompt> {
                   passcodeController.text = text.substring(0, text.length - 1);
                 }
               });
-            } else if (icon == Icons.keyboard_return) {
+            } else if (icon == Icons.arrowRight) {
               _onSubmitted(context, passcodeController.text);
             }
           },

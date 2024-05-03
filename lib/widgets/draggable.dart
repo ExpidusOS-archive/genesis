@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 
 class VerticalDragContainer extends StatefulWidget {
   final double minHeight;

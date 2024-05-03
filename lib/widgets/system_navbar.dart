@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
 
 class SystemNavbar extends StatelessWidget {
   const SystemNavbar({ super.key });
@@ -13,15 +14,15 @@ class SystemNavbar extends StatelessWidget {
         children: [
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.navigate_before),
+            icon: Icon(Icons.chevronLeft),
           ),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.apps),
+            icon: Icon(Icons.circleDot),
           ),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.menu),
+            icon: Icon(Icons.bars),
           ),
         ],
       ),

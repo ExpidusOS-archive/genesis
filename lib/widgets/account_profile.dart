@@ -1,7 +1,8 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:provider/provider.dart';
 
 import '../logic/account.dart';
@@ -52,7 +53,7 @@ class AccountProfile extends StatelessWidget {
           direction: direction,
           children: [
             icon == null
-              ? Icon(Icons.account_circle, size: iconSize)
+              ? Icon(Icons.user, size: iconSize)
               : ClipRRect(
                   borderRadius: BorderRadius.circular(360.0),
                   child: Image.file(
@@ -60,7 +61,7 @@ class AccountProfile extends StatelessWidget {
                     width: iconSize,
                     height: iconSize,
                     errorBuilder: (context, err, stackTrace) =>
-                      Icon(Icons.account_circle, size: iconSize),
+                      Icon(Icons.user, size: iconSize),
                   ),
                 ),
             Padding(

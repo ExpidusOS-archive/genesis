@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:intl/intl.dart';
 
 import '../logic/wallpaper.dart';
@@ -57,8 +58,8 @@ class LockView extends StatelessWidget {
             Align(
               alignment: Alignment.bottomCenter,
               child: VerticalDragContainer(
-                startHeight: 56.0,
-                minHeight: 56.0,
+                startHeight: 57.0,
+                minHeight: 57.0,
                 expandedHeight: MediaQuery.of(context).size.height - 37,
                 handleBuilder: (context, isExpanded) =>
                   Container(

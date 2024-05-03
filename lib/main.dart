@@ -1,14 +1,13 @@
 import 'dart:io' show exit;
 import 'package:args/args.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:flutter/material.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:provider/provider.dart';
-import 'package:system_theme/system_theme.dart';
 
 import 'logic/account.dart';
 import 'logic/outputs.dart';
 import 'logic/route_args.dart';
-import 'logic/theme.dart' show buildThemeData;
 
 import 'views/desktop.dart';
 import 'views/lock.dart';
@@ -33,7 +32,6 @@ void main(List<String> argsList) async {
   }
 
   WidgetsFlutterBinding.ensureInitialized();
-  await SystemTheme.accentColor.load();
 
   runApp(GenesisShellApp(
     initLocked: args.flag('init-locked'),
@@ -75,39 +73,27 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SystemThemeBuilder(
-      builder: (context, accent) =>
-        MultiProvider(
-          providers: [
-            ChangeNotifierProvider(create: (_) => _accountManager),
-            ChangeNotifierProvider(create: (_) => _outputManager),
-          ],
-          child: MaterialApp(
-            title: 'Genesis Shell',
-            theme: buildThemeData(
-              accent: accent,
-              brightness: Brightness.light,
-            ),
-            darkTheme: buildThemeData(
-              accent: accent,
-              brightness: Brightness.dark,
-            ),
-            themeMode: ThemeMode.dark,
-            routes: {
-              '/': (context) {
-                final args = AuthedRouteArguments.of(context);
-                return DesktopView(
-                  userName: args.userName,
-                  isSession: args.isSession,
-                );
-              },
-              '/lock': (context) => LockView(userName: AuthedRouteArguments.of(context).userName),
-              '/login': (_) => const LoginView(),
-            },
-            initialRoute: widget.initLocked ? '/lock' : (widget.displayManager ? '/login' : '/'),
-          ),
-        ),
-      );
-  }
+  Widget build(BuildContext context) =>
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => _accountManager),
+        ChangeNotifierProvider(create: (_) => _outputManager),
+      ],
+      child: TokyoApp(
+        title: 'Genesis Shell',
+        themeMode: ThemeMode.dark,
+        routes: {
+          '/': (context) {
+            final args = AuthedRouteArguments.of(context);
+            return DesktopView(
+              userName: args.userName,
+              isSession: args.isSession,
+            );
+          },
+          '/lock': (context) => LockView(userName: AuthedRouteArguments.of(context).userName),
+          '/login': (_) => const LoginView(),
+        },
+        initialRoute: widget.initLocked ? '/lock' : (widget.displayManager ? '/login' : '/'),
+      ),
+    );
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:flutter/services.dart';
 import '../logic/power.dart';
 
@@ -51,7 +52,7 @@ class PowerDialog extends StatelessWidget {
                             if (nav.canPop()) nav.pop();
                             else SystemNavigator.pop();
                           },
-                          icon: Icon(Icons.logout),
+                          icon: Icon(Icons.doorOpen),
                         ),
                         Text('Log Out'),
                       ],
@@ -69,7 +70,7 @@ class PowerDialog extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: () {},
-                      icon: Icon(Icons.restart_alt),
+                      icon: Icon(Icons.arrowsRotate),
                     ),
                     Text('Restart'),
                   ],
@@ -82,7 +83,7 @@ class PowerDialog extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: () {},
-                      icon: Icon(Icons.power),
+                      icon: Icon(Icons.powerOff),
                     ),
                     Text('Shutdown'),
                   ],
@@ -190,20 +191,18 @@ class _PowerIndicatorState extends State<PowerIndicator> {
 
   IconData _getIconData() {
     switch (state) {
-      case PowerDeviceState.full: return Icons.battery_charging_full;
+      case PowerDeviceState.full: return Icons.batteryFull;
       case PowerDeviceState.charging:
       case PowerDeviceState.discharging:
-        if (percentage >= 90) return Icons.battery_6_bar;
-        if (percentage >= 80) return Icons.battery_5_bar;
-        if (percentage >= 60) return Icons.battery_4_bar;
-        if (percentage >= 50) return Icons.battery_3_bar;
-        if (percentage >= 30) return Icons.battery_2_bar;
-        if (percentage >= 10) return Icons.battery_1_bar;
-        return Icons.battery_0_bar;
+        if (percentage >= 90) return Icons.batteryFull;
+        if (percentage >= 75) return Icons.batteryThreeQuarters;
+        if (percentage >= 50) return Icons.batteryHalf;
+        if (percentage >= 25) return Icons.batteryQuarter;
+        return Icons.batteryEmpty;
       default:
         break;
     }
-    return Icons.battery_unknown;
+    return Icons.batteryEmpty;
   }
 
   @override
@@ -231,13 +230,13 @@ class _PowerTileState extends State<PowerTile> {
   Widget _buildIcon(BuildContext context) {
     switch (widget.device.type) {
       case PowerDeviceType.battery: return PowerIndicator(device: widget.device);
-      case PowerDeviceType.line: return Icon(Icons.power_input);
+      case PowerDeviceType.line: return Icon(Icons.plug);
       case PowerDeviceType.mouse: return Icon(Icons.mouse);
       case PowerDeviceType.keyboard: return Icon(Icons.keyboard);
       default: break;
     }
 
-    return Icon(Icons.power);
+    return Icon(Icons.bolt);
   }
 
   @override

@@ -38,6 +38,11 @@
 
               pubspecLock = lib.importJSON ./pubspec.lock.json;
 
+              gitHashes = {
+                libtokyo = "sha256-U+hG+y6mTwxduo6QyNeCk659J0N/Y4ef7q0dsBzzwAU=";
+                libtokyo_flutter = "sha256-U+hG+y6mTwxduo6QyNeCk659J0N/Y4ef7q0dsBzzwAU=";
+              };
+
               postInstall = ''
                 mv $out/bin/genesis_shell $out/bin/genesis-shell
               '';

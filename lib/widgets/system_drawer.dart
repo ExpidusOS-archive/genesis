@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
 
 import '../logic/power.dart';
 
@@ -49,7 +50,7 @@ class _SystemDrawerState extends State<SystemDrawer> {
                             shape: const LinearBorder(),
                           ),
                           onPressed: () {},
-                          icon: Icon(Icons.settings),
+                          icon: Icon(Icons.gear),
                         ) : null,
                     IconButton(
                       key: _powerButtonKey,
@@ -65,7 +66,7 @@ class _SystemDrawerState extends State<SystemDrawer> {
                               isLocked: widget.isLocked,
                             ),
                         ),
-                      icon: Icon(Icons.power),
+                      icon: Icon(Icons.powerOff),
                     ),
                   ].where((e) => e != null).toList().cast<Widget>(),
                 ),

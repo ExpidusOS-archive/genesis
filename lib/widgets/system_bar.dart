@@ -1,4 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Scaffold;
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme, Scaffold;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
+
 import 'clock.dart';
 import 'power.dart';
 
@@ -13,8 +16,14 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildActions(BuildContext context) =>
     Row(
       children: [
-        const PowerBar(),
-        const DigitalClock(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: const PowerBar(),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: const DigitalClock(),
+        ),
       ],
     );
 
@@ -32,9 +41,8 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
                 state.openDrawer();
               }
             },
-            icon: Icon(Icons.apps),
+            icon: Icon(Icons.rocket),
           ) : null,
-      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       actions: [
         Scaffold.of(context).hasEndDrawer ?
           InkWell(

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
+import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
+import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:intl/intl.dart';
 
 import '../logic/route_args.dart';
@@ -95,7 +96,7 @@ class _LoginViewState extends State<LoginView> {
                   setState(() {
                     _selectedUser = null;
                   }),
-                icon: Icon(Icons.navigate_before),
+                icon: Icon(Icons.chevronLeft),
               ),
             ),
             const Spacer(),
