@@ -82,7 +82,30 @@ class LinuxPowerManager extends PowerManager {
 
   @override
   Future<void> doAction(PowerAction action) async {
-    throw Exception('Unimplemented action: ${action.name}');
+    switch (action) {
+      case PowerAction.reboot:
+        await _sysbus.callMethod(
+          destination: 'org.freedesktop.login1',
+          path: DBusObjectPath('/org/freedesktop/login1'),
+          interface: 'org.freedesktop.login1.Manager',
+          name: 'Reboot',
+          values: [
+            DBusBoolean(false),
+          ],
+        );
+      case PowerAction.shutdown:
+        await _sysbus.callMethod(
+          destination: 'org.freedesktop.login1',
+          path: DBusObjectPath('/org/freedesktop/login1'),
+          interface: 'org.freedesktop.login1.Manager',
+          name: 'PowerOff',
+          values: [
+            DBusBoolean(false),
+          ],
+        );
+      default:
+        throw Exception('Unimplemented action: ${action.name}');
+    }
   }
 }
 
