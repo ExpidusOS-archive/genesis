@@ -29,9 +29,11 @@ class DesktopView extends StatefulWidget {
 
 class _DesktopViewState extends State<DesktopView> {
   static const authChannel = MethodChannel('com.expidusos.genesis.shell/auth');
+  static const displayChannel = MethodChannel('com.expidusos.genesis.shell/display');
   static const sessionChannel = MethodChannel('com.expidusos.genesis.shell/session');
 
   String? sessionName = null;
+  String? displayName = null;
 
   @override
   void initState() {
@@ -39,6 +41,13 @@ class _DesktopViewState extends State<DesktopView> {
 
     sessionChannel.invokeMethod('open').then((name) => setState(() {
       sessionName = name;
+    })).catchError((err) {
+      print(err);
+    });
+
+    displayChannel.invokeMethod('start').then((name) => setState(() {
+      displayName = name;
+      print(name);
     })).catchError((err) {
       print(err);
     });
@@ -50,6 +59,13 @@ class _DesktopViewState extends State<DesktopView> {
 
     if (sessionName != null) {
       sessionChannel.invokeMethod('close', sessionName!).catchError((err) {
+        print(err);
+      });
+    }
+
+    if (displayName != null) {
+      print('Stopping $displayName');
+      displayChannel.invokeMethod('stop', displayName!).catchError((err) {
         print(err);
       });
     }

@@ -30,7 +30,9 @@
 
               src = lib.cleanSource self;
 
-              buildInputs = with s; [ pam accountsservice polkit seatd ];
+              buildInputs = with s; lib.optionalAttrs (stdenv.isLinux) [
+                pam accountsservice polkit seatd wlroots_0_17 libdrm libGL
+              ];
 
               pubspecLock = lib.importJSON ./pubspec.lock.json;
 

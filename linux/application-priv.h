@@ -1,5 +1,7 @@
 #pragma once
+
 #include "channels/auth.h"
+#include "channels/display.h"
 #include "channels/session.h"
 
 struct _GenesisShellApplication {
@@ -8,6 +10,7 @@ struct _GenesisShellApplication {
   FlMethodChannel* outputs;
   FlMethodChannel* account;
   AuthChannel auth;
+  DisplayChannel display;
   SessionChannel session;
   GtkWindow* win;
 };

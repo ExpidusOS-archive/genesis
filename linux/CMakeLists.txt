@@ -51,13 +51,17 @@ set(FLUTTER_MANAGED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/flutter")
 add_subdirectory(${FLUTTER_MANAGED_DIR})
 
 # System-level dependencies.
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(ACCOUNTSSERVICE REQUIRED IMPORTED_TARGET accountsservice)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 pkg_check_modules(LIBSEAT REQUIRED IMPORTED_TARGET libseat)
 pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
+pkg_check_modules(WLROOTS REQUIRED IMPORTED_TARGET wlroots wayland-server)
 
-add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
+add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}" -DWLR_USE_UNSTABLE)
 
 # Define the application target. To change its name, change BINARY_NAME above,
 # not the value here, or `flutter run` will no longer work.
@@ -68,6 +72,7 @@ add_executable(${BINARY_NAME}
   "application.cc"
   "channels/account.cc"
   "channels/auth.cc"
+  "channels/display.c"
   "channels/outputs.cc"
   "channels/session.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
@@ -84,6 +89,8 @@ target_link_libraries(${BINARY_NAME} PRIVATE
   PkgConfig::GTK
   PkgConfig::LIBSEAT
   PkgConfig::PAM
+  PkgConfig::WLROOTS
+  Threads::Threads
 )
 
 # Run the Flutter tool portions of the build. This must not be removed.
