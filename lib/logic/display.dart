@@ -15,10 +15,7 @@ class DisplayManager extends ChangeNotifier {
           final server = find(call.arguments['name']);
           if (server == null) break;
 
-          final toplevel = DisplayServerToplevel._(server, call.arguments['id']);
-          toplevel.sync();
-
-          server!._toplevels.add(toplevel);
+          server!._toplevels.add(DisplayServerToplevel._(server, call.arguments['id']));
           server!.notifyListeners();
           break;
         case 'removeToplevel':
@@ -28,8 +25,19 @@ class DisplayManager extends ChangeNotifier {
           server!._toplevels.removeWhere((item) => item.id == call.arguments['id']);
           server!.notifyListeners();
           break;
-        case 'notifyToplevel':
         case 'requestToplevel':
+          final server = find(call.arguments['name']);
+          if (server == null) break;
+
+          final toplevel = server._toplevels.firstWhere((item) => item.id == call.arguments['id']);
+
+          switch (call.arguments['reqName']) {
+            case 'map':
+              toplevel.sync();
+              break;
+          }
+          break;
+        case 'notifyToplevel':
           print(call.arguments);
           break;
         default:

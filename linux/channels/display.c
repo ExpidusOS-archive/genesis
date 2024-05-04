@@ -36,6 +36,7 @@ static void xdg_toplevel_map(struct wl_listener* listener, void* data) {
   (void)data;
 
   DisplayChannelToplevel* self = wl_container_of(listener, self, map);
+  g_hash_table_insert(self->display->toplevels, &self->id, self);
   xdg_toplevel_emit_request(self, "map");
 }
 
@@ -167,12 +168,6 @@ static void xdg_surface_new(struct wl_listener* listener, void* data) {
     toplevel->display = self;
     toplevel->xdg = xdg_toplevel;
     toplevel->id = self->toplevel_id++;
-    g_hash_table_insert(self->toplevels, &toplevel->id, self);
-
-    g_autoptr(FlValue) value = fl_value_new_map();
-    fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->socket));
-    fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(toplevel->id));
-    invoke_method(self->channel->channel, "newToplevel", value);
 
     toplevel->map.notify = xdg_toplevel_map;
     wl_signal_add(&xdg_surface->surface->events.map, &toplevel->map);
@@ -212,6 +207,13 @@ static void xdg_surface_new(struct wl_listener* listener, void* data) {
 
     toplevel->set_app_id.notify = xdg_toplevel_set_app_id;
     wl_signal_add(&xdg_toplevel->events.set_app_id, &toplevel->set_app_id);
+
+    g_autoptr(FlValue) value = fl_value_new_map();
+    fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->socket));
+    fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(toplevel->id));
+    invoke_method(self->channel->channel, "newToplevel", value);
+
+    g_hash_table_insert(self->toplevels, &toplevel->id, self);
   }
 }
 
