@@ -2,6 +2,7 @@
 
 #include <flutter_linux/flutter_linux.h>
 #include <wayland-server-core.h>
+#include <wayland-client-core.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,6 +22,9 @@ extern "C" {
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wayland-server.h>
+#include <wayland-client.h>
+
+#include "display/backend.h"
 
 #ifdef __cplusplus
 #undef static
@@ -73,6 +77,7 @@ typedef struct _DisplayChannelDisplay {
 } DisplayChannelDisplay;
 
 typedef struct _DisplayChannel {
+  DisplayChannelBackend* backend;
   GHashTable* displays;
   FlMethodChannel* channel;
 } DisplayChannel;

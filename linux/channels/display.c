@@ -5,6 +5,9 @@
 #include "../application-priv.h"
 #include "../messaging.h"
 
+void xdg_surface_new(struct wl_listener* listener, void* data);
+bool display_gpu_client_handle(DisplayChannel* self, struct wl_registry* registry, uint32_t id, const char* interface, uint32_t version);
+
 static gchar* get_string(FlValue* value) {
   if (fl_value_get_type(value) != FL_VALUE_TYPE_STRING) return g_strdup("Unknown");
   return g_strdup(fl_value_get_string(value));
@@ -13,208 +16,6 @@ static gchar* get_string(FlValue* value) {
 static FlValue* new_string(const gchar* str) {
   if (str == NULL || g_utf8_strlen(str, -1) == 0) return fl_value_new_null();
   return fl_value_new_string(g_strdup(str));
-}
-
-static void xdg_toplevel_emit_request(DisplayChannelToplevel* self, const char* name) {
-  g_autoptr(FlValue) value = fl_value_new_map();
-  fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->display->socket));
-  fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
-  fl_value_set(value, fl_value_new_string("reqName"), fl_value_new_string(name));
-  invoke_method(self->display->channel->channel, "requestToplevel", value);
-}
-
-static void xdg_toplevel_emit_prop(DisplayChannelToplevel* self, const char* name, FlValue* pvalue) {
-  g_autoptr(FlValue) value = fl_value_new_map();
-  fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->display->socket));
-  fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
-  fl_value_set(value, fl_value_new_string("propName"), fl_value_new_string(name));
-  fl_value_set(value, fl_value_new_string("propValue"), pvalue);
-  invoke_method(self->display->channel->channel, "notifyToplevel", value);
-}
-
-static void xdg_toplevel_map(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, map);
-  g_hash_table_insert(self->display->toplevels, &self->id, self);
-  xdg_toplevel_emit_request(self, "map");
-}
-
-static void xdg_toplevel_unmap(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, unmap);
-  xdg_toplevel_emit_request(self, "unmap");
-}
-
-static void xdg_toplevel_destroy(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, destroy);
-
-  wl_list_remove(&self->map.link);
-  wl_list_remove(&self->unmap.link);
-  wl_list_remove(&self->destroy.link);
-  wl_list_remove(&self->commit.link);
-
-  wl_list_remove(&self->request_maximize.link);
-  wl_list_remove(&self->request_fullscreen.link);
-  wl_list_remove(&self->request_minimize.link);
-  wl_list_remove(&self->request_move.link);
-  wl_list_remove(&self->request_resize.link);
-  wl_list_remove(&self->request_show_window_menu.link);
-  wl_list_remove(&self->set_parent.link);
-  wl_list_remove(&self->set_title.link);
-  wl_list_remove(&self->set_app_id.link);
-
-  g_hash_table_remove(self->display->toplevels, &self->id);
-
-  g_autoptr(FlValue) value = fl_value_new_map();
-  fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->display->socket));
-  fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
-  invoke_method(self->display->channel->channel, "removeToplevel", value);
-
-  free(self);
-}
-
-static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
-  DisplayChannelToplevel* self = wl_container_of(listener, self, commit);
-
-  if (self->xdg->base->initial_commit) {
-    wlr_xdg_surface_schedule_configure(self->xdg->base);
-    return;
-  }
-
-  g_message("%p", self->xdg->base->surface->buffer);
-}
-
-static void xdg_toplevel_request_maximize(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, request_maximize);
-  xdg_toplevel_emit_request(self, "maximize");
-}
-
-static void xdg_toplevel_request_fullscreen(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, request_fullscreen);
-  xdg_toplevel_emit_request(self, "fullscreen");
-}
-
-static void xdg_toplevel_request_minimize(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, request_minimize);
-  xdg_toplevel_emit_request(self, "minimize");
-}
-
-static void xdg_toplevel_request_move(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, request_move);
-  xdg_toplevel_emit_request(self, "move");
-}
-
-static void xdg_toplevel_request_resize(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, request_resize);
-  xdg_toplevel_emit_request(self, "resize");
-}
-
-static void xdg_toplevel_request_show_window_menu(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, request_show_window_menu);
-  xdg_toplevel_emit_request(self, "showWindowMenu");
-}
-
-static void xdg_toplevel_set_parent(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, set_parent);
-
-  if (self->xdg->parent != NULL && self->xdg->parent->base->data != NULL) {
-    DisplayChannelToplevel* parent = (DisplayChannelToplevel*)self->xdg->parent->base->data;
-    xdg_toplevel_emit_prop(self, "parent", fl_value_new_int(parent->id));
-  } else {
-    xdg_toplevel_emit_prop(self, "parent", fl_value_new_null());
-  }
-}
-
-static void xdg_toplevel_set_title(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, set_title);
-  xdg_toplevel_emit_prop(self, "title", new_string(self->xdg->title));
-}
-
-static void xdg_toplevel_set_app_id(struct wl_listener* listener, void* data) {
-  (void)data;
-
-  DisplayChannelToplevel* self = wl_container_of(listener, self, set_app_id);
-  xdg_toplevel_emit_prop(self, "appId", new_string(self->xdg->app_id));
-}
-
-static void xdg_surface_new(struct wl_listener* listener, void* data) {
-  DisplayChannelDisplay* self = wl_container_of(listener, self, xdg_surface_new);
-  struct wlr_xdg_surface* xdg_surface = data;
-
-  if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
-    struct wlr_xdg_toplevel* xdg_toplevel = wlr_xdg_toplevel_try_from_wlr_surface(xdg_surface->surface);
-
-    DisplayChannelToplevel* toplevel = (DisplayChannelToplevel*)malloc(sizeof (DisplayChannelToplevel));
-    toplevel->display = self;
-    toplevel->xdg = xdg_toplevel;
-    toplevel->id = self->toplevel_id++;
-
-    toplevel->map.notify = xdg_toplevel_map;
-    wl_signal_add(&xdg_surface->surface->events.map, &toplevel->map);
-
-    toplevel->unmap.notify = xdg_toplevel_unmap;
-    wl_signal_add(&xdg_surface->surface->events.unmap, &toplevel->unmap);
-
-    toplevel->destroy.notify = xdg_toplevel_destroy;
-    wl_signal_add(&xdg_surface->surface->events.destroy, &toplevel->destroy);
-
-    toplevel->commit.notify = xdg_toplevel_commit;
-    wl_signal_add(&xdg_surface->surface->events.commit, &toplevel->commit);
-
-    toplevel->request_maximize.notify = xdg_toplevel_request_maximize;
-    wl_signal_add(&xdg_toplevel->events.request_maximize, &toplevel->request_maximize);
-
-    toplevel->request_fullscreen.notify = xdg_toplevel_request_fullscreen;
-    wl_signal_add(&xdg_toplevel->events.request_fullscreen, &toplevel->request_fullscreen);
-
-    toplevel->request_minimize.notify = xdg_toplevel_request_minimize;
-    wl_signal_add(&xdg_toplevel->events.request_minimize, &toplevel->request_minimize);
-
-    toplevel->request_move.notify = xdg_toplevel_request_move;
-    wl_signal_add(&xdg_toplevel->events.request_move, &toplevel->request_move);
-
-    toplevel->request_resize.notify = xdg_toplevel_request_resize;
-    wl_signal_add(&xdg_toplevel->events.request_resize, &toplevel->request_resize);
-
-    toplevel->request_show_window_menu.notify = xdg_toplevel_request_show_window_menu;
-    wl_signal_add(&xdg_toplevel->events.request_show_window_menu, &toplevel->request_show_window_menu);
-
-    toplevel->set_parent.notify = xdg_toplevel_set_parent;
-    wl_signal_add(&xdg_toplevel->events.set_parent, &toplevel->set_parent);
-
-    toplevel->set_title.notify = xdg_toplevel_set_title;
-    wl_signal_add(&xdg_toplevel->events.set_title, &toplevel->set_title);
-
-    toplevel->set_app_id.notify = xdg_toplevel_set_app_id;
-    wl_signal_add(&xdg_toplevel->events.set_app_id, &toplevel->set_app_id);
-
-    g_autoptr(FlValue) value = fl_value_new_map();
-    fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->socket));
-    fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(toplevel->id));
-    invoke_method(self->channel->channel, "newToplevel", value);
-
-    g_hash_table_insert(self->toplevels, &toplevel->id, self);
-  }
 }
 
 static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_call, gpointer user_data) {
@@ -404,6 +205,14 @@ static void destory_display(DisplayChannelDisplay* self) {
 }
 
 void display_channel_init(DisplayChannel* self, FlView* view) {
+  GenesisShellApplication* app = wl_container_of(self, app, display);
+  GdkDisplay* disp = gtk_widget_get_display(GTK_WIDGET(app->win));
+
+  self->backend = display_channel_backend_init(disp);
+  if (self->backend == NULL) {
+    g_warning("Backend is not supported");
+  }
+
   self->displays = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)destory_display);
 
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
@@ -413,5 +222,6 @@ void display_channel_init(DisplayChannel* self, FlView* view) {
 
 void display_channel_deinit(DisplayChannel* self) {
   g_clear_object(&self->channel);
+  g_clear_pointer(&self->backend, display_channel_backend_deinit);
   g_hash_table_unref(self->displays);
 }
