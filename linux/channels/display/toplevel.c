@@ -1,4 +1,6 @@
 #include "../display.h"
+#include "../../application.h"
+#include "../../application-priv.h"
 #include "../../messaging.h"
 
 static FlValue* new_string(const gchar* str) {
@@ -80,13 +82,21 @@ static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
     return;
   }
 
+  struct wlr_buffer* buffer = self->xdg->base->surface->current.buffer;
+  GenesisShellApplication* app = wl_container_of(self->display->channel, app, display);
+  GdkWindow* win = gtk_widget_get_window(GTK_WIDGET(app->view));
+
   size_t stride = 0;
   uint32_t fmt = 0;
-  void* fb = NULL;
-  wlr_buffer_begin_data_ptr_access(self->xdg->base->surface->current.buffer, WLR_BUFFER_DATA_PTR_ACCESS_READ, &fb, &fmt, &stride);
+  void* fbdata = NULL;
+  wlr_buffer_begin_data_ptr_access(buffer, WLR_BUFFER_DATA_PTR_ACCESS_READ, &fbdata, &fmt, &stride);
 
-  g_message("%p %d %zu", fb, fmt, stride);
-  wlr_buffer_end_data_ptr_access(self->xdg->base->surface->current.buffer);
+  GError* error = NULL;
+  GdkGLContext* ctx = gdk_window_create_gl_context(win, &error);
+  gdk_gl_context_make_current(ctx);
+  gdk_gl_context_clear_current();
+
+  wlr_buffer_end_data_ptr_access(buffer);
 
   // TODO: render the buffer into an OpenGL texture.
 }

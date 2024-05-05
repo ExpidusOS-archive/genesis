@@ -9,7 +9,9 @@
 struct _GenesisShellApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
+
   GtkWindow* win;
+  FlView* view;
 
   AccountChannel account;
   AuthChannel auth;

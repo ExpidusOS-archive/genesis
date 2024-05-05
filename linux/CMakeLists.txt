@@ -120,6 +120,7 @@ add_executable(${BINARY_NAME}
   "channels/auth.cc"
   "channels/display/backend/wayland.c"
   "channels/display/backend.c"
+  "channels/display/texture.c"
   "channels/display/toplevel.c"
   "channels/display.c"
   "channels/outputs.cc"

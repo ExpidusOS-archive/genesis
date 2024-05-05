@@ -25,19 +25,19 @@ static void genesis_shell_application_activate(GApplication* application) {
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);
 
-  FlView* view = fl_view_new(project);
-  gtk_widget_show(GTK_WIDGET(view));
-  gtk_container_add(GTK_CONTAINER(self->win), GTK_WIDGET(view));
+  self->view = fl_view_new(project);
+  gtk_widget_show(GTK_WIDGET(self->view));
+  gtk_container_add(GTK_CONTAINER(self->win), GTK_WIDGET(self->view));
 
-  fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+  fl_register_plugins(FL_PLUGIN_REGISTRY(self->view));
 
-  account_channel_init(&self->account, view);
-  auth_channel_init(&self->auth, view);
-  display_channel_init(&self->display, view);
-  outputs_channel_init(&self->outputs, view);
-  session_channel_init(&self->session, view);
+  account_channel_init(&self->account, self->view);
+  auth_channel_init(&self->auth, self->view);
+  display_channel_init(&self->display, self->view);
+  outputs_channel_init(&self->outputs, self->view);
+  session_channel_init(&self->session, self->view);
 
-  gtk_widget_grab_focus(GTK_WIDGET(view));
+  gtk_widget_grab_focus(GTK_WIDGET(self->view));
 }
 
 // Implements GApplication::local_command_line.

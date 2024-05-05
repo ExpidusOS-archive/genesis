@@ -201,8 +201,6 @@ static void handle_global(void* data, struct wl_registry* registry, uint32_t id,
   } else if (strcmp(interface, wl_shm_interface.name) == 0) {
 		self->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
 		wl_shm_add_listener(self->shm, &shm_listener, self);
-  } else {
-    g_message("%s:%d", interface, version);
   }
 }
 
@@ -272,6 +270,5 @@ DisplayChannelBackend* display_channel_backend_wayland_init(GdkWaylandDisplay* d
     }
   }
 
-  g_message("%s", self->drm_render_name);
   return &self->base;
 }
