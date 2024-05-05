@@ -69,10 +69,8 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     wlr_subcompositor_create(disp->display);
     wlr_data_device_manager_create(disp->display);
 
-    size_t n_formats = 2;
-    uint32_t* formats = malloc(sizeof (uint32_t) * n_formats);
-    formats[0] = DRM_FORMAT_ARGB8888;
-    formats[1] = DRM_FORMAT_XRGB8888;
+    size_t n_formats = 0;
+    uint32_t* formats = display_channel_backend_get_shm_formats(self->backend, &n_formats);
 
     disp->shm = wlr_shm_create(disp->display, 1, formats, n_formats);
     disp->seat = wlr_seat_create(disp->display, session_name);

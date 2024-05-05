@@ -10,10 +10,13 @@
 
 struct Backend {
   DisplayChannelBackend base;
-
-  struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1;
-  struct wlr_drm_format_set linux_dmabuf_v1_formats;
   char* drm_render_name;
+
+  struct wl_shm* shm;
+  struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1;
+
+  struct wlr_drm_format_set shm_formats;
+  struct wlr_drm_format_set linux_dmabuf_v1_formats;
 };
 
 struct DmabufFeedbackData {
@@ -32,10 +35,17 @@ struct DmabufFeedbackDataTableEntry {
 	uint64_t modifier;
 };
 
+uint32_t convert_wl_shm_format_to_drm(enum wl_shm_format fmt) {
+	switch (fmt) {
+    case WL_SHM_FORMAT_XRGB8888: return DRM_FORMAT_XRGB8888;
+    case WL_SHM_FORMAT_ARGB8888: return DRM_FORMAT_ARGB8888;
+    default: return (uint32_t)fmt;
+	}
+}
+
 static void linux_dmabuf_v1_handle_format(void* data, struct zwp_linux_dmabuf_v1* linux_dmabuf_v1, uint32_t format) {
   struct Backend* self = data;
-	wlr_drm_format_set_add(&self->linux_dmabuf_v1_formats, format,
-		DRM_FORMAT_MOD_INVALID);
+	wlr_drm_format_set_add(&self->linux_dmabuf_v1_formats, format, DRM_FORMAT_MOD_INVALID);
 }
 
 static void linux_dmabuf_v1_handle_modifier(void* data, struct zwp_linux_dmabuf_v1* linux_dmabuf_v1, uint32_t format, uint32_t modifier_hi, uint32_t modifier_lo) {
@@ -142,6 +152,16 @@ static const struct zwp_linux_dmabuf_feedback_v1_listener linux_dmabuf_feedback_
   .tranche_flags = linux_dmabuf_feedback_v1_handle_tranche_flags,
 };
 
+static void shm_handle_format(void* data, struct wl_shm* shm, uint32_t shm_format) {
+	struct Backend* self = data;
+	uint32_t drm_format = convert_wl_shm_format_to_drm(shm_format);
+	wlr_drm_format_set_add(&self->shm_formats, drm_format, DRM_FORMAT_MOD_INVALID);
+}
+
+static const struct wl_shm_listener shm_listener = {
+	.format = shm_handle_format,
+};
+
 static void handle_global(void* data, struct wl_registry* registry, uint32_t id, const char* interface, uint32_t version) {
   struct Backend* self = (struct Backend*)data;
 
@@ -150,6 +170,9 @@ static void handle_global(void* data, struct wl_registry* registry, uint32_t id,
 
     self->zwp_linux_dmabuf_v1 = wl_registry_bind(registry, id, &zwp_linux_dmabuf_v1_interface, version >= 4 ? 4 : version);
 		zwp_linux_dmabuf_v1_add_listener(self->zwp_linux_dmabuf_v1, &linux_dmabuf_v1_listener, self);
+  } else if (strcmp(interface, wl_shm_interface.name) == 0) {
+		self->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
+		wl_shm_add_listener(self->shm, &shm_listener, self);
   } else {
     g_message("%s:%d", interface, version);
   }
@@ -165,15 +188,31 @@ static const struct wl_registry_listener wl_registry_listener = {
 static void deinit(DisplayChannelBackend* base) {
   struct Backend* self = (struct Backend*)base;
 
+  wlr_drm_format_set_finish(&self->shm_formats);
   wlr_drm_format_set_finish(&self->linux_dmabuf_v1_formats);
+
+  g_clear_pointer(&self->shm, wl_shm_destroy);
   free(self->drm_render_name);
   free(self);
+}
+
+static uint32_t* get_shm_formats(DisplayChannelBackend* base, size_t* len) {
+  struct Backend* self = (struct Backend*)base;
+
+  if (len != NULL) *len = self->shm_formats.len;
+
+  uint32_t* list = malloc(sizeof (uint32_t) * self->shm_formats.len);
+  for (size_t i = 0; i < self->shm_formats.len; i++) {
+    list[i] = self->shm_formats.formats[i].format;
+  }
+  return list;
 }
 
 DisplayChannelBackend* display_channel_backend_wayland_init(GdkWaylandDisplay* disp) {
   struct Backend* self = malloc(sizeof (struct Backend));
   memset(self, 0, sizeof (struct Backend));
   self->base.deinit = deinit;
+  self->base.get_shm_formats = get_shm_formats;
 
   struct wl_display* wl_display = gdk_wayland_display_get_wl_display(disp);
   struct wl_registry* wl_registry_global = wl_display_get_registry(wl_display);

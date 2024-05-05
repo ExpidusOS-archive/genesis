@@ -10,4 +10,13 @@ DisplayChannelBackend* display_channel_backend_init(GdkDisplay* display) {
 
 void display_channel_backend_deinit(DisplayChannelBackend* self) {
   if (self != NULL) self->deinit(self);
+  free(self);
+}
+
+uint32_t* display_channel_backend_get_shm_formats(DisplayChannelBackend* self, size_t* len) {
+  if (self->get_shm_formats == NULL) {
+    if (len != NULL) *len = 0;
+    return NULL;
+  }
+  return self->get_shm_formats(self, len);
 }
