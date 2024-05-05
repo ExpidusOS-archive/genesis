@@ -76,7 +76,19 @@ static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
     return;
   }
 
-  g_message("%p", self->xdg->base->surface->buffer);
+  if (!wlr_surface_has_buffer(self->xdg->base->surface) || self->xdg->base->surface->current.buffer == NULL) {
+    return;
+  }
+
+  size_t stride = 0;
+  uint32_t fmt = 0;
+  void* fb = NULL;
+  wlr_buffer_begin_data_ptr_access(self->xdg->base->surface->current.buffer, WLR_BUFFER_DATA_PTR_ACCESS_READ, &fb, &fmt, &stride);
+
+  g_message("%p %d %zu", fb, fmt, stride);
+  wlr_buffer_end_data_ptr_access(self->xdg->base->surface->current.buffer);
+
+  // TODO: render the buffer into an OpenGL texture.
 }
 
 static void xdg_toplevel_request_maximize(struct wl_listener* listener, void* data) {
