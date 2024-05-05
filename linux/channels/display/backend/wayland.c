@@ -1,5 +1,6 @@
 #include <sys/mman.h>
 #include <sys/types.h>
+#include <wlr/types/wlr_linux_dmabuf_v1.h>
 #include <wlr/render/drm_format_set.h>
 #include <drm_fourcc.h>
 #include <unistd.h>
@@ -17,6 +18,8 @@ struct Backend {
 
   struct wlr_drm_format_set shm_formats;
   struct wlr_drm_format_set linux_dmabuf_v1_formats;
+
+  struct wlr_linux_dmabuf_feedback_v1 default_feedback;
 };
 
 struct DmabufFeedbackData {
@@ -27,6 +30,8 @@ struct DmabufFeedbackData {
 	size_t format_table_size;
 
 	dev_t tranche_target_device_id;
+
+  size_t tranches_done;
 };
 
 struct DmabufFeedbackDataTableEntry {
@@ -84,6 +89,7 @@ static void linux_dmabuf_feedback_v1_handle_main_device(void* data, struct zwp_l
 	g_assert(dev_id_arr->size == sizeof(dev_id));
 	memcpy(&dev_id, dev_id_arr->data, sizeof(dev_id));
 
+  feedback_data->backend->default_feedback.main_device = dev_id;
 	feedback_data->main_device_id = dev_id;
 
 	drmDevice* device = NULL;
@@ -108,23 +114,42 @@ static void linux_dmabuf_feedback_v1_handle_main_device(void* data, struct zwp_l
 	drmFreeDevice(&device);
 }
 
+static struct wlr_linux_dmabuf_feedback_v1_tranche* get_tranche(struct DmabufFeedbackData* feedback_data) {
+  size_t feedback_tranches_size = feedback_data->backend->default_feedback.tranches.size;
+  size_t done_count = feedback_data->tranches_done;
+  size_t feedback_tranches_done = feedback_tranches_size / sizeof (struct wlr_linux_dmabuf_feedback_v1_tranche);
+
+  if ((feedback_tranches_done != done_count) || (feedback_tranches_size == 0 && done_count == 0)) {
+    struct wlr_linux_dmabuf_feedback_v1_tranche* entry = wl_array_add(&feedback_data->backend->default_feedback.tranches, sizeof (struct wlr_linux_dmabuf_feedback_v1_tranche));
+    memset(entry, 0, sizeof (struct wlr_linux_dmabuf_feedback_v1_tranche));
+    entry->target_device = feedback_data->main_device_id;
+    return entry;
+  }
+
+  return feedback_data->backend->default_feedback.tranches.data + (sizeof (struct wlr_linux_dmabuf_feedback_v1_tranche) * done_count);
+}
+
 static void linux_dmabuf_feedback_v1_handle_tranche_done(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback) {
   struct DmabufFeedbackData* feedback_data = data;
   feedback_data->tranche_target_device_id = 0;
+  feedback_data->tranches_done += 1;
 }
 
 static void linux_dmabuf_feedback_v1_handle_tranche_target_device(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback, struct wl_array* dev_id_arr) {
   struct DmabufFeedbackData* feedback_data = data;
+  struct wlr_linux_dmabuf_feedback_v1_tranche* tranche = get_tranche(feedback_data);
 
   dev_t dev_id;
 	g_assert(dev_id_arr->size == sizeof(dev_id));
 	memcpy(&dev_id, dev_id_arr->data, sizeof(dev_id));
 
+  tranche->target_device = dev_id;
 	feedback_data->tranche_target_device_id = dev_id;
 }
 
 static void linux_dmabuf_feedback_v1_handle_tranche_formats(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback, struct wl_array* indices_arr) {
   struct DmabufFeedbackData* feedback_data = data;
+  struct wlr_linux_dmabuf_feedback_v1_tranche* tranche = get_tranche(feedback_data);
 
   if (feedback_data->format_table == NULL) return;
 	if (feedback_data->tranche_target_device_id != feedback_data->main_device_id) return;
@@ -135,11 +160,14 @@ static void linux_dmabuf_feedback_v1_handle_tranche_formats(void* data, struct z
 		g_assert(*index_ptr < table_cap);
 		const struct DmabufFeedbackDataTableEntry* entry = &feedback_data->format_table[*index_ptr];
 		wlr_drm_format_set_add(&feedback_data->backend->linux_dmabuf_v1_formats, entry->format, entry->modifier);
+		wlr_drm_format_set_add(&tranche->formats, entry->format, entry->modifier);
 	}
 }
 
 static void linux_dmabuf_feedback_v1_handle_tranche_flags(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback, uint32_t flags) {
-  // TODO: handle SCANOUT flag
+  struct DmabufFeedbackData* feedback_data = data;
+  struct wlr_linux_dmabuf_feedback_v1_tranche* tranche = get_tranche(feedback_data);
+  tranche->flags = flags;
 }
 
 static const struct zwp_linux_dmabuf_feedback_v1_listener linux_dmabuf_feedback_v1_listener = {
@@ -192,6 +220,8 @@ static void deinit(DisplayChannelBackend* base) {
   wlr_drm_format_set_finish(&self->linux_dmabuf_v1_formats);
 
   g_clear_pointer(&self->shm, wl_shm_destroy);
+  wl_array_release(&self->default_feedback.tranches);
+
   free(self->drm_render_name);
   free(self);
 }
@@ -208,11 +238,17 @@ static uint32_t* get_shm_formats(DisplayChannelBackend* base, size_t* len) {
   return list;
 }
 
+static const struct wlr_linux_dmabuf_feedback_v1* get_default_drm_feedback(DisplayChannelBackend* base) {
+  struct Backend* self = (struct Backend*)base;
+  return &self->default_feedback;
+}
+
 DisplayChannelBackend* display_channel_backend_wayland_init(GdkWaylandDisplay* disp) {
   struct Backend* self = malloc(sizeof (struct Backend));
   memset(self, 0, sizeof (struct Backend));
   self->base.deinit = deinit;
   self->base.get_shm_formats = get_shm_formats;
+  self->base.get_default_drm_feedback = get_default_drm_feedback;
 
   struct wl_display* wl_display = gdk_wayland_display_get_wl_display(disp);
   struct wl_registry* wl_registry_global = wl_display_get_registry(wl_display);
@@ -222,6 +258,8 @@ DisplayChannelBackend* display_channel_backend_wayland_init(GdkWaylandDisplay* d
   if (self->zwp_linux_dmabuf_v1 != NULL && zwp_linux_dmabuf_v1_get_version(self->zwp_linux_dmabuf_v1) >= ZWP_LINUX_DMABUF_V1_GET_DEFAULT_FEEDBACK_SINCE_VERSION) {
     struct zwp_linux_dmabuf_feedback_v1* linux_dmabuf_feedback_v1 = zwp_linux_dmabuf_v1_get_default_feedback(self->zwp_linux_dmabuf_v1);
     if (linux_dmabuf_feedback_v1 != NULL) {
+      wl_array_init(&self->default_feedback.tranches);
+
       struct DmabufFeedbackData feedback_data = { .backend = self };
       zwp_linux_dmabuf_feedback_v1_add_listener(linux_dmabuf_feedback_v1, &linux_dmabuf_feedback_v1_listener, &feedback_data);
       wl_display_roundtrip(wl_display);

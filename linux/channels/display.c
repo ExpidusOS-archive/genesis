@@ -73,6 +73,9 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     uint32_t* formats = display_channel_backend_get_shm_formats(self->backend, &n_formats);
 
     disp->shm = wlr_shm_create(disp->display, 1, formats, n_formats);
+
+    disp->linux_dmabuf = wlr_linux_dmabuf_v1_create(disp->display, 4, display_channel_backend_get_default_drm_feedback(self->backend));
+
     disp->seat = wlr_seat_create(disp->display, session_name);
     disp->xdg_shell = wlr_xdg_shell_create(disp->display, 3);
 

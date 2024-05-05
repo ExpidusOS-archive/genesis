@@ -9,14 +9,22 @@ DisplayChannelBackend* display_channel_backend_init(GdkDisplay* display) {
 }
 
 void display_channel_backend_deinit(DisplayChannelBackend* self) {
-  if (self != NULL) self->deinit(self);
+  if (self == NULL) return;
+  if (self->deinit != NULL) self->deinit(self);
   free(self);
 }
 
 uint32_t* display_channel_backend_get_shm_formats(DisplayChannelBackend* self, size_t* len) {
-  if (self->get_shm_formats == NULL) {
+  if (self == NULL || self->get_shm_formats == NULL) {
     if (len != NULL) *len = 0;
     return NULL;
   }
   return self->get_shm_formats(self, len);
+}
+
+const struct wlr_linux_dmabuf_feedback_v1* display_channel_backend_get_default_drm_feedback(DisplayChannelBackend* self) {
+  if (self == NULL || self->get_default_drm_feedback == NULL) {
+    return NULL;
+  }
+  return self->get_default_drm_feedback(self);
 }
