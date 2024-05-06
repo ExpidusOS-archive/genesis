@@ -1,30 +1,21 @@
+#include "backend/dummy.h"
 #include "backend/wayland.h"
 #include "backend.h"
 
-DisplayChannelBackend* display_channel_backend_init(GdkDisplay* display) {
+struct wlr_backend* display_channel_backend_create(GdkDisplay* display) {
   if (GDK_IS_WAYLAND_DISPLAY(display)) {
-    return display_channel_backend_wayland_init(GDK_WAYLAND_DISPLAY(display));
+    return display_channel_backend_wayland_create(GDK_WAYLAND_DISPLAY(display));
   }
-  return NULL;
+
+  return display_channel_backend_dummy_create();
 }
 
-void display_channel_backend_deinit(DisplayChannelBackend* self) {
-  if (self == NULL) return;
-  if (self->deinit != NULL) self->deinit(self);
-  free(self);
+struct wl_display* display_channel_backend_get_display(struct wlr_backend* backend) {
+  DisplayChannelBackend* self = (DisplayChannelBackend*)backend;
+  return self->get_display(self);
 }
 
-uint32_t* display_channel_backend_get_shm_formats(DisplayChannelBackend* self, size_t* len) {
-  if (self == NULL || self->get_shm_formats == NULL) {
-    if (len != NULL) *len = 0;
-    return NULL;
-  }
-  return self->get_shm_formats(self, len);
-}
-
-const struct wlr_linux_dmabuf_feedback_v1* display_channel_backend_get_default_drm_feedback(DisplayChannelBackend* self) {
-  if (self == NULL || self->get_default_drm_feedback == NULL) {
-    return NULL;
-  }
-  return self->get_default_drm_feedback(self);
+struct wlr_output* display_channel_backend_add_output(struct wlr_backend* backend, unsigned int width, unsigned int height) {
+  DisplayChannelBackend* self = (DisplayChannelBackend*)backend;
+  return self->add_output(self, width, height);
 }

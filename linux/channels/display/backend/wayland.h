@@ -1,7 +1,6 @@
 #pragma once
 
+#include <wlr/backend.h>
 #include <gdk/gdkwayland.h>
 
-#include "../backend.h"
-
-DisplayChannelBackend* display_channel_backend_wayland_init(GdkWaylandDisplay*);
+struct wlr_backend* display_channel_backend_wayland_create(GdkWaylandDisplay*);

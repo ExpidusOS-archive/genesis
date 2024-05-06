@@ -1,3 +1,4 @@
+#include <wlr/render/pixman.h>
 #include <drm_fourcc.h>
 
 #include "display.h"
@@ -32,30 +33,31 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       return;
     }
 
+    GdkDisplay* gdk_disp = gtk_widget_get_display(GTK_WIDGET(app->win));
+
     DisplayChannelDisplay* disp = (DisplayChannelDisplay*)malloc(sizeof (DisplayChannelDisplay));
+    disp->backend = display_channel_backend_create(gdk_disp);
 
-    disp->display = wl_display_create();
-    if (disp->display == NULL) {
-      fl_method_call_respond_error(method_call, "wayland", "failed to create server", NULL, NULL);
-      free(disp);
-      return;
-    }
+    struct wl_display* wl_display = display_channel_backend_get_display(disp->backend);
 
-    disp->backend = wlr_headless_backend_create(disp->display);
-
-    disp->socket = wl_display_add_socket_auto(disp->display);
+    disp->socket = wl_display_add_socket_auto(wl_display);
     if (disp->socket == NULL) {
       fl_method_call_respond_error(method_call, "wayland", "failed to create socket", NULL, NULL);
       wlr_backend_destroy(disp->backend);
-      wl_display_destroy(disp->display);
       free(disp);
       return;
     }
+
+    // FIXME: EGL swap issues
+    disp->renderer = wlr_renderer_autocreate(disp->backend);
+    // disp->renderer = wlr_pixman_renderer_create();
+    wlr_renderer_init_wl_display(disp->renderer, wl_display);
+
+    disp->allocator = wlr_allocator_autocreate(disp->backend, disp->renderer);
 
     if (!wlr_backend_start(disp->backend)) {
       fl_method_call_respond_error(method_call, "wlroots", "failed to start backend", NULL, NULL);
       wlr_backend_destroy(disp->backend);
-      wl_display_destroy(disp->display);
       free(disp);
       return;
     }
@@ -65,19 +67,12 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     disp->toplevels = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, NULL);
     disp->channel = self;
 
-    disp->compositor = wlr_compositor_create(disp->display, 5, NULL);
-    wlr_subcompositor_create(disp->display);
-    wlr_data_device_manager_create(disp->display);
+    disp->compositor = wlr_compositor_create(wl_display, 5, NULL);
+    wlr_subcompositor_create(wl_display);
+    wlr_data_device_manager_create(wl_display);
 
-    size_t n_formats = 0;
-    uint32_t* formats = display_channel_backend_get_shm_formats(self->backend, &n_formats);
-
-    disp->shm = wlr_shm_create(disp->display, 1, formats, n_formats);
-
-    disp->linux_dmabuf = wlr_linux_dmabuf_v1_create(disp->display, 4, display_channel_backend_get_default_drm_feedback(self->backend));
-
-    disp->seat = wlr_seat_create(disp->display, session_name);
-    disp->xdg_shell = wlr_xdg_shell_create(disp->display, 3);
+    disp->seat = wlr_seat_create(wl_display, session_name);
+    disp->xdg_shell = wlr_xdg_shell_create(wl_display, 3);
 
     disp->xdg_surface_new.notify = xdg_surface_new;
     wl_signal_add(&disp->xdg_shell->events.new_surface, &disp->xdg_surface_new);
@@ -85,7 +80,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     disp->prev_wl_disp = getenv("WAYLAND_DISPLAY");
     setenv("WAYLAND_DISPLAY", disp->socket, true);
 
-    pthread_create(&disp->thread, NULL, (void *(*)(void*))wl_display_run, disp->display);
+    pthread_create(&disp->thread, NULL, (void *(*)(void*))wl_display_run, wl_display);
     g_hash_table_insert(self->displays, (gpointer)g_strdup(disp->socket), (gpointer)disp);
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(disp->socket)));
@@ -135,7 +130,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       int64_t refresh = fl_value_get_int(fl_value_lookup_string(item, "refreshRate"));
       int64_t scale = fl_value_get_int(fl_value_lookup_string(item, "scale"));
 
-      struct wlr_output* output = wlr_headless_add_output(disp->backend, width, height);
+      struct wlr_output* output = display_channel_backend_add_output(disp->backend, width, height);
       output->model = get_string(fl_value_lookup_string(item, "model"));
       output->make = get_string(fl_value_lookup_string(item, "manufacturer"));
 
@@ -191,30 +186,23 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
   }
 }
 
-static void destory_display(DisplayChannelDisplay* self) {
-  wl_display_terminate(self->display);
+static void destroy_display(DisplayChannelDisplay* self) {
+ struct wl_display* wl_display = display_channel_backend_get_display(self->backend);
+
+  wl_display_terminate(wl_display);
   pthread_join(self->thread, NULL);
 
   g_clear_list(&self->outputs, (GDestroyNotify)wlr_output_destroy_global);
   g_hash_table_unref(self->toplevels);
 
   wlr_backend_destroy(self->backend);
-  wl_display_destroy(self->display);
 
   setenv("WAYLAND_DISPLAY", self->prev_wl_disp, true);
   free(self);
 }
 
 void display_channel_init(DisplayChannel* self, FlView* view) {
-  GenesisShellApplication* app = wl_container_of(self, app, display);
-  GdkDisplay* disp = gtk_widget_get_display(GTK_WIDGET(app->win));
-
-  self->backend = display_channel_backend_init(disp);
-  if (self->backend == NULL) {
-    g_warning("Backend is not supported");
-  }
-
-  self->displays = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)destory_display);
+  self->displays = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)destroy_display);
 
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
   self->channel = fl_method_channel_new(fl_engine_get_binary_messenger(fl_view_get_engine(view)), "com.expidusos.genesis.shell/display", FL_METHOD_CODEC(codec));
@@ -223,6 +211,5 @@ void display_channel_init(DisplayChannel* self, FlView* view) {
 
 void display_channel_deinit(DisplayChannel* self) {
   g_clear_object(&self->channel);
-  g_clear_pointer(&self->backend, display_channel_backend_deinit);
   g_hash_table_unref(self->displays);
 }

@@ -1,17 +1,26 @@
 #include <sys/mman.h>
 #include <sys/types.h>
+#include <wlr/backend/headless.h>
 #include <wlr/types/wlr_linux_dmabuf_v1.h>
+#include <wlr/types/wlr_shm.h>
 #include <wlr/render/drm_format_set.h>
 #include <drm_fourcc.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <xf86drm.h>
 
 #include <linux-dmabuf-v1-client-protocol.h>
+#include "../backend.h"
 #include "wayland.h"
 
-struct Backend {
+struct backend {
   DisplayChannelBackend base;
+
+  struct wl_display* display;
+  struct wlr_backend* headless;
+
   char* drm_render_name;
+  int drm_fd;
 
   struct wl_shm* shm;
   struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1;
@@ -22,11 +31,11 @@ struct Backend {
   struct wlr_linux_dmabuf_feedback_v1 default_feedback;
 };
 
-struct DmabufFeedbackData {
-  struct Backend* backend;
+struct dmabuf_feedback_data {
+  struct backend* backend;
 
   dev_t main_device_id;
-	struct DmabufFeedbackDataTableEntry* format_table;
+	struct dmabuf_feedback_data_table_entry* format_table;
 	size_t format_table_size;
 
 	dev_t tranche_target_device_id;
@@ -34,7 +43,7 @@ struct DmabufFeedbackData {
   size_t tranches_done;
 };
 
-struct DmabufFeedbackDataTableEntry {
+struct dmabuf_feedback_data_table_entry {
   uint32_t format;
 	uint32_t pad;
 	uint64_t modifier;
@@ -49,12 +58,12 @@ uint32_t convert_wl_shm_format_to_drm(enum wl_shm_format fmt) {
 }
 
 static void linux_dmabuf_v1_handle_format(void* data, struct zwp_linux_dmabuf_v1* linux_dmabuf_v1, uint32_t format) {
-  struct Backend* self = data;
+  struct backend* self = data;
 	wlr_drm_format_set_add(&self->linux_dmabuf_v1_formats, format, DRM_FORMAT_MOD_INVALID);
 }
 
 static void linux_dmabuf_v1_handle_modifier(void* data, struct zwp_linux_dmabuf_v1* linux_dmabuf_v1, uint32_t format, uint32_t modifier_hi, uint32_t modifier_lo) {
-  struct Backend* self = data;
+  struct backend* self = data;
 
   uint64_t modifier = ((uint64_t)modifier_hi << 32) | modifier_lo;
 	wlr_drm_format_set_add(&self->linux_dmabuf_v1_formats, format, modifier);
@@ -68,7 +77,7 @@ static const struct zwp_linux_dmabuf_v1_listener linux_dmabuf_v1_listener = {
 static void linux_dmabuf_feedback_v1_handle_done(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback) {}
 
 static void linux_dmabuf_feedback_v1_handle_format_table(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback, int fd, uint32_t size) {
-  struct DmabufFeedbackData* feedback_data = data;
+  struct dmabuf_feedback_data* feedback_data = data;
 
   feedback_data->format_table = NULL;
 
@@ -83,7 +92,7 @@ static void linux_dmabuf_feedback_v1_handle_format_table(void* data, struct zwp_
 }
 
 static void linux_dmabuf_feedback_v1_handle_main_device(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback, struct wl_array* dev_id_arr) {
-  struct DmabufFeedbackData* feedback_data = data;
+  struct dmabuf_feedback_data* feedback_data = data;
 
   dev_t dev_id;
 	g_assert(dev_id_arr->size == sizeof(dev_id));
@@ -114,7 +123,7 @@ static void linux_dmabuf_feedback_v1_handle_main_device(void* data, struct zwp_l
 	drmFreeDevice(&device);
 }
 
-static struct wlr_linux_dmabuf_feedback_v1_tranche* get_tranche(struct DmabufFeedbackData* feedback_data) {
+static struct wlr_linux_dmabuf_feedback_v1_tranche* get_tranche(struct dmabuf_feedback_data* feedback_data) {
   size_t feedback_tranches_size = feedback_data->backend->default_feedback.tranches.size;
   size_t done_count = feedback_data->tranches_done;
   size_t feedback_tranches_done = feedback_tranches_size / sizeof (struct wlr_linux_dmabuf_feedback_v1_tranche);
@@ -130,13 +139,13 @@ static struct wlr_linux_dmabuf_feedback_v1_tranche* get_tranche(struct DmabufFee
 }
 
 static void linux_dmabuf_feedback_v1_handle_tranche_done(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback) {
-  struct DmabufFeedbackData* feedback_data = data;
+  struct dmabuf_feedback_data* feedback_data = data;
   feedback_data->tranche_target_device_id = 0;
   feedback_data->tranches_done += 1;
 }
 
 static void linux_dmabuf_feedback_v1_handle_tranche_target_device(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback, struct wl_array* dev_id_arr) {
-  struct DmabufFeedbackData* feedback_data = data;
+  struct dmabuf_feedback_data* feedback_data = data;
   struct wlr_linux_dmabuf_feedback_v1_tranche* tranche = get_tranche(feedback_data);
 
   dev_t dev_id;
@@ -148,24 +157,24 @@ static void linux_dmabuf_feedback_v1_handle_tranche_target_device(void* data, st
 }
 
 static void linux_dmabuf_feedback_v1_handle_tranche_formats(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback, struct wl_array* indices_arr) {
-  struct DmabufFeedbackData* feedback_data = data;
+  struct dmabuf_feedback_data* feedback_data = data;
   struct wlr_linux_dmabuf_feedback_v1_tranche* tranche = get_tranche(feedback_data);
 
   if (feedback_data->format_table == NULL) return;
 	if (feedback_data->tranche_target_device_id != feedback_data->main_device_id) return;
 
-	size_t table_cap = feedback_data->format_table_size / sizeof(struct DmabufFeedbackDataTableEntry);
+	size_t table_cap = feedback_data->format_table_size / sizeof(struct dmabuf_feedback_data_table_entry);
 	uint16_t* index_ptr;
 	wl_array_for_each(index_ptr, indices_arr) {
 		g_assert(*index_ptr < table_cap);
-		const struct DmabufFeedbackDataTableEntry* entry = &feedback_data->format_table[*index_ptr];
+		const struct dmabuf_feedback_data_table_entry* entry = &feedback_data->format_table[*index_ptr];
 		wlr_drm_format_set_add(&feedback_data->backend->linux_dmabuf_v1_formats, entry->format, entry->modifier);
 		wlr_drm_format_set_add(&tranche->formats, entry->format, entry->modifier);
 	}
 }
 
 static void linux_dmabuf_feedback_v1_handle_tranche_flags(void* data, struct zwp_linux_dmabuf_feedback_v1* feedback, uint32_t flags) {
-  struct DmabufFeedbackData* feedback_data = data;
+  struct dmabuf_feedback_data* feedback_data = data;
   struct wlr_linux_dmabuf_feedback_v1_tranche* tranche = get_tranche(feedback_data);
   tranche->flags = flags;
 }
@@ -181,7 +190,7 @@ static const struct zwp_linux_dmabuf_feedback_v1_listener linux_dmabuf_feedback_
 };
 
 static void shm_handle_format(void* data, struct wl_shm* shm, uint32_t shm_format) {
-	struct Backend* self = data;
+	struct backend* self = data;
 	uint32_t drm_format = convert_wl_shm_format_to_drm(shm_format);
 	wlr_drm_format_set_add(&self->shm_formats, drm_format, DRM_FORMAT_MOD_INVALID);
 }
@@ -191,7 +200,7 @@ static const struct wl_shm_listener shm_listener = {
 };
 
 static void handle_global(void* data, struct wl_registry* registry, uint32_t id, const char* interface, uint32_t version) {
-  struct Backend* self = (struct Backend*)data;
+  struct backend* self = (struct backend*)data;
 
   if (strcmp(interface, zwp_linux_dmabuf_v1_interface.name) == 0) {
     g_warn_if_fail(zwp_linux_dmabuf_v1_interface.version >= 4);
@@ -211,8 +220,25 @@ static const struct wl_registry_listener wl_registry_listener = {
   .global_remove = handle_global_remove,
 };
 
-static void deinit(DisplayChannelBackend* base) {
-  struct Backend* self = (struct Backend*)base;
+static struct wl_display* base_get_display(DisplayChannelBackend* base) {
+  struct backend* self = (struct backend*)base;
+  return self->display;
+}
+
+static struct wlr_output* base_add_output(DisplayChannelBackend* base, unsigned int width, unsigned int height) {
+  struct backend* self = (struct backend*)base;
+  return wlr_headless_add_output(self->headless, width, height);
+}
+
+static bool backend_start(struct wlr_backend* backend) {
+  struct backend* self = (struct backend*)backend;
+  return wlr_backend_start(self->headless);
+}
+
+static void backend_destroy(struct wlr_backend* backend) {
+  struct backend* self = (struct backend*)backend;
+
+  wlr_backend_finish(backend);
 
   wlr_drm_format_set_finish(&self->shm_formats);
   wlr_drm_format_set_finish(&self->linux_dmabuf_v1_formats);
@@ -220,33 +246,41 @@ static void deinit(DisplayChannelBackend* base) {
   g_clear_pointer(&self->shm, wl_shm_destroy);
   wl_array_release(&self->default_feedback.tranches);
 
-  free(self->drm_render_name);
-  free(self);
+  close(self->drm_fd);
+  g_clear_pointer(&self->drm_render_name, g_free);
+
+  wlr_backend_destroy(self->headless);
+  wl_display_destroy(self->display);
 }
 
-static uint32_t* get_shm_formats(DisplayChannelBackend* base, size_t* len) {
-  struct Backend* self = (struct Backend*)base;
-
-  if (len != NULL) *len = self->shm_formats.len;
-
-  uint32_t* list = malloc(sizeof (uint32_t) * self->shm_formats.len);
-  for (size_t i = 0; i < self->shm_formats.len; i++) {
-    list[i] = self->shm_formats.formats[i].format;
-  }
-  return list;
+static int backend_get_drm_fd(struct wlr_backend* backend) {
+  struct backend* self = (struct backend*)backend;
+  return self->drm_fd;
 }
 
-static const struct wlr_linux_dmabuf_feedback_v1* get_default_drm_feedback(DisplayChannelBackend* base) {
-  struct Backend* self = (struct Backend*)base;
-  return &self->default_feedback;
+static uint32_t get_buffer_caps(struct wlr_backend* backend) {
+  struct backend* self = (struct backend*)backend;
+  return (self->zwp_linux_dmabuf_v1 ? WLR_BUFFER_CAP_DMABUF : 0) | (self->shm ? WLR_BUFFER_CAP_SHM : 0);
 }
 
-DisplayChannelBackend* display_channel_backend_wayland_init(GdkWaylandDisplay* disp) {
-  struct Backend* self = malloc(sizeof (struct Backend));
-  memset(self, 0, sizeof (struct Backend));
-  self->base.deinit = deinit;
-  self->base.get_shm_formats = get_shm_formats;
-  self->base.get_default_drm_feedback = get_default_drm_feedback;
+static const struct wlr_backend_impl backend_impl = {
+	.start = backend_start,
+	.destroy = backend_destroy,
+  .get_drm_fd = backend_get_drm_fd,
+	.get_buffer_caps = get_buffer_caps,
+};
+
+struct wlr_backend* display_channel_backend_wayland_create(GdkWaylandDisplay* disp) {
+  struct backend* self = malloc(sizeof (struct backend));
+  memset(self, 0, sizeof (struct backend));
+
+  wlr_backend_init(&self->base.backend, &backend_impl);
+
+  self->base.get_display = base_get_display;
+  self->base.add_output = base_add_output;
+
+  self->display = wl_display_create();
+  self->headless = wlr_headless_backend_create(self->display);
 
   struct wl_display* wl_display = gdk_wayland_display_get_wl_display(disp);
   struct wl_registry* wl_registry_global = wl_display_get_registry(wl_display);
@@ -258,7 +292,7 @@ DisplayChannelBackend* display_channel_backend_wayland_init(GdkWaylandDisplay* d
     if (linux_dmabuf_feedback_v1 != NULL) {
       wl_array_init(&self->default_feedback.tranches);
 
-      struct DmabufFeedbackData feedback_data = { .backend = self };
+      struct dmabuf_feedback_data feedback_data = { .backend = self };
       zwp_linux_dmabuf_feedback_v1_add_listener(linux_dmabuf_feedback_v1, &linux_dmabuf_feedback_v1_listener, &feedback_data);
       wl_display_roundtrip(wl_display);
 
@@ -270,5 +304,13 @@ DisplayChannelBackend* display_channel_backend_wayland_init(GdkWaylandDisplay* d
     }
   }
 
-  return &self->base;
+  if (self->drm_render_name != NULL) {
+		self->drm_fd = open(self->drm_render_name, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+    if (self->drm_fd < 0) {
+      g_error("Failed to open %s", self->drm_render_name);
+    }
+	} else {
+		self->drm_fd = -1;
+	}
+  return &self->base.backend;
 }

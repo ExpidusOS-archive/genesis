@@ -78,6 +78,8 @@ static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
     return;
   }
 
+  g_message("%p", self->xdg->base->surface->buffer);
+
   if (!wlr_surface_has_buffer(self->xdg->base->surface) || self->xdg->base->surface->current.buffer == NULL) {
     return;
   }
@@ -90,6 +92,9 @@ static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
   uint32_t fmt = 0;
   void* fbdata = NULL;
   wlr_buffer_begin_data_ptr_access(buffer, WLR_BUFFER_DATA_PTR_ACCESS_READ, &fbdata, &fmt, &stride);
+
+  uint8_t* fb = fbdata;
+  g_message("%d", fb[buffer->height * stride + buffer->width]);
 
   GError* error = NULL;
   GdkGLContext* ctx = gdk_window_create_gl_context(win, &error);

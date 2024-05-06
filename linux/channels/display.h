@@ -14,7 +14,8 @@ extern "C" {
 #define static
 #endif
 
-#include <wlr/backend/headless.h>
+#include <wlr/render/allocator.h>
+#include <wlr/render/wlr_renderer.h>
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_linux_dmabuf_v1.h>
@@ -58,11 +59,11 @@ typedef struct _DisplayChannelToplevel {
 } DisplayChannelToplevel;
 
 typedef struct _DisplayChannelDisplay {
-  struct wl_display* display;
   struct wlr_backend* backend;
+  struct wlr_renderer* renderer;
+	struct wlr_allocator* allocator;
+
   struct wlr_compositor* compositor;
-  struct wlr_shm* shm;
-  struct wlr_linux_dmabuf_v1* linux_dmabuf;
   struct wlr_seat* seat;
   struct wlr_xdg_shell* xdg_shell;
 
@@ -79,7 +80,6 @@ typedef struct _DisplayChannelDisplay {
 } DisplayChannelDisplay;
 
 typedef struct _DisplayChannel {
-  DisplayChannelBackend* backend;
   GHashTable* displays;
   FlMethodChannel* channel;
 } DisplayChannel;

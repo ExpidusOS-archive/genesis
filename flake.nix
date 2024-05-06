@@ -6,6 +6,7 @@
       url = "github:RossComputerGuy/mobile-nixos/fix/impure";
       flake = false;
     };
+    nixos-apple-silicon.url = "github:tpwrules/nixos-apple-silicon/777e10ec2094a0ac92e61cbfe338063d1e64646e";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -14,13 +15,16 @@
     nixpkgs,
     nixos-hardware,
     nixos-mobile,
+    nixos-apple-silicon,
     flake-utils,
     ...
   }@inputs:
-    (flake-utils.lib.eachSystem (flake-utils.lib.defaultSystems ++ [ "riscv64-linux" ]) (system:
+    (flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
         inherit (pkgs) lib;
+
+        isAsahi = pkgs.targetPlatform.isAarch64 && pkgs.stdenv.isLinux;
 
         overlay = f: s: {
           expidus = s.expidus // {
@@ -34,6 +38,7 @@
                 pam accountsservice polkit seatd wlroots_0_17 libdrm libGL libxkbcommon
                 mesa vulkan-loader libdisplay-info libliftoff libinput xorg.xcbutilwm
                 xorg.libX11 xorg.xcbutilerrors xorg.xcbutilimage xorg.xcbutilrenderutil
+                libepoxy
               ];
 
               pubspecLock = lib.importJSON ./pubspec.lock.json;
@@ -54,16 +59,35 @@
           };
         };
       in {
-        packages.default = self.legacyPackages.${system}.expidus.genesis-shell;
+        packages = {
+          default = self.legacyPackages.${system}.expidus.genesis-shell;
+        } // lib.optionalAttrs (isAsahi) {
+          asahi = self.legacyPackages.${system}.pkgsAsahi.expidus.genesis-shell;
+        };
 
-        legacyPackages = pkgs.appendOverlays [
+        legacyPackages = pkgs.appendOverlays (lib.optionals (isAsahi) [
+          (f: p: {
+            pkgsAsahi = p.appendOverlays [
+              nixos-apple-silicon.overlays.default
+              (f: p: {
+                mesa = p.mesa-asahi-edge;
+              })
+            ];
+          })
+        ] ++ [
           overlay
-        ];
+        ]);
 
-        devShells.default = pkgs.mkShell {
-          inherit (self.packages.${system}.default) pname version name;
-          inputsFrom = [ self.packages.${system}.default ];
-          packages = [ pkgs.flutter pkgs.yq ];
+        devShells = let 
+          mkShell = pkg: pkgs.mkShell {
+            inherit (pkg) pname version name;
+            inputsFrom = [ pkg ];
+            packages = [ pkgs.flutter pkgs.yq ];
+          };
+        in {
+          default = mkShell self.packages.${system}.default;
+        } // lib.optionalAttrs (isAsahi) {
+          asahi = mkShell self.packages.${system}.asahi;
         };
       })) // {
         nixosConfigurations = let
