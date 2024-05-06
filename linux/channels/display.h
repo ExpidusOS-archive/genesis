@@ -8,8 +8,6 @@
 extern "C" {
 #endif
 
-#include <pthread.h>
-
 #ifdef __cplusplus
 #define static
 #endif
@@ -68,7 +66,6 @@ typedef struct _DisplayChannelDisplay {
   struct wlr_xdg_shell* xdg_shell;
 
   const gchar* prev_wl_disp;
-  pthread_t thread;
   const char* socket;
   struct _DisplayChannel* channel;
 
@@ -77,6 +74,9 @@ typedef struct _DisplayChannelDisplay {
   GList* outputs;
   GHashTable* toplevels;
   size_t toplevel_id;
+
+  GIOChannel* wl_poll;
+  guint wl_poll_id;
 } DisplayChannelDisplay;
 
 typedef struct _DisplayChannel {

@@ -19,6 +19,16 @@ static FlValue* new_string(const gchar* str) {
   return fl_value_new_string(g_strdup(str));
 }
 
+static gboolean display_channel_wl_poll(GIOChannel* src, GIOCondition cond, gpointer user_data) {
+  DisplayChannelDisplay* self = (DisplayChannelDisplay*)user_data;
+  struct wl_display* wl_display = display_channel_backend_get_display(self->backend);
+  struct wl_event_loop* wl_event_loop = wl_display_get_event_loop(wl_display);
+
+  wl_event_loop_dispatch(wl_event_loop, -1);
+  wl_display_flush_clients(wl_display);
+  return TRUE;
+}
+
 static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_call, gpointer user_data) {
   DisplayChannel* self = (DisplayChannel*)user_data;
 
@@ -80,7 +90,9 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     disp->prev_wl_disp = getenv("WAYLAND_DISPLAY");
     setenv("WAYLAND_DISPLAY", disp->socket, true);
 
-    pthread_create(&disp->thread, NULL, (void *(*)(void*))wl_display_run, wl_display);
+    disp->wl_poll = g_io_channel_unix_new(wl_event_loop_get_fd(wl_display_get_event_loop(wl_display)));
+    disp->wl_poll_id = g_io_add_watch(disp->wl_poll, G_IO_IN | G_IO_OUT, display_channel_wl_poll, disp);
+
     g_hash_table_insert(self->displays, (gpointer)g_strdup(disp->socket), (gpointer)disp);
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(disp->socket)));
@@ -187,10 +199,8 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 }
 
 static void destroy_display(DisplayChannelDisplay* self) {
- struct wl_display* wl_display = display_channel_backend_get_display(self->backend);
-
-  wl_display_terminate(wl_display);
-  pthread_join(self->thread, NULL);
+  g_source_remove(self->wl_poll_id);
+  g_io_channel_unref(self->wl_poll);
 
   g_clear_list(&self->outputs, (GDestroyNotify)wlr_output_destroy_global);
   g_hash_table_unref(self->toplevels);
