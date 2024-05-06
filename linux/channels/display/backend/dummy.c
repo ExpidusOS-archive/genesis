@@ -1,4 +1,5 @@
 #include <wlr/backend/headless.h>
+#include <wlr/render/pixman.h>
 #include "../backend.h"
 #include "dummy.h"
 
@@ -6,6 +7,7 @@ struct backend {
   DisplayChannelBackend base;
   struct wl_display* display;
   struct wlr_backend* headless;
+  struct wlr_renderer* renderer;
 };
 
 static struct wl_display* base_get_display(DisplayChannelBackend* base) {
@@ -16,6 +18,11 @@ static struct wl_display* base_get_display(DisplayChannelBackend* base) {
 static struct wlr_output* base_add_output(DisplayChannelBackend* base, unsigned int width, unsigned int height) {
   struct backend* self = (struct backend*)base;
   return wlr_headless_add_output(self->headless, width, height);
+}
+
+static struct wlr_renderer* base_get_renderer(DisplayChannelBackend* base) {
+  struct backend* self = (struct backend*)base;
+  return self->renderer;
 }
 
 static bool backend_start(struct wlr_backend* backend) {
@@ -47,8 +54,11 @@ struct wlr_backend* display_channel_backend_dummy_create() {
 
   self->base.get_display = base_get_display;
   self->base.add_output = base_add_output;
+  self->base.get_renderer = base_get_renderer;
 
   self->display = wl_display_create();
   self->headless = wlr_headless_backend_create(self->display);
+
+  self->renderer = wlr_pixman_renderer_create();
   return &self->base.backend;
 }

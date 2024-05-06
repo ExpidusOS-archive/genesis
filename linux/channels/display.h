@@ -13,7 +13,6 @@ extern "C" {
 #endif
 
 #include <wlr/render/allocator.h>
-#include <wlr/render/wlr_renderer.h>
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_linux_dmabuf_v1.h>
@@ -58,7 +57,6 @@ typedef struct _DisplayChannelToplevel {
 
 typedef struct _DisplayChannelDisplay {
   struct wlr_backend* backend;
-  struct wlr_renderer* renderer;
 	struct wlr_allocator* allocator;
 
   struct wlr_compositor* compositor;

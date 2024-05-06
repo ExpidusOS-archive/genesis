@@ -94,7 +94,7 @@ endfunction()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(ACCOUNTSSERVICE REQUIRED IMPORTED_TARGET accountsservice)
-pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0 epoxy)
+pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0 epoxy egl)
 pkg_check_modules(LIBSEAT REQUIRED IMPORTED_TARGET libseat)
 pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
 pkg_check_modules(WLROOTS REQUIRED IMPORTED_TARGET wlroots wayland-server wayland-client xkbcommon libdrm)

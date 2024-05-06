@@ -19,3 +19,8 @@ struct wlr_output* display_channel_backend_add_output(struct wlr_backend* backen
   DisplayChannelBackend* self = (DisplayChannelBackend*)backend;
   return self->add_output(self, width, height);
 }
+
+struct wlr_renderer* display_channel_backend_get_renderer(struct wlr_backend* backend) {
+  DisplayChannelBackend* self = (DisplayChannelBackend*)backend;
+  return self->get_renderer(self);
+}

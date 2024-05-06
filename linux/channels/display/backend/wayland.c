@@ -3,6 +3,8 @@
 #include <wlr/backend/headless.h>
 #include <wlr/types/wlr_linux_dmabuf_v1.h>
 #include <wlr/types/wlr_shm.h>
+#include <wlr/render/egl.h>
+#include <wlr/render/gles2.h>
 #include <wlr/render/drm_format_set.h>
 #include <drm_fourcc.h>
 #include <fcntl.h>
@@ -18,6 +20,7 @@ struct backend {
 
   struct wl_display* display;
   struct wlr_backend* headless;
+  struct wlr_renderer* renderer;
 
   char* drm_render_name;
   int drm_fd;
@@ -230,6 +233,11 @@ static struct wlr_output* base_add_output(DisplayChannelBackend* base, unsigned 
   return wlr_headless_add_output(self->headless, width, height);
 }
 
+static struct wlr_renderer* base_get_renderer(DisplayChannelBackend* base) {
+  struct backend* self = (struct backend*)base;
+  return self->renderer;
+}
+
 static bool backend_start(struct wlr_backend* backend) {
   struct backend* self = (struct backend*)backend;
   return wlr_backend_start(self->headless);
@@ -278,6 +286,7 @@ struct wlr_backend* display_channel_backend_wayland_create(GdkWaylandDisplay* di
 
   self->base.get_display = base_get_display;
   self->base.add_output = base_add_output;
+  self->base.get_renderer = base_get_renderer;
 
   self->display = wl_display_create();
   self->headless = wlr_headless_backend_create(self->display);
@@ -312,5 +321,7 @@ struct wlr_backend* display_channel_backend_wayland_create(GdkWaylandDisplay* di
 	} else {
 		self->drm_fd = -1;
 	}
+
+  self->renderer = wlr_gles2_renderer_create(wlr_egl_create_with_context(eglGetDisplay(wl_display), eglGetCurrentContext()));
   return &self->base.backend;
 }

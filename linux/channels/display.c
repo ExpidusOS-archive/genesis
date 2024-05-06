@@ -1,5 +1,6 @@
-#include <wlr/render/pixman.h>
 #include <drm_fourcc.h>
+
+#include <EGL/egl.h>
 
 #include "display.h"
 #include "session.h"
@@ -44,6 +45,25 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     GdkDisplay* gdk_disp = gtk_widget_get_display(GTK_WIDGET(app->win));
+    GdkWindow* win = gtk_widget_get_window(GTK_WIDGET(app->view));
+
+    GError* error = NULL;
+    GdkGLContext* ctx = gdk_window_create_gl_context(win, &error);
+    if (ctx == NULL) {
+      fl_method_call_respond_error(method_call, "GTK", "failed to create OpenGL context", NULL, NULL);
+      g_clear_object(&ctx);
+      return;
+    }
+
+    gdk_gl_context_set_debug_enabled(ctx, true);
+    gdk_gl_context_set_use_es(ctx, true);
+    gdk_gl_context_make_current(ctx);
+
+    eglBindAPI(EGL_OPENGL_ES_API);
+
+    EGLint client_type;
+    eglQueryContext(eglGetCurrentDisplay(), eglGetCurrentContext(), EGL_CONTEXT_CLIENT_TYPE, &client_type);
+    g_message("%d", client_type);
 
     DisplayChannelDisplay* disp = (DisplayChannelDisplay*)malloc(sizeof (DisplayChannelDisplay));
     disp->backend = display_channel_backend_create(gdk_disp);
@@ -54,16 +74,16 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     if (disp->socket == NULL) {
       fl_method_call_respond_error(method_call, "wayland", "failed to create socket", NULL, NULL);
       wlr_backend_destroy(disp->backend);
+      g_clear_object(&ctx);
       free(disp);
       return;
     }
 
-    // FIXME: EGL swap issues
-    disp->renderer = wlr_renderer_autocreate(disp->backend);
-    // disp->renderer = wlr_pixman_renderer_create();
-    wlr_renderer_init_wl_display(disp->renderer, wl_display);
+    struct wlr_renderer* renderer = display_channel_backend_get_renderer(disp->backend);
+    wlr_renderer_init_wl_display(renderer, wl_display);
 
-    disp->allocator = wlr_allocator_autocreate(disp->backend, disp->renderer);
+    disp->allocator = wlr_allocator_autocreate(disp->backend, renderer);
+    gdk_gl_context_clear_current();
 
     if (!wlr_backend_start(disp->backend)) {
       fl_method_call_respond_error(method_call, "wlroots", "failed to start backend", NULL, NULL);
