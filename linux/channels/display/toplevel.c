@@ -62,6 +62,15 @@ static void xdg_toplevel_destroy(struct wl_listener* listener, void* data) {
 
   g_hash_table_remove(self->display->toplevels, &self->id);
 
+  if (self->texture != NULL) {
+    GenesisShellApplication* app = wl_container_of(self->display->channel, app, display);
+    FlEngine* engine = fl_view_get_engine(app->view);
+    FlTextureRegistrar* tex_reg = fl_engine_get_texture_registrar(engine);
+    fl_texture_registrar_unregister_texture(tex_reg, FL_TEXTURE(self->texture));
+  }
+
+  g_clear_object(&self->texture);
+
   g_autoptr(FlValue) value = fl_value_new_map();
   fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->display->socket));
   fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
@@ -78,8 +87,6 @@ static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
     return;
   }
 
-  g_message("%p", self->xdg->base->surface->buffer);
-
   if (!wlr_surface_has_buffer(self->xdg->base->surface) || self->xdg->base->surface->current.buffer == NULL) {
     return;
   }
@@ -88,22 +95,21 @@ static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
   GenesisShellApplication* app = wl_container_of(self->display->channel, app, display);
   GdkWindow* win = gtk_widget_get_window(GTK_WIDGET(app->view));
 
-  size_t stride = 0;
-  uint32_t fmt = 0;
-  void* fbdata = NULL;
-  wlr_buffer_begin_data_ptr_access(buffer, WLR_BUFFER_DATA_PTR_ACCESS_READ, &fbdata, &fmt, &stride);
+  FlEngine* engine = fl_view_get_engine(app->view);
+  FlTextureRegistrar* tex_reg = fl_engine_get_texture_registrar(engine);
 
-  uint8_t* fb = fbdata;
-  g_message("%d", fb[buffer->height * stride + buffer->width]);
+  if (self->texture == NULL) {
+    GError* error = NULL;
+    GdkGLContext* ctx = gdk_window_create_gl_context(win, &error);
+    gdk_gl_context_make_current(ctx);
+    self->texture = display_channel_texture_new(ctx, buffer);
+    gdk_gl_context_clear_current();
+    fl_texture_registrar_register_texture(tex_reg, FL_TEXTURE(self->texture));
+  } else {
+    display_channel_texture_update(self->texture, buffer);
+  }
 
-  GError* error = NULL;
-  GdkGLContext* ctx = gdk_window_create_gl_context(win, &error);
-  gdk_gl_context_make_current(ctx);
-  gdk_gl_context_clear_current();
-
-  wlr_buffer_end_data_ptr_access(buffer);
-
-  // TODO: render the buffer into an OpenGL texture.
+  fl_texture_registrar_mark_texture_frame_available(tex_reg, FL_TEXTURE(self->texture));
 }
 
 static void xdg_toplevel_request_maximize(struct wl_listener* listener, void* data) {
@@ -186,6 +192,7 @@ void xdg_surface_new(struct wl_listener* listener, void* data) {
     toplevel->display = self;
     toplevel->xdg = xdg_toplevel;
     toplevel->id = self->toplevel_id++;
+    toplevel->texture = NULL;
 
     toplevel->map.notify = xdg_toplevel_map;
     wl_signal_add(&xdg_surface->surface->events.map, &toplevel->map);

@@ -55,15 +55,8 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       return;
     }
 
-    gdk_gl_context_set_debug_enabled(ctx, true);
     gdk_gl_context_set_use_es(ctx, true);
     gdk_gl_context_make_current(ctx);
-
-    eglBindAPI(EGL_OPENGL_ES_API);
-
-    EGLint client_type;
-    eglQueryContext(eglGetCurrentDisplay(), eglGetCurrentContext(), EGL_CONTEXT_CLIENT_TYPE, &client_type);
-    g_message("%d", client_type);
 
     DisplayChannelDisplay* disp = (DisplayChannelDisplay*)malloc(sizeof (DisplayChannelDisplay));
     disp->backend = display_channel_backend_create(gdk_disp);

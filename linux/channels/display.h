@@ -24,6 +24,7 @@ extern "C" {
 #include <wayland-client.h>
 
 #include "display/backend.h"
+#include "display/texture.h"
 
 #ifdef __cplusplus
 #undef static
@@ -42,6 +43,7 @@ typedef struct _DisplayChannelToplevel {
   struct wl_listener map;
   struct wl_listener unmap;
   struct wl_listener destroy;
+  struct wl_listener new_subsurface;
   struct wl_listener commit;
 
   struct wl_listener request_maximize;
@@ -53,6 +55,8 @@ typedef struct _DisplayChannelToplevel {
   struct wl_listener set_parent;
   struct wl_listener set_title;
   struct wl_listener set_app_id;
+
+  DisplayChannelTexture* texture;
 } DisplayChannelToplevel;
 
 typedef struct _DisplayChannelDisplay {

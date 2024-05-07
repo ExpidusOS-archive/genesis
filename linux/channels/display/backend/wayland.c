@@ -1,11 +1,13 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <wlr/backend/headless.h>
+#include <wlr/types/wlr_drm.h>
 #include <wlr/types/wlr_linux_dmabuf_v1.h>
 #include <wlr/types/wlr_shm.h>
 #include <wlr/render/egl.h>
 #include <wlr/render/gles2.h>
 #include <wlr/render/drm_format_set.h>
+#include <wlr/render/pixman.h>
 #include <drm_fourcc.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -317,11 +319,14 @@ struct wlr_backend* display_channel_backend_wayland_create(GdkWaylandDisplay* di
 		self->drm_fd = open(self->drm_render_name, O_RDWR | O_NONBLOCK | O_CLOEXEC);
     if (self->drm_fd < 0) {
       g_error("Failed to open %s", self->drm_render_name);
+      self->renderer = wlr_pixman_renderer_create();
+    } else {
+      self->renderer = wlr_gles2_renderer_create_with_drm_fd(self->drm_fd);
+      wlr_drm_create(self->display, self->renderer);
     }
 	} else {
 		self->drm_fd = -1;
+    self->renderer = wlr_pixman_renderer_create();
 	}
-
-  self->renderer = wlr_gles2_renderer_create(wlr_egl_create_with_context(eglGetDisplay(wl_display), eglGetCurrentContext()));
   return &self->base.backend;
 }
