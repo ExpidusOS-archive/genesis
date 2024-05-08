@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -35,10 +36,37 @@ class DisplayManager extends ChangeNotifier {
             case 'map':
               toplevel.sync();
               break;
+            case 'commit':
+              toplevel.notifyListeners();
+              break;
           }
           break;
         case 'notifyToplevel':
-          print(call.arguments);
+          final server = find(call.arguments['name']);
+          if (server == null) break;
+
+          final toplevel = server._toplevels.firstWhere((item) => item.id == call.arguments['id']);
+
+          switch (call.arguments['propName']) {
+            case 'appId':
+              toplevel.appId = call.arguments['propValue'];
+              toplevel.notifyListeners();
+              break;
+            case 'title':
+              toplevel.title = call.arguments['propValue'];
+              toplevel.notifyListeners();
+              break;
+            case 'texture':
+              toplevel.texture = call.arguments['propValue'];
+              toplevel.notifyListeners();
+              break;
+            case 'parent':
+              toplevel._parent = call.arguments['propValue'];
+              toplevel.notifyListeners();
+              break;
+            default:
+              throw MissingPluginException();
+          }
           break;
         default:
           throw MissingPluginException();
@@ -86,6 +114,7 @@ class DisplayServer extends ChangeNotifier {
   final String name;
 
   List<DisplayServerToplevel> _toplevels = [];
+  UnmodifiableListView<DisplayServerToplevel> get toplevels => UnmodifiableListView(_toplevels);
 
   Future<void> stop() async {
     await DisplayManager.channel.invokeMethod('stop', name);
@@ -109,6 +138,7 @@ class DisplayServerToplevel extends ChangeNotifier {
 
   String? appId;
   String? title;
+  int? texture;
 
   int? _parent;
   DisplayServerToplevel? get parent {
@@ -124,7 +154,17 @@ class DisplayServerToplevel extends ChangeNotifier {
 
     appId = data['appId'];
     title = data['title'];
+    texture = data['texture'];
     _parent = data['parent'];
     notifyListeners();
+  }
+
+  Future<void> setSize(int width, int height) async {
+    await DisplayManager.channel.invokeMethod('setToplevelSize', <String, dynamic>{
+      'name': _server.name,
+      'id': id,
+      'width': width,
+      'height': height,
+    });
   }
 }

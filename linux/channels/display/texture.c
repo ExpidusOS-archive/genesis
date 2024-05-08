@@ -1,4 +1,5 @@
 #include <epoxy/gl.h>
+#include "pixel-format.h"
 #include "texture.h"
 
 typedef struct _DisplayChannelTexturePrivate {
@@ -85,27 +86,45 @@ static void display_channel_texture_init(DisplayChannelTexture* self) {}
 DisplayChannelTexture* display_channel_texture_new(GdkGLContext* gl_context, struct wlr_buffer* buffer) {
   DisplayChannelTexture* self = DISPLAY_CHANNEL_TEXTURE(g_object_new(display_channel_texture_get_type(), "gl-context", gl_context, NULL));
   g_return_val_if_fail(self != NULL, NULL);
+
+  DisplayChannelTexturePrivate* priv = display_channel_texture_get_instance_private(self);
+  gdk_gl_context_make_current(priv->gl_context);
+  glGenTextures(1, &priv->name);
+  gdk_gl_context_clear_current();
+
   display_channel_texture_update(self, buffer);
   return self;
 }
 
 void display_channel_texture_update(DisplayChannelTexture* self, struct wlr_buffer* buffer) {
-  struct wlr_dmabuf_attributes dmabuf_attribs;
-  struct wlr_shm_attributes shm_attribs;
-  if (wlr_buffer_get_dmabuf(buffer, &dmabuf_attribs)) {
-    g_message("%p", &dmabuf_attribs);
+  DisplayChannelTexturePrivate* priv = display_channel_texture_get_instance_private(self);
+  gdk_gl_context_make_current(priv->gl_context);
 
-    // TODO: import using GBM into a texture
-  } else if (wlr_buffer_get_shm(buffer, &shm_attribs)) {
-    g_message("%p", &shm_attribs);
+  size_t stride = 0;
+  uint32_t fmt = 0;
+  void* data = NULL;
+  wlr_buffer_begin_data_ptr_access(buffer, WLR_BUFFER_DATA_PTR_ACCESS_READ, &data, &fmt, &stride);
 
-    // TODO: read shm into a GL texture
-  } else {
-    size_t stride = 0;
-    uint32_t fmt = 0;
-    void* fbdata = NULL;
-    wlr_buffer_begin_data_ptr_access(buffer, WLR_BUFFER_DATA_PTR_ACCESS_READ, &fbdata, &fmt, &stride);
-    // TODO: render out fbdata
-    wlr_buffer_end_data_ptr_access(buffer);
-  }
+  const struct wlr_gles2_pixel_format* gles2_fmt = get_gles2_format_from_drm(fmt);
+  const struct wlr_pixel_format_info* drm_fmt = drm_get_pixel_format_info(fmt);
+
+  glBindTexture(GL_TEXTURE_2D, priv->name);
+
+  priv->width = buffer->width;
+  priv->height = buffer->height;
+
+  GLint internal_format = gles2_fmt->gl_internalformat;
+	if (!internal_format) internal_format = gles2_fmt->gl_format;
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, stride / drm_fmt->bytes_per_block);
+	glTexImage2D(GL_TEXTURE_2D, 0, internal_format, priv->width, priv->height, 0, gles2_fmt->gl_format, gles2_fmt->gl_type, data);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  wlr_buffer_end_data_ptr_access(buffer);
+
+  gdk_gl_context_clear_current();
 }

@@ -200,7 +200,35 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       fl_value_set(value, fl_value_new_string("parent"), fl_value_new_null());
     }
 
+    if (toplevel->texture != NULL) {
+      fl_value_set(value, fl_value_new_string("texture"), fl_value_new_int((uintptr_t)FL_TEXTURE(toplevel->texture)));
+    } else {
+      fl_value_set(value, fl_value_new_string("texture"), fl_value_new_null());
+    }
+
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
+  } else if (strcmp(fl_method_call_get_name(method_call), "setToplevelSize") == 0) {
+    FlValue* args = fl_method_call_get_args(method_call);
+    const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
+    int id = fl_value_get_int(fl_value_lookup_string(args, "id"));
+
+    if (!g_hash_table_contains(self->displays, name)) {
+      fl_method_call_respond_error(method_call, "Linux", "Display server does not exist", NULL, NULL);
+      return;
+    }
+
+    DisplayChannelDisplay* disp = g_hash_table_lookup(self->displays, name);
+
+    if (!g_hash_table_contains(disp->toplevels, &id)) {
+      fl_method_call_respond_error(method_call, "Linux", "Toplevel does not exist", NULL, NULL);
+      return;
+    }
+
+    DisplayChannelToplevel* toplevel = g_hash_table_lookup(disp->toplevels, &id);
+    g_assert(toplevel->id == id);
+
+    wlr_xdg_toplevel_set_size(toplevel->xdg, fl_value_get_int(fl_value_lookup_string(args, "width")), fl_value_get_int(fl_value_lookup_string(args, "height")));
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }

@@ -11,6 +11,7 @@ import '../logic/wallpaper.dart';
 
 import '../widgets/system_layout.dart';
 import '../widgets/system_navbar.dart';
+import '../widgets/toplevel.dart';
 
 class DesktopView extends StatefulWidget {
   const DesktopView({
@@ -110,8 +111,23 @@ class _DesktopViewState extends State<DesktopView> {
           image: getWallpaper(
             path: (Breakpoints.small.isActive(context) ? widget.mobileWallpaper : widget.desktopWallpaper) ?? widget.wallpaper,
             fallback: AssetImage('assets/wallpaper/${Breakpoints.small.isActive(context) ? 'mobile' : 'desktop'}/default.jpg'),
-          ),
+          )
         ),
+        child: _displayServer != null
+          ? ChangeNotifierProvider(
+              create: (_) => _displayServer!,
+              child: Consumer<DisplayServer>(
+                builder: (context, server, _) =>
+                  Stack(
+                    children: server.toplevels.map(
+                      (toplevel) =>
+                        Toplevel(
+                          toplevel: toplevel,
+                        )
+                    ).toList(),
+                  ),
+              ),
+            ) : null,
       ),
       bottomNavigationBar: Breakpoints.small.isActive(context)
         ? SystemNavbar() : null,

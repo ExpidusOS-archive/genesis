@@ -98,18 +98,24 @@ static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
   FlEngine* engine = fl_view_get_engine(app->view);
   FlTextureRegistrar* tex_reg = fl_engine_get_texture_registrar(engine);
 
-  if (self->texture == NULL) {
+  bool is_new = self->texture == NULL;
+
+  if (is_new) {
     GError* error = NULL;
     GdkGLContext* ctx = gdk_window_create_gl_context(win, &error);
-    gdk_gl_context_make_current(ctx);
     self->texture = display_channel_texture_new(ctx, buffer);
-    gdk_gl_context_clear_current();
     fl_texture_registrar_register_texture(tex_reg, FL_TEXTURE(self->texture));
   } else {
     display_channel_texture_update(self->texture, buffer);
   }
 
   fl_texture_registrar_mark_texture_frame_available(tex_reg, FL_TEXTURE(self->texture));
+
+  if (is_new) {
+    xdg_toplevel_emit_prop(self, "texture", fl_value_new_int((uintptr_t)FL_TEXTURE(self->texture)));
+  }
+
+  xdg_toplevel_emit_request(self, "commit");
 }
 
 static void xdg_toplevel_request_maximize(struct wl_listener* listener, void* data) {
