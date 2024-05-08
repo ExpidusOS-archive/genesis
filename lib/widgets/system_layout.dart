@@ -7,6 +7,7 @@ import 'account_profile.dart';
 import 'output_layout.dart';
 import 'system_bar.dart';
 import 'system_drawer.dart';
+import 'user_drawer.dart';
 
 class SystemLayout extends StatelessWidget {
   const SystemLayout({
@@ -94,6 +95,26 @@ class SystemLayout extends StatelessWidget {
           child: const SystemBar(),
         ),
       ),
+      drawer: userMode && !isLocked
+        ? Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Drawer(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              child: ListTileTheme(
+                tileColor: Theme.of(context).colorScheme.surface,
+                child: IconButtonTheme(
+                  data: IconButtonThemeData(
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                    ),
+                  ),
+                  child: UserDrawer(),
+                ),
+              ),
+            ),
+          ) : null,
       endDrawer: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Drawer(

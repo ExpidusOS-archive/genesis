@@ -119,7 +119,7 @@ void display_channel_texture_update(DisplayChannelTexture* self, struct wlr_buff
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, stride / drm_fmt->bytes_per_block);
-	glTexImage2D(GL_TEXTURE_2D, 0, internal_format, priv->width, priv->height, 0, gles2_fmt->gl_format, gles2_fmt->gl_type, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, priv->width, priv->height, 0, gles2_fmt->gl_format, gles2_fmt->gl_type, data);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
 
   glBindTexture(GL_TEXTURE_2D, 0);

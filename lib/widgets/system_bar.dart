@@ -32,7 +32,7 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
     AppBar(
       automaticallyImplyLeading: false,
       leading: Scaffold.of(context).hasDrawer
-        ? IconButton.filled(
+        ? IconButton(
             onPressed: () {
               final state = Scaffold.of(context);
               if (state.isDrawerOpen) {
@@ -41,7 +41,7 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
                 state.openDrawer();
               }
             },
-            icon: Icon(Icons.rocket),
+            icon: Icon(Icons.bars),
           ) : null,
       actions: [
         Scaffold.of(context).hasEndDrawer ?
