@@ -20,6 +20,13 @@ static FlValue* new_string(const gchar* str) {
   return fl_value_new_string(g_strdup(str));
 }
 
+static void toplevel_decor_new(struct wl_listener* listener, void* data) {
+  DisplayChannelDisplay* self = wl_container_of(listener, self, toplevel_decor_new);
+  struct wlr_xdg_toplevel_decoration_v1* decor = data;
+  g_message("%p", decor->toplevel->base->data);
+  wlr_xdg_toplevel_decoration_v1_set_mode(decor, WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+}
+
 static gboolean display_channel_wl_poll(GIOChannel* src, GIOCondition cond, gpointer user_data) {
   DisplayChannelDisplay* self = (DisplayChannelDisplay*)user_data;
   struct wl_display* wl_display = display_channel_backend_get_display(self->backend);
@@ -96,6 +103,11 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 
     disp->seat = wlr_seat_create(wl_display, session_name);
     disp->xdg_shell = wlr_xdg_shell_create(wl_display, 3);
+
+    disp->xdg_decor = wlr_xdg_decoration_manager_v1_create(wl_display);
+
+    disp->toplevel_decor_new.notify = toplevel_decor_new;
+    wl_signal_add(&disp->xdg_decor->events.new_toplevel_decoration, &disp->toplevel_decor_new);
 
     disp->xdg_surface_new.notify = xdg_surface_new;
     wl_signal_add(&disp->xdg_shell->events.new_surface, &disp->xdg_surface_new);
@@ -206,8 +218,16 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       fl_value_set(value, fl_value_new_string("texture"), fl_value_new_null());
     }
 
+    struct wlr_box geom;
+    wlr_xdg_surface_get_geometry(toplevel->xdg->base, &geom);
+
+    FlValue* value_size = fl_value_new_map();
+    fl_value_set(value_size, fl_value_new_string("width"), fl_value_new_int(geom.width));
+    fl_value_set(value_size, fl_value_new_string("height"), fl_value_new_int(geom.height));
+    fl_value_set(value, fl_value_new_string("size"), value_size);
+
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
-  } else if (strcmp(fl_method_call_get_name(method_call), "setToplevelSize") == 0) {
+  } else if (strcmp(fl_method_call_get_name(method_call), "setToplevel") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
     const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
     int id = fl_value_get_int(fl_value_lookup_string(args, "id"));
@@ -227,7 +247,11 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     DisplayChannelToplevel* toplevel = g_hash_table_lookup(disp->toplevels, &id);
     g_assert(toplevel->id == id);
 
-    wlr_xdg_toplevel_set_size(toplevel->xdg, fl_value_get_int(fl_value_lookup_string(args, "width")), fl_value_get_int(fl_value_lookup_string(args, "height")));
+    FlValue* value_size = fl_value_lookup_string(args, "size");
+    if (value_size != NULL) {
+      wlr_xdg_toplevel_set_size(toplevel->xdg, fl_value_get_int(fl_value_lookup_string(value_size, "width")), fl_value_get_int(fl_value_lookup_string(value_size, "height")));
+    }
+
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());

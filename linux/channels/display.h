@@ -19,6 +19,7 @@ extern "C" {
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_shm.h>
 #include <wlr/types/wlr_subcompositor.h>
+#include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wayland-server.h>
 #include <wayland-client.h>
@@ -66,12 +67,14 @@ typedef struct _DisplayChannelDisplay {
   struct wlr_compositor* compositor;
   struct wlr_seat* seat;
   struct wlr_xdg_shell* xdg_shell;
+  struct wlr_xdg_decoration_manager_v1* xdg_decor;
 
   const gchar* prev_wl_disp;
   const char* socket;
   struct _DisplayChannel* channel;
 
   struct wl_listener xdg_surface_new;
+  struct wl_listener toplevel_decor_new;
 
   GList* outputs;
   GHashTable* toplevels;

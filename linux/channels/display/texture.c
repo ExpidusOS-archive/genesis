@@ -7,11 +7,13 @@ typedef struct _DisplayChannelTexturePrivate {
   uint32_t name;
   uint32_t width;
   uint32_t height;
+  bool has_init;
 } DisplayChannelTexturePrivate;
 
 enum {
   PROP_0 = 0,
   PROP_GL_CONTEXT,
+  PROP_HAS_INIT,
   N_PROPERTIES,
 };
 
@@ -41,6 +43,9 @@ static void display_channel_texture_get_property(GObject* obj, guint prop_id, GV
   switch (prop_id) {
     case PROP_GL_CONTEXT:
       g_value_set_object(value, priv->gl_context);
+      break;
+    case PROP_HAS_INIT:
+      g_value_set_boolean(value, priv->has_init);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -78,6 +83,7 @@ static void display_channel_texture_class_init(DisplayChannelTextureClass* klass
   FL_TEXTURE_GL_CLASS(klass)->populate = display_channel_texture_populate;
 
   obj_props[PROP_GL_CONTEXT] = g_param_spec_object("gl-context", "GL Context", "The OpenGL context in GDK to use", GDK_TYPE_GL_CONTEXT, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+  obj_props[PROP_HAS_INIT] = g_param_spec_boolean("has-init", "Has initial update", "Whether the texture has done an initial update", false, G_PARAM_READABLE);
   g_object_class_install_properties(obj_class, N_PROPERTIES, obj_props);
 }
 
@@ -92,6 +98,7 @@ DisplayChannelTexture* display_channel_texture_new(GdkGLContext* gl_context, str
   glGenTextures(1, &priv->name);
   gdk_gl_context_clear_current();
 
+  priv->has_init = false;
   display_channel_texture_update(self, buffer);
   return self;
 }
@@ -106,7 +113,10 @@ void display_channel_texture_update(DisplayChannelTexture* self, struct wlr_buff
   wlr_buffer_begin_data_ptr_access(buffer, WLR_BUFFER_DATA_PTR_ACCESS_READ, &data, &fmt, &stride);
 
   const struct wlr_gles2_pixel_format* gles2_fmt = get_gles2_format_from_drm(fmt);
+  g_return_if_fail(gles2_fmt != NULL);
+
   const struct wlr_pixel_format_info* drm_fmt = drm_get_pixel_format_info(fmt);
+  g_return_if_fail(drm_fmt != NULL);
 
   glBindTexture(GL_TEXTURE_2D, priv->name);
 
@@ -127,4 +137,6 @@ void display_channel_texture_update(DisplayChannelTexture* self, struct wlr_buff
   wlr_buffer_end_data_ptr_access(buffer);
 
   gdk_gl_context_clear_current();
+
+  priv->has_init = true;
 }

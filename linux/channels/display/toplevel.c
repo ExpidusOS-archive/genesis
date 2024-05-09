@@ -45,6 +45,11 @@ static void xdg_toplevel_destroy(struct wl_listener* listener, void* data) {
 
   DisplayChannelToplevel* self = wl_container_of(listener, self, destroy);
 
+  g_autoptr(FlValue) value = fl_value_new_map();
+  fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->display->socket));
+  fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
+  invoke_method(self->display->channel->channel, "removeToplevel", value);
+
   wl_list_remove(&self->map.link);
   wl_list_remove(&self->unmap.link);
   wl_list_remove(&self->destroy.link);
@@ -63,18 +68,19 @@ static void xdg_toplevel_destroy(struct wl_listener* listener, void* data) {
   g_hash_table_remove(self->display->toplevels, &self->id);
 
   if (self->texture != NULL) {
-    GenesisShellApplication* app = wl_container_of(self->display->channel, app, display);
-    FlEngine* engine = fl_view_get_engine(app->view);
-    FlTextureRegistrar* tex_reg = fl_engine_get_texture_registrar(engine);
-    fl_texture_registrar_unregister_texture(tex_reg, FL_TEXTURE(self->texture));
+    bool has_init;
+    g_object_get(G_OBJECT(self->texture), "has-init", &has_init, NULL);
+
+    if (has_init) {
+      GenesisShellApplication* app = wl_container_of(self->display->channel, app, display);
+      FlEngine* engine = fl_view_get_engine(app->view);
+      FlTextureRegistrar* tex_reg = fl_engine_get_texture_registrar(engine);
+      // FIXME: Sometimes this causes a SIGSEV
+      fl_texture_registrar_unregister_texture(tex_reg, FL_TEXTURE(self->texture));
+    }
   }
 
   g_clear_object(&self->texture);
-
-  g_autoptr(FlValue) value = fl_value_new_map();
-  fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->display->socket));
-  fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
-  invoke_method(self->display->channel->channel, "removeToplevel", value);
 
   free(self);
 }
@@ -109,13 +115,18 @@ static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
     display_channel_texture_update(self->texture, buffer);
   }
 
-  fl_texture_registrar_mark_texture_frame_available(tex_reg, FL_TEXTURE(self->texture));
+  bool has_init;
+  g_object_get(G_OBJECT(self->texture), "has-init", &has_init, NULL);
 
-  if (is_new) {
-    xdg_toplevel_emit_prop(self, "texture", fl_value_new_int((uintptr_t)FL_TEXTURE(self->texture)));
+  if (has_init) {
+    fl_texture_registrar_mark_texture_frame_available(tex_reg, FL_TEXTURE(self->texture));
+
+    if (is_new) {
+      xdg_toplevel_emit_prop(self, "texture", fl_value_new_int((uintptr_t)FL_TEXTURE(self->texture)));
+    }
+
+    xdg_toplevel_emit_request(self, "commit");
   }
-
-  xdg_toplevel_emit_request(self, "commit");
 }
 
 static void xdg_toplevel_request_maximize(struct wl_listener* listener, void* data) {
@@ -195,6 +206,8 @@ void xdg_surface_new(struct wl_listener* listener, void* data) {
     struct wlr_xdg_toplevel* xdg_toplevel = wlr_xdg_toplevel_try_from_wlr_surface(xdg_surface->surface);
 
     DisplayChannelToplevel* toplevel = (DisplayChannelToplevel*)malloc(sizeof (DisplayChannelToplevel));
+    xdg_surface->data = toplevel;
+
     toplevel->display = self;
     toplevel->xdg = xdg_toplevel;
     toplevel->id = self->toplevel_id++;

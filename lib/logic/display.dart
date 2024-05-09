@@ -11,6 +11,7 @@ class DisplayManager extends ChangeNotifier {
 
   DisplayManager() {
     channel.setMethodCallHandler((call) async {
+      print(call.arguments);
       switch (call.method) {
         case 'newToplevel':
           final server = find(call.arguments['name']);
@@ -36,8 +37,9 @@ class DisplayManager extends ChangeNotifier {
             case 'map':
               toplevel.sync();
               break;
-            case 'commit':
+            default:
               toplevel.notifyListeners();
+              server.notifyListeners();
               break;
           }
           break;
@@ -130,6 +132,23 @@ class DisplayServer extends ChangeNotifier {
   }
 }
 
+class DisplayServerToplevelSize {
+  const DisplayServerToplevelSize({
+    this.width = 0,
+    this.height = 0,
+  });
+
+  final int width;
+  final int height;
+
+  dynamic toJSON() {
+    return <String, dynamic>{
+      'width': width,
+      'height': height,
+    };
+  }
+}
+
 class DisplayServerToplevel extends ChangeNotifier {
   DisplayServerToplevel._(this._server, this.id);
 
@@ -146,6 +165,8 @@ class DisplayServerToplevel extends ChangeNotifier {
     return _server._toplevels.firstWhere((item) => item.id == _parent);
   }
 
+  DisplayServerToplevelSize? size;
+
   Future<void> sync() async {
     final data = await DisplayManager.channel.invokeMethod('getToplevel', <String, dynamic>{
       'name': _server.name,
@@ -156,15 +177,20 @@ class DisplayServerToplevel extends ChangeNotifier {
     title = data['title'];
     texture = data['texture'];
     _parent = data['parent'];
+    size = DisplayServerToplevelSize(
+      width: data['size']['width'],
+      height: data['size']['height'],
+    );
     notifyListeners();
   }
 
   Future<void> setSize(int width, int height) async {
-    await DisplayManager.channel.invokeMethod('setToplevelSize', <String, dynamic>{
+    size = DisplayServerToplevelSize(width: width, height: height);
+    await DisplayManager.channel.invokeMethod('setToplevel', <String, dynamic>{
       'name': _server.name,
       'id': id,
-      'width': width,
-      'height': height,
+      'size': size!.toJSON(),
     });
+    await sync();
   }
 }

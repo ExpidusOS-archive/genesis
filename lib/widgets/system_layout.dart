@@ -84,6 +84,7 @@ class SystemLayout extends StatelessWidget {
       frontLayer: body,
       bottomSheet: bottomSheet,
       bottomNavigationBar: bottomNavigationBar,
+      extendBody: true,
     );
 
   Widget _buildDesktop(BuildContext context) =>
@@ -141,6 +142,7 @@ class SystemLayout extends StatelessWidget {
       body: body,
       bottomSheet: bottomSheet,
       bottomNavigationBar: bottomNavigationBar,
+      extendBody: true,
     );
 
   @override

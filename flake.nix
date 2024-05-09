@@ -82,7 +82,11 @@
           mkShell = pkg: pkgs.mkShell {
             inherit (pkg) pname version name;
             inputsFrom = [ pkg ];
-            packages = [ pkgs.flutter pkgs.yq ];
+            packages = with pkgs; [
+              flutter yq cage
+              wayland-utils
+              mesa-demos
+            ];
           };
         in {
           default = mkShell self.packages.${system}.default;
