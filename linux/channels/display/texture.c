@@ -1,4 +1,6 @@
+#include <epoxy/egl.h>
 #include <epoxy/gl.h>
+#include <drm_fourcc.h>
 #include "pixel-format.h"
 #include "texture.h"
 
@@ -107,6 +109,91 @@ void display_channel_texture_update(DisplayChannelTexture* self, struct wlr_buff
   DisplayChannelTexturePrivate* priv = display_channel_texture_get_instance_private(self);
   gdk_gl_context_make_current(priv->gl_context);
 
+  struct wlr_dmabuf_attributes dmabuf;
+  if (wlr_buffer_get_dmabuf(buffer, &dmabuf)) {
+    unsigned int atti = 0;
+    EGLint attribs[50];
+    attribs[atti++] = EGL_WIDTH;
+    attribs[atti++] = dmabuf.width;
+    attribs[atti++] = EGL_HEIGHT;
+    attribs[atti++] = dmabuf.height;
+    attribs[atti++] = EGL_LINUX_DRM_FOURCC_EXT;
+    attribs[atti++] = dmabuf.format;
+
+    struct {
+		  EGLint fd;
+		  EGLint offset;
+		  EGLint pitch;
+		  EGLint mod_lo;
+		  EGLint mod_hi;
+	  } attr_names[WLR_DMABUF_MAX_PLANES] = {
+		  {
+			  EGL_DMA_BUF_PLANE0_FD_EXT,
+			  EGL_DMA_BUF_PLANE0_OFFSET_EXT,
+			  EGL_DMA_BUF_PLANE0_PITCH_EXT,
+			  EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT,
+			  EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT
+  		}, {
+	  		EGL_DMA_BUF_PLANE1_FD_EXT,
+		  	EGL_DMA_BUF_PLANE1_OFFSET_EXT,
+			  EGL_DMA_BUF_PLANE1_PITCH_EXT,
+  			EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT,
+	  		EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT
+		  }, {
+  			EGL_DMA_BUF_PLANE2_FD_EXT,
+	  		EGL_DMA_BUF_PLANE2_OFFSET_EXT,
+		  	EGL_DMA_BUF_PLANE2_PITCH_EXT,
+			  EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT,
+  			EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT
+	  	}, {
+		  	EGL_DMA_BUF_PLANE3_FD_EXT,
+			  EGL_DMA_BUF_PLANE3_OFFSET_EXT,
+  			EGL_DMA_BUF_PLANE3_PITCH_EXT,
+	  		EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT,
+		  	EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT
+		  }
+	  };
+
+	  for (int i = 0; i < dmabuf.n_planes; i++) {
+  		attribs[atti++] = attr_names[i].fd;
+		  attribs[atti++] = dmabuf.fd[i];
+	  	attribs[atti++] = attr_names[i].offset;
+  		attribs[atti++] = dmabuf.offset[i];
+		  attribs[atti++] = attr_names[i].pitch;
+	  	attribs[atti++] = dmabuf.stride[i];
+  		if (dmabuf.modifier != DRM_FORMAT_MOD_INVALID) {
+			  attribs[atti++] = attr_names[i].mod_lo;
+		  	attribs[atti++] = dmabuf.modifier & 0xFFFFFFFF;
+	  		attribs[atti++] = attr_names[i].mod_hi;
+  			attribs[atti++] = dmabuf.modifier >> 32;
+		  }
+	  }
+
+    attribs[atti++] = EGL_IMAGE_PRESERVED_KHR;
+    attribs[atti++] = EGL_TRUE;
+    attribs[atti++] = EGL_NONE;
+
+    EGLImageKHR img = eglCreateImageKHR(eglGetCurrentDisplay(), EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attribs);
+    if (img == EGL_NO_IMAGE_KHR) {
+      gdk_gl_context_clear_current();
+      g_return_if_fail(false);
+      return;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, priv->name);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, img);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    eglDestroyImage(eglGetCurrentDisplay(), img);
+    gdk_gl_context_clear_current();
+
+    priv->has_init = true;
+    return;
+  }
+
   size_t stride = 0;
   uint32_t fmt = 0;
   void* data = NULL;
@@ -127,15 +214,14 @@ void display_channel_texture_update(DisplayChannelTexture* self, struct wlr_buff
 	if (!internal_format) internal_format = gles2_fmt->gl_format;
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, stride / drm_fmt->bytes_per_block);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, priv->width, priv->height, 0, gles2_fmt->gl_format, gles2_fmt->gl_type, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, priv->width, priv->height, 0, gles2_fmt->gl_format, gles2_fmt->gl_type, data);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
   wlr_buffer_end_data_ptr_access(buffer);
-
   gdk_gl_context_clear_current();
 
   priv->has_init = true;

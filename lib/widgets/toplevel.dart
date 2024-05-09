@@ -9,9 +9,11 @@ class Toplevel extends StatefulWidget {
   const Toplevel({
     super.key,
     required this.toplevel,
+    this.isFocusable = true,
   });
 
   final DisplayServerToplevel toplevel;
+  final bool isFocusable;
 
   @override
   State<Toplevel> createState() => _ToplevelState();
@@ -37,11 +39,32 @@ class _ToplevelState extends State<Toplevel> {
   }
 
   @override
-  Widget buildContent(BuildContext context, DisplayServerToplevel toplevel) =>
-    toplevel.texture == null
-      ? SizedBox() : Texture(
-          textureId: toplevel.texture!,
-        );
+  Widget buildContent(BuildContext context, DisplayServerToplevel toplevel) {
+    Widget content = ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: toplevel.minSize == null ? 0 : (toplevel.minSize!.width ?? 0).toDouble(),
+        minHeight: toplevel.minSize == null ? 0 : (toplevel.minSize!.height ?? 0).toDouble(),
+        maxWidth: toplevel.maxSize == null ? double.infinity : (toplevel.maxSize!.width ?? double.infinity).toDouble(),
+        maxHeight: toplevel.maxSize == null ? double.infinity : (toplevel.maxSize!.height ?? double.infinity).toDouble(),
+      ),
+      child: toplevel.texture == null
+        ? SizedBox() : Texture(
+            textureId: toplevel.texture!,
+          ),
+    );
+
+    if (widget.isFocusable) {
+      content = Focus(
+        onFocusChange: (isFocused) {
+          toplevel.setActive(isFocused);
+          toplevel.setSuspended(!isFocused);
+        },
+        child: content,
+      );
+    }
+
+    return content;
+  }
 
   @override
   Widget build(BuildContext context) =>
@@ -51,15 +74,15 @@ class _ToplevelState extends State<Toplevel> {
         return true;
       },
       child: SizeChangedLayoutNotifier(
-        child: ChangeNotifierProvider(
-          create: (_) => widget.toplevel,
+        child: ChangeNotifierProvider.value(
+          value: widget.toplevel,
           child: Consumer<DisplayServerToplevel>(
             key: key,
             builder: (context, toplevel, _) =>
               toplevel.size != null
                 ? SizedBox(
-                    width: toplevel.size!.width.toDouble(),
-                    height: toplevel.size!.height.toDouble(),
+                    width: toplevel.size!.width == null ? null : toplevel.size!.width!.toDouble(),
+                    height: toplevel.size!.height == null ? null : toplevel.size!.height!.toDouble(),
                     child: buildContent(context, toplevel),
                   ) : buildContent(context, toplevel),
           ),

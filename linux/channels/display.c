@@ -102,7 +102,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     wlr_data_device_manager_create(wl_display);
 
     disp->seat = wlr_seat_create(wl_display, session_name);
-    disp->xdg_shell = wlr_xdg_shell_create(wl_display, 3);
+    disp->xdg_shell = wlr_xdg_shell_create(wl_display, 6);
 
     disp->xdg_decor = wlr_xdg_decoration_manager_v1_create(wl_display);
 
@@ -213,7 +213,14 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     if (toplevel->texture != NULL) {
-      fl_value_set(value, fl_value_new_string("texture"), fl_value_new_int((uintptr_t)FL_TEXTURE(toplevel->texture)));
+      bool has_init;
+      g_object_get(G_OBJECT(toplevel->texture), "has-init", &has_init, NULL);
+
+      if (has_init) {
+        fl_value_set(value, fl_value_new_string("texture"), fl_value_new_int((uintptr_t)FL_TEXTURE(toplevel->texture)));
+      } else {
+        fl_value_set(value, fl_value_new_string("texture"), fl_value_new_null());
+      }
     } else {
       fl_value_set(value, fl_value_new_string("texture"), fl_value_new_null());
     }
@@ -225,6 +232,22 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     fl_value_set(value_size, fl_value_new_string("width"), fl_value_new_int(geom.width));
     fl_value_set(value_size, fl_value_new_string("height"), fl_value_new_int(geom.height));
     fl_value_set(value, fl_value_new_string("size"), value_size);
+
+    FlValue* value_size_max = fl_value_new_map();
+    fl_value_set(value_size_max, fl_value_new_string("width"), fl_value_new_int(toplevel->xdg->current.max_width));
+    fl_value_set(value_size_max, fl_value_new_string("height"), fl_value_new_int(toplevel->xdg->current.max_height));
+    fl_value_set(value, fl_value_new_string("maxSize"), value_size_max);
+
+    FlValue* value_size_min = fl_value_new_map();
+    fl_value_set(value_size_min, fl_value_new_string("width"), fl_value_new_int(toplevel->xdg->current.min_width));
+    fl_value_set(value_size_min, fl_value_new_string("height"), fl_value_new_int(toplevel->xdg->current.min_height));
+    fl_value_set(value, fl_value_new_string("minSize"), value_size_min);
+
+    fl_value_set(value, fl_value_new_string("maximized"), fl_value_new_bool(toplevel->xdg->current.maximized));
+    fl_value_set(value, fl_value_new_string("fullscreen"), fl_value_new_bool(toplevel->xdg->current.fullscreen));
+    fl_value_set(value, fl_value_new_string("resizing"), fl_value_new_bool(toplevel->xdg->current.resizing));
+    fl_value_set(value, fl_value_new_string("active"), fl_value_new_bool(toplevel->xdg->current.activated));
+    fl_value_set(value, fl_value_new_string("suspended"), fl_value_new_bool(toplevel->xdg->current.suspended));
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
   } else if (strcmp(fl_method_call_get_name(method_call), "setToplevel") == 0) {
@@ -250,6 +273,31 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     FlValue* value_size = fl_value_lookup_string(args, "size");
     if (value_size != NULL) {
       wlr_xdg_toplevel_set_size(toplevel->xdg, fl_value_get_int(fl_value_lookup_string(value_size, "width")), fl_value_get_int(fl_value_lookup_string(value_size, "height")));
+    }
+
+    FlValue* value_maximized = fl_value_lookup_string(args, "maximized");
+    if (value_maximized != NULL) {
+      wlr_xdg_toplevel_set_maximized(toplevel->xdg, fl_value_get_bool(value_maximized));
+    }
+
+    FlValue* value_fullscreen = fl_value_lookup_string(args, "fullscreen");
+    if (value_fullscreen != NULL) {
+      wlr_xdg_toplevel_set_fullscreen(toplevel->xdg, fl_value_get_bool(value_fullscreen));
+    }
+
+    FlValue* value_resizing = fl_value_lookup_string(args, "resizing");
+    if (value_resizing != NULL) {
+      wlr_xdg_toplevel_set_resizing(toplevel->xdg, fl_value_get_bool(value_resizing));
+    }
+
+    FlValue* value_active = fl_value_lookup_string(args, "active");
+    if (value_active != NULL) {
+      wlr_xdg_toplevel_set_activated(toplevel->xdg, fl_value_get_bool(value_active));
+    }
+
+    FlValue* value_suspended = fl_value_lookup_string(args, "suspended");
+    if (value_suspended != NULL) {
+      wlr_xdg_toplevel_set_suspended(toplevel->xdg, fl_value_get_bool(value_suspended));
     }
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));

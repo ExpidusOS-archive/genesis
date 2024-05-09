@@ -51,15 +51,15 @@ class DisplayManager extends ChangeNotifier {
 
           switch (call.arguments['propName']) {
             case 'appId':
-              toplevel.appId = call.arguments['propValue'];
+              toplevel._appId = call.arguments['propValue'];
               toplevel.notifyListeners();
               break;
             case 'title':
-              toplevel.title = call.arguments['propValue'];
+              toplevel._title = call.arguments['propValue'];
               toplevel.notifyListeners();
               break;
             case 'texture':
-              toplevel.texture = call.arguments['propValue'];
+              toplevel._texture = call.arguments['propValue'];
               toplevel.notifyListeners();
               break;
             case 'parent':
@@ -134,30 +134,47 @@ class DisplayServer extends ChangeNotifier {
 
 class DisplayServerToplevelSize {
   const DisplayServerToplevelSize({
-    this.width = 0,
-    this.height = 0,
+    this.width,
+    this.height,
   });
 
-  final int width;
-  final int height;
+  final int? width;
+  final int? height;
 
   dynamic toJSON() {
     return <String, dynamic>{
-      'width': width,
-      'height': height,
+      'width': width ?? 0,
+      'height': height ?? 0,
     };
+  }
+
+  static DisplayServerToplevelSize? fromJSON(dynamic data) {
+    final width = data['width'] > 0 ? data['width'] : null;
+    final height = data['height'] > 0 ? data['height'] : null;
+
+    if (width == null && height == null) return null;
+
+    return DisplayServerToplevelSize(
+      width: width,
+      height: height,
+    );
   }
 }
 
 class DisplayServerToplevel extends ChangeNotifier {
-  DisplayServerToplevel._(this._server, this.id);
+  DisplayServerToplevel._(this._server, this.id) : _active = false, _suspended = false;
 
   final DisplayServer _server;
   final int id;
 
-  String? appId;
-  String? title;
-  int? texture;
+  String? _appId;
+  String? get appId => _appId;
+
+  String? _title;
+  String? get title => _title;
+
+  int? _texture;
+  int? get texture => _texture;
 
   int? _parent;
   DisplayServerToplevel? get parent {
@@ -165,31 +182,66 @@ class DisplayServerToplevel extends ChangeNotifier {
     return _server._toplevels.firstWhere((item) => item.id == _parent);
   }
 
-  DisplayServerToplevelSize? size;
+  DisplayServerToplevelSize? _size;
+  DisplayServerToplevelSize? get size => _size;
+
+  DisplayServerToplevelSize? _maxSize;
+  DisplayServerToplevelSize? get maxSize => _maxSize;
+
+  DisplayServerToplevelSize? _minSize;
+  DisplayServerToplevelSize? get minSize => _minSize;
+
+  bool _active;
+  bool get active => _active;
+
+  bool _suspended;
+  bool get suspended => _suspended;
 
   Future<void> sync() async {
     final data = await DisplayManager.channel.invokeMethod('getToplevel', <String, dynamic>{
       'name': _server.name,
       'id': id,
     });
+    print(data);
 
-    appId = data['appId'];
-    title = data['title'];
-    texture = data['texture'];
+    _appId = data['appId'];
+    _title = data['title'];
+    _texture = data['texture'];
     _parent = data['parent'];
-    size = DisplayServerToplevelSize(
-      width: data['size']['width'],
-      height: data['size']['height'],
-    );
+    _size = DisplayServerToplevelSize.fromJSON(data['size']);
+    _minSize = DisplayServerToplevelSize.fromJSON(data['minSize']);
+    _maxSize = DisplayServerToplevelSize.fromJSON(data['maxSize']);
+    _active = data['active'];
+    _suspended = data['suspended'];
     notifyListeners();
   }
 
   Future<void> setSize(int width, int height) async {
-    size = DisplayServerToplevelSize(width: width, height: height);
+    _size = DisplayServerToplevelSize(width: width, height: height);
     await DisplayManager.channel.invokeMethod('setToplevel', <String, dynamic>{
       'name': _server.name,
       'id': id,
       'size': size!.toJSON(),
+    });
+    await sync();
+  }
+
+  Future<void> setActive(bool isActive) async {
+    _active = isActive;
+    await DisplayManager.channel.invokeMethod('setToplevel', <String, dynamic>{
+      'name': _server.name,
+      'id': id,
+      'active': active,
+    });
+    await sync();
+  }
+
+  Future<void> setSuspended(bool isSuspended) async {
+    _suspended = isSuspended;
+    await DisplayManager.channel.invokeMethod('setToplevel', <String, dynamic>{
+      'name': _server.name,
+      'id': id,
+      'suspended': suspended,
     });
     await sync();
   }

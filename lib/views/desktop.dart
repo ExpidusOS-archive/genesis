@@ -113,9 +113,10 @@ class _DesktopViewState extends State<DesktopView> {
             fallback: AssetImage('assets/wallpaper/${Breakpoints.small.isActive(context) ? 'mobile' : 'desktop'}/default.jpg'),
           )
         ),
+        constraints: BoxConstraints.expand(),
         child: _displayServer != null
-          ? ChangeNotifierProvider(
-              create: (_) => _displayServer!,
+          ? ChangeNotifierProvider.value(
+              value: _displayServer!,
               child: Consumer<DisplayServer>(
                 builder: (context, server, _) =>
                   Stack(
