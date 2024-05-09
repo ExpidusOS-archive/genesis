@@ -18,12 +18,12 @@ class LinuxPowerManager extends PowerManager {
 
   @override
   Stream<PowerDevice> get deviceAdded {
-    return _deviceAddedCtrl.stream;
+    return _deviceAddedCtrl.stream.asBroadcastStream();
   }
 
   @override
   Stream<PowerDevice> get deviceRemoved {
-    return _deviceRemovedCtrl.stream;
+    return _deviceRemovedCtrl.stream.asBroadcastStream();
   }
 
   @override
@@ -116,7 +116,7 @@ class LinuxPowerDevice extends PowerDevice {
 
   @override
   Stream<List<String>> get changed {
-    return _device.propertiesChanged;
+    return _device.propertiesChanged.asBroadcastStream();
   }
 
   @override

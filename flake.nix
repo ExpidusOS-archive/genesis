@@ -79,7 +79,7 @@
         ]);
 
         devShells = let 
-          mkShell = pkg: pkgs.mkShell {
+          mkShell = pkgs: pkg: pkgs.mkShell {
             inherit (pkg) pname version name;
             inputsFrom = [ pkg ];
             packages = with pkgs; [
@@ -89,9 +89,9 @@
             ];
           };
         in {
-          default = mkShell self.packages.${system}.default;
+          default = mkShell pkgs self.packages.${system}.default;
         } // lib.optionalAttrs (isAsahi) {
-          asahi = mkShell self.packages.${system}.asahi;
+          asahi = mkShell self.legacyPackages.${system}.pkgsAsahi self.packages.${system}.asahi;
         };
       })) // {
         nixosConfigurations = let

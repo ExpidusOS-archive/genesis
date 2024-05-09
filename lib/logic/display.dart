@@ -216,7 +216,7 @@ class DisplayServerToplevel extends ChangeNotifier {
   Stream<DisplayServerToplevelNotify> get notify => _notifyCtrl.stream.asBroadcastStream();
 
   StreamController<String> _reqCtrl = StreamController();
-  Stream<String> get req => _reqCtrl.stream;
+  Stream<String> get req => _reqCtrl.stream.asBroadcastStream();
 
   String? _appId;
   String? get appId => _appId;
