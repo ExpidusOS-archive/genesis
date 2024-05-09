@@ -17,7 +17,7 @@ class ToplevelView extends StatefulWidget {
   final DisplayServerToplevel toplevel;
   final bool isFocusable;
   final bool isSizable;
-  final Widget Function(BuildContext context, DisplayServerToplevel toplevel)? buildDecor;
+  final Widget? Function(BuildContext context, DisplayServerToplevel toplevel, Widget content)? buildDecor;
 
   @override
   State<ToplevelView> createState() => _ToplevelViewState();
@@ -43,14 +43,9 @@ class _ToplevelViewState extends State<ToplevelView> {
   }
 
   @override
-  Widget buildContent(BuildContext context, DisplayServerToplevel toplevel) {
+  Widget _buildContent(BuildContext context, DisplayServerToplevel toplevel) {
     Widget content = ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: toplevel.minSize == null ? 0 : (toplevel.minSize!.width ?? 0).toDouble(),
-        minHeight: toplevel.minSize == null ? 0 : (toplevel.minSize!.height ?? 0).toDouble(),
-        maxWidth: toplevel.maxSize == null ? double.infinity : (toplevel.maxSize!.width ?? double.infinity).toDouble(),
-        maxHeight: toplevel.maxSize == null ? double.infinity : (toplevel.maxSize!.height ?? double.infinity).toDouble(),
-      ),
+      constraints: toplevel.buildBoxConstraints(),
       child: toplevel.texture == null
         ? SizedBox() : Texture(
             textureId: toplevel.texture!,
@@ -79,8 +74,16 @@ class _ToplevelViewState extends State<ToplevelView> {
       );
     }
 
+    if (toplevel.size != null) {
+      content = SizedBox(
+        width: toplevel.size!.width == null ? null : toplevel.size!.width!.toDouble(),
+        height: toplevel.size!.height == null ? null : toplevel.size!.height!.toDouble(),
+        child: content,
+      );
+    }
+
     if (!toplevel.hasDecorations && widget.buildDecor != null) {
-      content = widget.buildDecor!(context, toplevel);
+      content = widget.buildDecor!(context, toplevel, content) ?? content;
     }
     return content;
   }
@@ -91,13 +94,7 @@ class _ToplevelViewState extends State<ToplevelView> {
       value: widget.toplevel,
       child: Consumer<DisplayServerToplevel>(
         key: key,
-        builder: (context, toplevel, _) =>
-          toplevel.size != null
-            ? SizedBox(
-                width: toplevel.size!.width == null ? null : toplevel.size!.width!.toDouble(),
-                height: toplevel.size!.height == null ? null : toplevel.size!.height!.toDouble(),
-                child: buildContent(context, toplevel),
-              ) : buildContent(context, toplevel),
+        builder: (context, toplevel, _) => _buildContent(context, toplevel),
       ),
     );
 }

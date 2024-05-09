@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 import 'outputs.dart';
 
@@ -256,4 +257,15 @@ class DisplayServerToplevel extends ChangeNotifier {
     });
     await sync();
   }
+
+  BoxConstraints buildBoxConstraints({
+    double minWidthAppend = 0,
+    double minHeightAppend = 0,
+  }) =>
+    BoxConstraints(
+      minWidth: (minSize == null ? 0 : (minSize!.width ?? 0).toDouble()) + minWidthAppend,
+      minHeight: (minSize == null ? 0 : (minSize!.height ?? 0).toDouble()) + minHeightAppend,
+      maxWidth: maxSize == null ? double.infinity : (maxSize!.width ?? double.infinity).toDouble(),
+      maxHeight: maxSize == null ? double.infinity : (maxSize!.height ?? double.infinity).toDouble(),
+    );
 }

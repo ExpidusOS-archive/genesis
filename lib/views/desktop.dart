@@ -124,6 +124,36 @@ class _DesktopViewState extends State<DesktopView> {
                       (toplevel) =>
                         ToplevelView(
                           toplevel: toplevel,
+                          buildDecor: (context, toplevel, content) =>
+                            !Breakpoints.small.isActive(context)
+                              ? Container(
+                                  width: toplevel.size != null ? (toplevel.size!.width ?? 0).toDouble() : null,
+                                  child: Column(
+                                    children: [
+                                      AppBar(
+                                        automaticallyImplyLeading: false,
+                                        primary: false,
+                                        title: Text(toplevel.title ?? 'Untitled Window'),
+                                        toolbarHeight: kToolbarHeight / 1.5,
+                                        actions: [
+                                          IconButton(
+                                            onPressed: () {},
+                                            icon: Icon(Icons.windowMinimize),
+                                          ),
+                                          IconButton(
+                                            onPressed: () {},
+                                            icon: Icon(Icons.windowMaximize),
+                                          ),
+                                          IconButton(
+                                            onPressed: () {},
+                                            icon: Icon(Icons.circleXmark),
+                                          ),
+                                        ],
+                                      ),
+                                      content,
+                                    ],
+                                  ),
+                                ) : null,
                         )
                     ).toList(),
                   ),
