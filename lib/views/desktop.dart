@@ -122,7 +122,7 @@ class _DesktopViewState extends State<DesktopView> {
                   Stack(
                     children: server.toplevels.map(
                       (toplevel) =>
-                        Toplevel(
+                        ToplevelView(
                           toplevel: toplevel,
                         )
                     ).toList(),

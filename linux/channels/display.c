@@ -23,8 +23,9 @@ static FlValue* new_string(const gchar* str) {
 static void toplevel_decor_new(struct wl_listener* listener, void* data) {
   DisplayChannelDisplay* self = wl_container_of(listener, self, toplevel_decor_new);
   struct wlr_xdg_toplevel_decoration_v1* decor = data;
-  g_message("%p", decor->toplevel->base->data);
-  wlr_xdg_toplevel_decoration_v1_set_mode(decor, WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+  DisplayChannelToplevel* toplevel = decor->toplevel->base->data;
+  toplevel->decor = decor;
+  wl_signal_add(&decor->events.request_mode, &toplevel->decor_request_mode);
 }
 
 static gboolean display_channel_wl_poll(GIOChannel* src, GIOCondition cond, gpointer user_data) {
@@ -248,6 +249,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     fl_value_set(value, fl_value_new_string("resizing"), fl_value_new_bool(toplevel->xdg->current.resizing));
     fl_value_set(value, fl_value_new_string("active"), fl_value_new_bool(toplevel->xdg->current.activated));
     fl_value_set(value, fl_value_new_string("suspended"), fl_value_new_bool(toplevel->xdg->current.suspended));
+    fl_value_set(value, fl_value_new_string("hasDecorations"), fl_value_new_bool(toplevel->has_decor));
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
   } else if (strcmp(fl_method_call_get_name(method_call), "setToplevel") == 0) {

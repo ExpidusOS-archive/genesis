@@ -198,6 +198,20 @@ static void xdg_toplevel_set_app_id(struct wl_listener* listener, void* data) {
   xdg_toplevel_emit_prop(self, "appId", new_string(self->xdg->app_id));
 }
 
+static void xdg_toplevel_decor_request_mode(struct wl_listener* listener, void* data) {
+  (void)data;
+
+  DisplayChannelToplevel* self = wl_container_of(listener, self, decor_request_mode);
+  if (self->decor->requested_mode != WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_NONE) {
+    wlr_xdg_toplevel_decoration_v1_set_mode(self->decor, self->decor->requested_mode);
+    self->has_decor = self->decor->requested_mode == WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+  } else {
+    self->has_decor = false;
+  }
+
+  xdg_toplevel_emit_prop(self, "hasDecorations", fl_value_new_bool(self->has_decor));
+}
+
 void xdg_surface_new(struct wl_listener* listener, void* data) {
   DisplayChannelDisplay* self = wl_container_of(listener, self, xdg_surface_new);
   struct wlr_xdg_surface* xdg_surface = data;
@@ -212,6 +226,8 @@ void xdg_surface_new(struct wl_listener* listener, void* data) {
     toplevel->xdg = xdg_toplevel;
     toplevel->id = self->toplevel_id++;
     toplevel->texture = NULL;
+    toplevel->decor = NULL;
+    toplevel->has_decor = false;
 
     toplevel->map.notify = xdg_toplevel_map;
     wl_signal_add(&xdg_surface->surface->events.map, &toplevel->map);
@@ -251,6 +267,8 @@ void xdg_surface_new(struct wl_listener* listener, void* data) {
 
     toplevel->set_app_id.notify = xdg_toplevel_set_app_id;
     wl_signal_add(&xdg_toplevel->events.set_app_id, &toplevel->set_app_id);
+
+    toplevel->decor_request_mode.notify = xdg_toplevel_decor_request_mode;
 
     g_autoptr(FlValue) value = fl_value_new_map();
     fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->socket));

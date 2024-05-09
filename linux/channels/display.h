@@ -39,7 +39,10 @@ struct _DisplayChannelDisplay;
 typedef struct _DisplayChannelToplevel {
   struct _DisplayChannelDisplay* display;
   size_t id;
+  bool has_decor;
+
   struct wlr_xdg_toplevel* xdg;
+  struct wlr_xdg_toplevel_decoration_v1* decor;
 
   struct wl_listener map;
   struct wl_listener unmap;
@@ -56,6 +59,8 @@ typedef struct _DisplayChannelToplevel {
   struct wl_listener set_parent;
   struct wl_listener set_title;
   struct wl_listener set_app_id;
+
+  struct wl_listener decor_request_mode;
 
   DisplayChannelTexture* texture;
 } DisplayChannelToplevel;

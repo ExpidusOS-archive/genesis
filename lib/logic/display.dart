@@ -66,6 +66,10 @@ class DisplayManager extends ChangeNotifier {
               toplevel._parent = call.arguments['propValue'];
               toplevel.notifyListeners();
               break;
+            case 'hasDecorations':
+              toplevel._hasDecorations = call.arguments['propValue'];
+              toplevel.notifyListeners();
+              break;
             default:
               throw MissingPluginException();
           }
@@ -162,7 +166,10 @@ class DisplayServerToplevelSize {
 }
 
 class DisplayServerToplevel extends ChangeNotifier {
-  DisplayServerToplevel._(this._server, this.id) : _active = false, _suspended = false;
+  DisplayServerToplevel._(this._server, this.id) :
+    _active = false,
+    _suspended = false,
+    _hasDecorations = false;
 
   final DisplayServer _server;
   final int id;
@@ -197,6 +204,9 @@ class DisplayServerToplevel extends ChangeNotifier {
   bool _suspended;
   bool get suspended => _suspended;
 
+  bool _hasDecorations;
+  bool get hasDecorations => _hasDecorations;
+
   Future<void> sync() async {
     final data = await DisplayManager.channel.invokeMethod('getToplevel', <String, dynamic>{
       'name': _server.name,
@@ -213,6 +223,7 @@ class DisplayServerToplevel extends ChangeNotifier {
     _maxSize = DisplayServerToplevelSize.fromJSON(data['maxSize']);
     _active = data['active'];
     _suspended = data['suspended'];
+    _hasDecorations = data['hasDecorations'];
     notifyListeners();
   }
 
