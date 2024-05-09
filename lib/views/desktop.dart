@@ -130,27 +130,16 @@ class _DesktopViewState extends State<DesktopView> {
                                   width: toplevel.size != null ? (toplevel.size!.width ?? 0).toDouble() : null,
                                   child: Column(
                                     children: [
-                                      AppBar(
-                                        automaticallyImplyLeading: false,
-                                        primary: false,
-                                        title: Text(toplevel.title ?? 'Untitled Window'),
-                                        toolbarHeight: kToolbarHeight / 1.5,
-                                        actions: [
-                                          IconButton(
-                                            onPressed: () {},
-                                            icon: Icon(Icons.windowMinimize),
-                                          ),
-                                          IconButton(
-                                            onPressed: () {},
-                                            icon: Icon(Icons.windowMaximize),
-                                          ),
-                                          IconButton(
-                                            onPressed: () {},
-                                            icon: Icon(Icons.circleXmark),
-                                          ),
-                                        ],
+                                      ToplevelDecor(
+                                        toplevel: toplevel,
                                       ),
-                                      content,
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(12),
+                                          bottomRight: Radius.circular(12),
+                                        ),
+                                        child: content,
+                                      ),
                                     ],
                                   ),
                                 ) : null,

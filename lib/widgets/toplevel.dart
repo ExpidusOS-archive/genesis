@@ -5,6 +5,44 @@ import 'package:provider/provider.dart';
 
 import '../logic/display.dart';
 
+class ToplevelDecor extends StatelessWidget {
+  const ToplevelDecor({
+    super.key,
+    required this.toplevel,
+  });
+
+  final DisplayServerToplevel toplevel;
+
+  @override
+  Widget build(BuildContext context) =>
+    AppBar(
+      automaticallyImplyLeading: false,
+      primary: false,
+      title: Text(toplevel.title ?? 'Untitled Window'),
+      toolbarHeight: kToolbarHeight / 1.5,
+      shape: ContinuousRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          topRight: Radius.circular(12),
+        ),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: Icon(Icons.windowMinimize),
+        ),
+        IconButton(
+          onPressed: () {},
+          icon: Icon(Icons.windowMaximize),
+        ),
+        IconButton(
+          onPressed: () {},
+          icon: Icon(Icons.circleXmark),
+        ),
+      ],
+    );
+}
+
 class ToplevelView extends StatefulWidget {
   const ToplevelView({
     super.key,

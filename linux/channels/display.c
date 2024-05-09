@@ -7,8 +7,8 @@
 #include "../application-priv.h"
 #include "../messaging.h"
 
+void xdg_toplevel_emit_prop(DisplayChannelToplevel* self, const char* name, FlValue* pvalue);
 void xdg_surface_new(struct wl_listener* listener, void* data);
-bool display_gpu_client_handle(DisplayChannel* self, struct wl_registry* registry, uint32_t id, const char* interface, uint32_t version);
 
 static gchar* get_string(FlValue* value) {
   if (fl_value_get_type(value) != FL_VALUE_TYPE_STRING) return g_strdup("Unknown");
@@ -23,9 +23,19 @@ static FlValue* new_string(const gchar* str) {
 static void toplevel_decor_new(struct wl_listener* listener, void* data) {
   DisplayChannelDisplay* self = wl_container_of(listener, self, toplevel_decor_new);
   struct wlr_xdg_toplevel_decoration_v1* decor = data;
+
   DisplayChannelToplevel* toplevel = decor->toplevel->base->data;
   toplevel->decor = decor;
   wl_signal_add(&decor->events.request_mode, &toplevel->decor_request_mode);
+
+  if (decor->requested_mode != WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_NONE) {
+    wlr_xdg_toplevel_decoration_v1_set_mode(decor, decor->requested_mode);
+    toplevel->has_decor = decor->requested_mode == WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+  } else {
+    toplevel->has_decor = false;
+  }
+
+  xdg_toplevel_emit_prop(toplevel, "hasDecorations", fl_value_new_bool(toplevel->has_decor));
 }
 
 static gboolean display_channel_wl_poll(GIOChannel* src, GIOCondition cond, gpointer user_data) {

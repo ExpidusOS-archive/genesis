@@ -3,6 +3,8 @@
 #include "../../application-priv.h"
 #include "../../messaging.h"
 
+static void xdg_toplevel_decor_request_mode(struct wl_listener* listener, void* data);
+
 static FlValue* new_string(const gchar* str) {
   if (str == NULL || g_utf8_strlen(str, -1) == 0) return fl_value_new_null();
   return fl_value_new_string(g_strdup(str));
@@ -16,7 +18,7 @@ static void xdg_toplevel_emit_request(DisplayChannelToplevel* self, const char* 
   invoke_method(self->display->channel->channel, "requestToplevel", value);
 }
 
-static void xdg_toplevel_emit_prop(DisplayChannelToplevel* self, const char* name, FlValue* pvalue) {
+void xdg_toplevel_emit_prop(DisplayChannelToplevel* self, const char* name, FlValue* pvalue) {
   g_autoptr(FlValue) value = fl_value_new_map();
   fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->display->socket));
   fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
@@ -89,6 +91,10 @@ static void xdg_toplevel_commit(struct wl_listener* listener, void* data) {
   DisplayChannelToplevel* self = wl_container_of(listener, self, commit);
 
   if (self->xdg->base->initial_commit) {
+    if (self->decor != NULL) {
+      xdg_toplevel_decor_request_mode(&self->decor_request_mode, NULL);
+    }
+
     wlr_xdg_surface_schedule_configure(self->xdg->base);
     return;
   }
@@ -227,7 +233,7 @@ void xdg_surface_new(struct wl_listener* listener, void* data) {
     toplevel->id = self->toplevel_id++;
     toplevel->texture = NULL;
     toplevel->decor = NULL;
-    toplevel->has_decor = false;
+    toplevel->has_decor = true;
 
     toplevel->map.notify = xdg_toplevel_map;
     wl_signal_add(&xdg_surface->surface->events.map, &toplevel->map);
