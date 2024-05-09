@@ -107,10 +107,10 @@ class DisplayManager extends ChangeNotifier {
   List<DisplayServer> _servers = [];
 
   StreamController<DisplayServer> _serverStartedCtrl = StreamController();
-  Stream<DisplayServer> get serverStarted => _serverStartedCtrl.stream;
+  Stream<DisplayServer> get serverStarted => _serverStartedCtrl.stream.asBroadcastStream();
 
   StreamController<DisplayServer> _serverStoppedCtrl = StreamController();
-  Stream<DisplayServer> get serverStopped => _serverStoppedCtrl.stream;
+  Stream<DisplayServer> get serverStopped => _serverStoppedCtrl.stream.asBroadcastStream();
 
   DisplayServer? find(String name) {
     for (final server in _servers) {
@@ -144,10 +144,10 @@ class DisplayServer extends ChangeNotifier {
   UnmodifiableListView<DisplayServerToplevel> get toplevels => UnmodifiableListView(_toplevels);
 
   StreamController<DisplayServerToplevel> _toplevelAddedCtrl = StreamController();
-  Stream<DisplayServerToplevel> get toplevelAdded => _toplevelAddedCtrl.stream;
+  Stream<DisplayServerToplevel> get toplevelAdded => _toplevelAddedCtrl.stream.asBroadcastStream();
 
   StreamController<DisplayServerToplevel> _toplevelRemovedCtrl = StreamController();
-  Stream<DisplayServerToplevel> get toplevelRemoved => _toplevelRemovedCtrl.stream;
+  Stream<DisplayServerToplevel> get toplevelRemoved => _toplevelRemovedCtrl.stream.asBroadcastStream();
 
   Future<void> stop() async {
     await DisplayManager.channel.invokeMethod('stop', name);
@@ -213,7 +213,7 @@ class DisplayServerToplevel extends ChangeNotifier {
   final int id;
 
   StreamController<DisplayServerToplevelNotify> _notifyCtrl = StreamController();
-  Stream<DisplayServerToplevelNotify> get notify => _notifyCtrl.stream;
+  Stream<DisplayServerToplevelNotify> get notify => _notifyCtrl.stream.asBroadcastStream();
 
   StreamController<String> _reqCtrl = StreamController();
   Stream<String> get req => _reqCtrl.stream;

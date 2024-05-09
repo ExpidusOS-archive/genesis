@@ -102,8 +102,8 @@ class _DesktopViewState extends State<DesktopView> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-    SystemLayout(
+  Widget build(BuildContext context) {
+    Widget value = SystemLayout(
       key: _key,
       userMode: true,
       userName: widget.userName,
@@ -124,4 +124,13 @@ class _DesktopViewState extends State<DesktopView> {
       bottomNavigationBar: Breakpoints.small.isActive(context)
         ? SystemNavbar() : null,
     );
+
+    if (_displayServer != null) {
+      value = ChangeNotifierProvider<DisplayServer>.value(
+        value: _displayServer!,
+        child: value,
+      );
+    }
+    return value;
+  }
 }
