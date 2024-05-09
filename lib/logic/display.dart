@@ -18,13 +18,19 @@ class DisplayManager extends ChangeNotifier {
           final server = find(call.arguments['name']);
           if (server == null) break;
 
-          server!._toplevels.add(DisplayServerToplevel._(server, call.arguments['id']));
+          final toplevel = DisplayServerToplevel._(server, call.arguments['id']);
+
+          server!._toplevelAddedCtrl.add(toplevel);
+          server!._toplevels.add(toplevel);
           server!.notifyListeners();
           break;
         case 'removeToplevel':
           final server = find(call.arguments['name']);
           if (server == null) break;
 
+          final toplevel = server._toplevels.firstWhere((item) => item.id == call.arguments['id']);
+
+          server!._toplevelRemovedCtrl.add(toplevel);
           server!._toplevels.removeWhere((item) => item.id == call.arguments['id']);
           server!.notifyListeners();
           break;
@@ -43,6 +49,8 @@ class DisplayManager extends ChangeNotifier {
               server.notifyListeners();
               break;
           }
+
+          toplevel._reqCtrl.add(call.arguments['reqName']);
           break;
         case 'notifyToplevel':
           final server = find(call.arguments['name']);
@@ -74,6 +82,11 @@ class DisplayManager extends ChangeNotifier {
             default:
               throw MissingPluginException();
           }
+
+          toplevel._notifyCtrl.add(DisplayServerToplevelNotify(
+            propName: call.arguments['propName'],
+            propValue: call.arguments['propValue'],
+          ));
           break;
         default:
           throw MissingPluginException();
@@ -93,6 +106,12 @@ class DisplayManager extends ChangeNotifier {
 
   List<DisplayServer> _servers = [];
 
+  StreamController<DisplayServer> _serverStartedCtrl = StreamController();
+  Stream<DisplayServer> get serverStarted => _serverStartedCtrl.stream;
+
+  StreamController<DisplayServer> _serverStoppedCtrl = StreamController();
+  Stream<DisplayServer> get serverStopped => _serverStoppedCtrl.stream;
+
   DisplayServer? find(String name) {
     for (final server in _servers) {
       if (server.name == name) return server;
@@ -109,6 +128,7 @@ class DisplayManager extends ChangeNotifier {
 
     final instance = DisplayServer._(this, name);
     _servers.add(instance);
+    _serverStartedCtrl.add(instance);
     notifyListeners();
     return instance;
   }
@@ -123,9 +143,16 @@ class DisplayServer extends ChangeNotifier {
   List<DisplayServerToplevel> _toplevels = [];
   UnmodifiableListView<DisplayServerToplevel> get toplevels => UnmodifiableListView(_toplevels);
 
+  StreamController<DisplayServerToplevel> _toplevelAddedCtrl = StreamController();
+  Stream<DisplayServerToplevel> get toplevelAdded => _toplevelAddedCtrl.stream;
+
+  StreamController<DisplayServerToplevel> _toplevelRemovedCtrl = StreamController();
+  Stream<DisplayServerToplevel> get toplevelRemoved => _toplevelRemovedCtrl.stream;
+
   Future<void> stop() async {
     await DisplayManager.channel.invokeMethod('stop', name);
     _manager._servers.removeWhere((entry) => entry.name == name);
+    _manager._serverStoppedCtrl.add(this);
     _manager.notifyListeners();
   }
 
@@ -135,6 +162,16 @@ class DisplayServer extends ChangeNotifier {
       'list': list.map((item) => item.toJSON()).toList(),
     });
   }
+}
+
+class DisplayServerToplevelNotify {
+  const DisplayServerToplevelNotify({
+    required this.propName,
+    required this.propValue,
+  });
+
+  final String propName;
+  final String propValue;
 }
 
 class DisplayServerToplevelSize {
@@ -175,6 +212,12 @@ class DisplayServerToplevel extends ChangeNotifier {
   final DisplayServer _server;
   final int id;
 
+  StreamController<DisplayServerToplevelNotify> _notifyCtrl = StreamController();
+  Stream<DisplayServerToplevelNotify> get notify => _notifyCtrl.stream;
+
+  StreamController<String> _reqCtrl = StreamController();
+  Stream<String> get req => _reqCtrl.stream;
+
   String? _appId;
   String? get appId => _appId;
 
@@ -207,6 +250,16 @@ class DisplayServerToplevel extends ChangeNotifier {
 
   bool _hasDecorations;
   bool get hasDecorations => _hasDecorations;
+
+  Future<void> close() => sendRequest('close');
+
+  Future<void> sendRequest(String name) async {
+    await DisplayManager.channel.invokeMethod('requestToplevel', <String, dynamic>{
+      'name': _server.name,
+      'id': id,
+      'reqName': name,
+    });
+  }
 
   Future<void> sync() async {
     final data = await DisplayManager.channel.invokeMethod('getToplevel', <String, dynamic>{

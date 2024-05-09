@@ -9,9 +9,15 @@ class ToplevelDecor extends StatelessWidget {
   const ToplevelDecor({
     super.key,
     required this.toplevel,
+    this.onMinimize,
+    this.onMaximize,
+    this.onClose,
   });
 
   final DisplayServerToplevel toplevel;
+  final VoidCallback? onMinimize;
+  final VoidCallback? onMaximize;
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) =>
@@ -27,19 +33,22 @@ class ToplevelDecor extends StatelessWidget {
         ),
       ),
       actions: [
-        IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.windowMinimize),
-        ),
-        IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.windowMaximize),
-        ),
-        IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.circleXmark),
-        ),
-      ],
+        onMinimize != null
+          ? IconButton(
+              onPressed: onMinimize!,
+              icon: Icon(Icons.windowMinimize),
+            ) : null,
+        onMaximize != null
+          ? IconButton(
+              onPressed: onMaximize!,
+              icon: Icon(Icons.windowMaximize),
+            ) : null,
+        onClose != null
+          ? IconButton(
+              onPressed: onClose!,
+              icon: Icon(Icons.circleXmark),
+            ) : null,
+      ].where((e) => e != null).toList().cast<Widget>(),
     );
 }
 

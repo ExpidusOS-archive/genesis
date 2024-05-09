@@ -8,10 +8,11 @@ import 'package:provider/provider.dart';
 import '../logic/display.dart';
 import '../logic/outputs.dart';
 import '../logic/wallpaper.dart';
+import '../logic/wm.dart';
 
 import '../widgets/system_layout.dart';
 import '../widgets/system_navbar.dart';
-import '../widgets/toplevel.dart';
+import '../widgets/wm.dart';
 
 class DesktopView extends StatefulWidget {
   const DesktopView({
@@ -115,38 +116,9 @@ class _DesktopViewState extends State<DesktopView> {
         ),
         constraints: BoxConstraints.expand(),
         child: _displayServer != null
-          ? ChangeNotifierProvider.value(
-              value: _displayServer!,
-              child: Consumer<DisplayServer>(
-                builder: (context, server, _) =>
-                  Stack(
-                    children: server.toplevels.map(
-                      (toplevel) =>
-                        ToplevelView(
-                          toplevel: toplevel,
-                          buildDecor: (context, toplevel, content) =>
-                            !Breakpoints.small.isActive(context)
-                              ? Container(
-                                  width: toplevel.size != null ? (toplevel.size!.width ?? 0).toDouble() : null,
-                                  child: Column(
-                                    children: [
-                                      ToplevelDecor(
-                                        toplevel: toplevel,
-                                      ),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.only(
-                                          bottomLeft: Radius.circular(12),
-                                          bottomRight: Radius.circular(12),
-                                        ),
-                                        child: content,
-                                      ),
-                                    ],
-                                  ),
-                                ) : null,
-                        )
-                    ).toList(),
-                  ),
-              ),
+          ? WindowManagerView(
+              displayServer: _displayServer!,
+              mode: Breakpoints.small.isActive(context) ? WindowManagerMode.stacking : WindowManagerMode.floating,
             ) : null,
       ),
       bottomNavigationBar: Breakpoints.small.isActive(context)

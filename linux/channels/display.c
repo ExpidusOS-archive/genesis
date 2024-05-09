@@ -313,6 +313,33 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
+  } else if (strcmp(fl_method_call_get_name(method_call), "requestToplevel") == 0) {
+    FlValue* args = fl_method_call_get_args(method_call);
+    const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
+    int id = fl_value_get_int(fl_value_lookup_string(args, "id"));
+
+    if (!g_hash_table_contains(self->displays, name)) {
+      fl_method_call_respond_error(method_call, "Linux", "Display server does not exist", NULL, NULL);
+      return;
+    }
+
+    DisplayChannelDisplay* disp = g_hash_table_lookup(self->displays, name);
+
+    if (!g_hash_table_contains(disp->toplevels, &id)) {
+      fl_method_call_respond_error(method_call, "Linux", "Toplevel does not exist", NULL, NULL);
+      return;
+    }
+
+    DisplayChannelToplevel* toplevel = g_hash_table_lookup(disp->toplevels, &id);
+    g_assert(toplevel->id == id);
+
+    const gchar* req_name = fl_value_get_string(fl_value_lookup_string(args, "reqName"));
+    if (strcmp(req_name, "close") == 0) {
+      wlr_xdg_toplevel_send_close(toplevel->xdg);
+      response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
+    } else {
+      response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
+    }
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }
