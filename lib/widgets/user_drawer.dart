@@ -86,6 +86,7 @@ class UserDrawer extends StatelessWidget {
                   InkWell(
                     onTap: () {
                       app.launch();
+                      onClose();
                     },
                     child: Column(
                       children: [
