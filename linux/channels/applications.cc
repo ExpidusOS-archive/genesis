@@ -53,6 +53,30 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     g_clear_list(&list, g_object_unref);
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
+  } else if (strcmp(fl_method_call_get_name(method_call), "launch") == 0) {
+    FlValue* args = fl_method_call_get_args(method_call);
+    const gchar* name = fl_value_get_string(args);
+
+    GAppInfo* appinfo = nullptr;
+
+    GList* list = g_app_info_get_all();
+    for (GList* entry = list; entry != NULL; entry = entry->next) {
+      GAppInfo* i = G_APP_INFO(entry->data);
+      if (g_strcmp0(name, g_app_info_get_id(i)) == 0) {
+        appinfo = G_APP_INFO(g_object_ref(G_OBJECT(i)));
+        break;
+      }
+    }
+
+    g_clear_list(&list, g_object_unref);
+
+    if (appinfo == nullptr) {
+      fl_method_call_respond_error(method_call, "Gio", "Application does not exist", args, nullptr);
+      return;
+    }
+
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_bool(g_app_info_launch(appinfo, nullptr, nullptr, nullptr))));
+    g_object_unref(G_OBJECT(appinfo));
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }

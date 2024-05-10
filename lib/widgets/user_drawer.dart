@@ -75,38 +75,43 @@ class UserDrawer extends StatelessWidget {
             ).toList(),
           ),
         ),
-        GridView.count(
-          crossAxisCount: 5,
-          shrinkWrap: true,
-          children: (Provider.of<ApplicationsManager>(context).applications.toList()..where((app) => !app.isHidden))
-            .map(
-              (app) =>
-                InkWell(
-                  // TODO: launch app
-                  child: Column(
-                    children: [
-                      app.icon != null
-                        ? (path.extension(app.icon!) == '.svg'
-                          ? SvgPicture.file(
-                              File(app.icon!),
-                              width: 40,
-                              height: 40,
-                            ) : Image.file(
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: GridView.count(
+            crossAxisCount: 5,
+            shrinkWrap: true,
+            children: (Provider.of<ApplicationsManager>(context).applications.toList()..where((app) => !app.isHidden))
+              .map(
+                (app) =>
+                  InkWell(
+                    onTap: () {
+                      app.launch();
+                    },
+                    child: Column(
+                      children: [
+                        app.icon != null
+                          ? (path.extension(app.icon!) == '.svg'
+                            ? SvgPicture.file(
                                 File(app.icon!),
                                 width: 40,
                                 height: 40,
-                              )) : Icon(Icons.tablet, size: 80),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Text(
-                          app.displayName ?? app.name ?? '',
-                          overflow: TextOverflow.ellipsis,
+                              ) : Image.file(
+                                    File(app.icon!),
+                                    width: 40,
+                                    height: 40,
+                                  )) : Icon(Icons.tablet, size: 40),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Text(
+                            app.displayName ?? app.name ?? '',
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                )
-            ).toList(),
+                      ],
+                    ),
+                  )
+              ).toList(),
+          ),
         ),
       ],
     );

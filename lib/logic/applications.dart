@@ -60,4 +60,8 @@ class Application {
   final String? description;
   final bool isHidden;
   final String? icon;
+
+  Future<bool> launch() async {
+    return await ApplicationsManager.channel.invokeMethod('launch', id);
+  }
 }
