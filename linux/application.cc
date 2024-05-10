@@ -32,6 +32,7 @@ static void genesis_shell_application_activate(GApplication* application) {
   fl_register_plugins(FL_PLUGIN_REGISTRY(self->view));
 
   account_channel_init(&self->account, self->view);
+  applications_channel_init(&self->applications, self->view);
   auth_channel_init(&self->auth, self->view);
   display_channel_init(&self->display, self->view);
   outputs_channel_init(&self->outputs, self->view);
@@ -83,6 +84,7 @@ static void genesis_shell_application_dispose(GObject* object) {
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
 
   account_channel_deinit(&self->account);
+  applications_channel_deinit(&self->applications);
   auth_channel_deinit(&self->auth);
   display_channel_deinit(&self->display);
   outputs_channel_deinit(&self->outputs);

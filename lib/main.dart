@@ -6,6 +6,7 @@ import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:provider/provider.dart';
 
 import 'logic/account.dart';
+import 'logic/applications.dart';
 import 'logic/display.dart';
 import 'logic/outputs.dart';
 import 'logic/power.dart';
@@ -64,6 +65,7 @@ class GenesisShellApp extends StatefulWidget {
 
 class _GenesisShellAppState extends State<GenesisShellApp> {
   late AccountManager _accountManager;
+  late ApplicationsManager _applicationsManager;
   late DisplayManager _displayManager;
   late OutputManager _outputManager;
   late PowerManager _powerManager;
@@ -73,6 +75,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
     super.initState();
 
     _accountManager = AccountManager();
+    _applicationsManager = ApplicationsManager();
     _displayManager = DisplayManager();
     _outputManager = OutputManager();
     _powerManager = PowerManager.auto();
@@ -90,6 +93,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => _accountManager),
+        Provider(create: (_) => _applicationsManager),
         ChangeNotifierProvider(create: (_) => _displayManager),
         ChangeNotifierProvider(create: (_) => _outputManager),
         Provider(create: (_) => _powerManager),

@@ -117,6 +117,7 @@ add_executable(${BINARY_NAME}
   "application.cc"
   "messaging.c"
   "channels/account.cc"
+  "channels/applications.cc"
   "channels/auth.cc"
   "channels/display/backend/dummy.c"
   "channels/display/backend/wayland.c"

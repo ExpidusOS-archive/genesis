@@ -41,6 +41,7 @@ class _DesktopViewState extends State<DesktopView> {
   String? sessionName = null;
   DisplayServer? _displayServer = null;
   GlobalKey _key = GlobalKey();
+  GlobalKey<WindowManagerViewState> _wmKey = GlobalKey();
 
   void _syncOutputs() {
     final outputs = Provider.of<OutputManager>(_key.currentContext!, listen: false);
@@ -117,6 +118,7 @@ class _DesktopViewState extends State<DesktopView> {
         constraints: BoxConstraints.expand(),
         child: _displayServer != null
           ? WindowManagerView(
+              key: _wmKey,
               displayServer: _displayServer!,
               mode: Breakpoints.small.isActive(context) ? WindowManagerMode.stacking : WindowManagerMode.floating,
             ) : null,
@@ -128,7 +130,10 @@ class _DesktopViewState extends State<DesktopView> {
     if (_displayServer != null) {
       value = ChangeNotifierProvider<DisplayServer>.value(
         value: _displayServer!,
-        child: value,
+        child: ChangeNotifierProvider<WindowManager>(
+          create: (context) => _wmKey!.currentState!.instance,
+          child: value,
+        ),
       );
     }
     return value;

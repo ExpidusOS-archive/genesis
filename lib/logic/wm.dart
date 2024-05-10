@@ -13,7 +13,7 @@ class WindowManager extends ChangeNotifier {
     this.mode = WindowManagerMode.stacking,
   });
 
-  final WindowManagerMode mode;
+  WindowManagerMode mode;
   List<Window> _wins = [];
 
   void dispose() {}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "channels/account.h"
+#include "channels/applications.h"
 #include "channels/auth.h"
 #include "channels/display.h"
 #include "channels/outputs.h"
@@ -14,6 +15,7 @@ struct _GenesisShellApplication {
   FlView* view;
 
   AccountChannel account;
+  ApplicationsChannel applications;
   AuthChannel auth;
   DisplayChannel display;
   OutputsChannel outputs;

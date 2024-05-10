@@ -1,4 +1,5 @@
 import 'package:backdrop/backdrop.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
@@ -100,6 +101,7 @@ class SystemLayout extends StatelessWidget {
         ? Padding(
             padding: const EdgeInsets.all(8.0),
             child: Drawer(
+              width: double.infinity,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
               ),
@@ -111,7 +113,14 @@ class SystemLayout extends StatelessWidget {
                       backgroundColor: Theme.of(context).colorScheme.surface,
                     ),
                   ),
-                  child: UserDrawer(),
+                  child: Builder(
+                    builder: (context) =>
+                      UserDrawer(
+                        onClose: () {
+                          material.Scaffold.of(context).closeDrawer();
+                        },
+                      ),
+                  ),
                 ),
               ),
             ),

@@ -20,8 +20,25 @@ class ToplevelDecor extends StatelessWidget {
   final VoidCallback? onClose;
 
   @override
-  Widget build(BuildContext context) =>
-    AppBar(
+  Widget build(BuildContext context) {
+    final actions = [
+      onMinimize != null
+        ? IconButton(
+            onPressed: onMinimize!,
+            icon: Icon(Icons.windowMinimize),
+          ) : null,
+      onMaximize != null
+        ? IconButton(
+            onPressed: onMaximize!,
+            icon: Icon(Icons.windowMaximize),
+          ) : null,
+      onClose != null
+        ? IconButton(
+            onPressed: onClose!,
+            icon: Icon(Icons.circleXmark),
+          ) : null,
+    ].where((e) => e != null).toList().cast<Widget>();
+    return AppBar(
       automaticallyImplyLeading: false,
       primary: false,
       title: Text(toplevel.title ?? 'Untitled Window'),
@@ -32,24 +49,12 @@ class ToplevelDecor extends StatelessWidget {
           topRight: Radius.circular(12),
         ),
       ),
-      actions: [
-        onMinimize != null
-          ? IconButton(
-              onPressed: onMinimize!,
-              icon: Icon(Icons.windowMinimize),
-            ) : null,
-        onMaximize != null
-          ? IconButton(
-              onPressed: onMaximize!,
-              icon: Icon(Icons.windowMaximize),
-            ) : null,
-        onClose != null
-          ? IconButton(
-              onPressed: onClose!,
-              icon: Icon(Icons.circleXmark),
-            ) : null,
-      ].where((e) => e != null).toList().cast<Widget>(),
+      actions: actions.isEmpty
+        ? [
+            const SizedBox()
+          ] : actions,
     );
+  }
 }
 
 class ToplevelView extends StatefulWidget {
@@ -91,13 +96,10 @@ class _ToplevelViewState extends State<ToplevelView> {
 
   @override
   Widget _buildContent(BuildContext context, DisplayServerToplevel toplevel) {
-    Widget content = ConstrainedBox(
-      constraints: toplevel.buildBoxConstraints(),
-      child: toplevel.texture == null
-        ? SizedBox() : Texture(
-            textureId: toplevel.texture!,
-          ),
-    );
+    Widget content = toplevel.texture == null
+      ? SizedBox() : Texture(
+          textureId: toplevel.texture!,
+        );
 
     if (widget.isFocusable) {
       content = Focus(
@@ -116,7 +118,10 @@ class _ToplevelViewState extends State<ToplevelView> {
           return true;
         },
         child: SizeChangedLayoutNotifier(
-          child: content,
+          child: ConstrainedBox(
+            constraints: toplevel.buildBoxConstraints(),
+            child: content,
+          ),
         ),
       );
     }

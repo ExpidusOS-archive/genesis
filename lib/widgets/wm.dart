@@ -84,21 +84,24 @@ class WindowManagerView extends StatefulWidget {
   final WindowManagerMode mode;
 
   @override
-  State<WindowManagerView> createState() => _WindowManagerViewState();
+  State<WindowManagerView> createState() => WindowManagerViewState();
+
+  static WindowManagerViewState? maybeOf(BuildContext context) =>
+    context.findAncestorStateOfType<WindowManagerViewState>();
+
+  static WindowManagerViewState of(BuildContext context) => maybeOf(context)!;
 }
 
-class _WindowManagerViewState extends State<WindowManagerView> {
-  late WindowManager _instance;
+class WindowManagerViewState extends State<WindowManagerView> {
+  WindowManager _instance = WindowManager();
   late StreamSubscription<DisplayServerToplevel> _toplevelAdded;
   late StreamSubscription<DisplayServerToplevel> _toplevelRemoved;
+
+  WindowManager get instance => _instance;
 
   @override
   void initState() {
     super.initState();
-
-    _instance = WindowManager(
-      mode: widget.mode,
-    );
 
     _toplevelAdded = widget.displayServer.toplevelAdded.listen((toplevel) {
       _instance.fromToplevel(toplevel);
