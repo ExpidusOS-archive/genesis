@@ -12,12 +12,14 @@ class ToplevelDecor extends StatelessWidget {
     this.onMinimize,
     this.onMaximize,
     this.onClose,
+    this.onDrag,
   });
 
   final DisplayServerToplevel toplevel;
   final VoidCallback? onMinimize;
   final VoidCallback? onMaximize;
   final VoidCallback? onClose;
+  final GestureDragUpdateCallback? onDrag;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,8 @@ class ToplevelDecor extends StatelessWidget {
             icon: Icon(Icons.circleXmark),
           ) : null,
     ].where((e) => e != null).toList().cast<Widget>();
-    return AppBar(
+
+    Widget value = AppBar(
       automaticallyImplyLeading: false,
       primary: false,
       title: Text(toplevel.title ?? 'Untitled Window'),
@@ -54,6 +57,15 @@ class ToplevelDecor extends StatelessWidget {
             const SizedBox()
           ] : actions,
     );
+
+    if (onDrag != null) {
+      value = GestureDetector(
+        onPanUpdate: onDrag!,
+        child: value,
+      );
+    }
+
+    return value;
   }
 }
 

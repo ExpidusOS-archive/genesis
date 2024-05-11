@@ -20,8 +20,11 @@ class WindowView extends StatelessWidget {
   final WindowManagerMode? mode;
 
   Widget _buildInner(BuildContext context) {
+    final _win = context.watch<Window>();
+    final _mode = mode ?? _win.manager.mode;
+
     Widget content = ToplevelView(
-      toplevel: win.toplevel,
+      toplevel: _win.toplevel,
       buildDecor: (context, toplevel, content) =>
         !Breakpoints.small.isActive(context)
           ? Container(
@@ -36,6 +39,10 @@ class WindowView extends StatelessWidget {
                     onClose: () {
                       win.toplevel.close();
                     },
+                    onDrag: (info) {
+                      _win.x += info.delta.dx;
+                      _win.y += info.delta.dy;
+                    },
                   ),
                   ClipRRect(
                     borderRadius: BorderRadius.only(
@@ -49,13 +56,13 @@ class WindowView extends StatelessWidget {
             ) : null,
     );
 
-    if (mode == WindowManagerMode.floating) {
+    if (_mode == WindowManagerMode.floating) {
       content = Positioned(
-        top: win.y,
-        left: win.x,
+        top: _win.y,
+        left: _win.x,
         child: Container(
-          width: win.toplevel.size != null ? (win.toplevel.size!.width ?? 0).toDouble() : null,
-          height: win.toplevel.size != null ? (win.toplevel.size!.height ?? 0).toDouble() + (kToolbarHeight / 1.5) : null,
+          width: _win.toplevel.size != null ? (_win.toplevel.size!.width ?? 0).toDouble() : null,
+          height: _win.toplevel.size != null ? (_win.toplevel.size!.height ?? 0).toDouble() + (kToolbarHeight / 1.5) : null,
           child: content,
         ),
       );
@@ -102,6 +109,8 @@ class WindowManagerViewState extends State<WindowManagerView> {
   @override
   void initState() {
     super.initState();
+
+    _instance.mode = widget.mode;
 
     _toplevelAdded = widget.displayServer.toplevelAdded.listen((toplevel) {
       _instance.fromToplevel(toplevel);
