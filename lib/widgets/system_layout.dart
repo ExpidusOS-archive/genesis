@@ -4,11 +4,11 @@ import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
 
+import 'activity_drawer.dart';
 import 'account_profile.dart';
 import 'output_layout.dart';
 import 'system_bar.dart';
 import 'system_drawer.dart';
-import 'user_drawer.dart';
 
 class SystemLayout extends StatelessWidget {
   const SystemLayout({
@@ -117,7 +117,7 @@ class SystemLayout extends StatelessWidget {
                   ),
                   child: Builder(
                     builder: (context) =>
-                      UserDrawer(
+                      ActivityDrawer(
                         hasDisplayServer: hasDisplayServer,
                         onClose: () {
                           material.Scaffold.of(context).closeDrawer();

@@ -7,6 +7,7 @@
         program = "${lib.getExe pkgs.expidus.genesis-shell} --display-manager";
       };
       accounts-daemon.enable = true;
+      upower.enable = true;
     };
 
     users.users.${config.services.cage.user} = {

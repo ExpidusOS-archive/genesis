@@ -2,7 +2,7 @@ import 'package:flutter/material.dart' as material;
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
 
-import 'user_drawer.dart';
+import 'activity_drawer.dart';
 
 class SystemNavbar extends StatefulWidget {
   const SystemNavbar({ super.key });
@@ -33,7 +33,7 @@ class _SystemNavbarState extends State<SystemNavbar> {
                 _controller = null;
               } else {
                 _controller = material.Scaffold.of(context).showBottomSheet((context) =>
-                  UserDrawer(
+                  ActivityDrawer(
                     onClose: () {
                       _controller!.close();
                     },

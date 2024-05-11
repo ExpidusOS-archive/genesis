@@ -13,8 +13,8 @@ import '../logic/wm.dart';
 
 import 'toplevel.dart';
 
-class UserDrawer extends StatelessWidget {
-  const UserDrawer({
+class ActivityDrawer extends StatelessWidget {
+  const ActivityDrawer({
     super.key,
     required this.onClose,
     this.hasDisplayServer = false,
@@ -28,7 +28,7 @@ class UserDrawer extends StatelessWidget {
     ListView(
       children: [
         hasDisplayServer
-          ? SingleChildScrollView(
+          ? Container(height: MediaQuery.of(context).size.height / 3, child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: context.watch<DisplayServer>().toplevels.map(
@@ -77,11 +77,14 @@ class UserDrawer extends StatelessWidget {
                     )
                 ).toList(),
               ),
-            ) : null,
+            )) : null,
         Padding(
           padding: const EdgeInsets.all(8),
-          child: GridView.count(
-            crossAxisCount: 5,
+          child: GridView(
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 84,
+              mainAxisExtent: 84,
+            ),
             shrinkWrap: true,
             children: (Provider.of<ApplicationsManager>(context).applications.toList()..where((app) => !app.isHidden))
               .map(
@@ -93,17 +96,18 @@ class UserDrawer extends StatelessWidget {
                     },
                     child: Column(
                       children: [
+                        const Spacer(),
                         app.icon != null
                           ? (path.extension(app.icon!) == '.svg'
                             ? SvgPicture.file(
                                 File(app.icon!),
-                                width: 40,
-                                height: 40,
+                                width: 64,
+                                height: 64,
                               ) : Image.file(
                                     File(app.icon!),
-                                    width: 40,
-                                    height: 40,
-                                  )) : Icon(Icons.tablet, size: 40),
+                                    width: 64,
+                                    height: 64,
+                                  )) : Icon(Icons.tablet, size: 58),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
                           child: Text(
@@ -111,6 +115,7 @@ class UserDrawer extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        const Spacer(),
                       ],
                     ),
                   )
