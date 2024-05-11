@@ -29,56 +29,59 @@ class ActivityDrawer extends StatelessWidget {
     ListView(
       children: [
         hasDisplayServer
-          ? Container(height: MediaQuery.of(context).size.height / 3, child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: context.watch<DisplayServer>().toplevels.map(
-                  (toplevel) =>
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: InkWell(
-                        onTap: () {
-                          final wm = Provider.of<WindowManager>(context, listen: false);
-                          final win = wm.fromToplevel(toplevel);
+          ? Container(
+              height: context.watch<DisplayServer>().toplevels.isEmpty ? 0 : MediaQuery.of(context).size.height / 3,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: context.watch<DisplayServer>().toplevels.map(
+                    (toplevel) =>
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: InkWell(
+                          onTap: () {
+                            final wm = Provider.of<WindowManager>(context, listen: false);
+                            final win = wm.fromToplevel(toplevel);
 
-                          win.toplevel.setActive(true);
-                          win.minimized = false;
-                          win.layer++;
+                            win.toplevel.setActive(true);
+                            win.minimized = false;
+                            win.raiseToTop();
 
-                          onClose();
-                        },
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: ToplevelView(
-                            toplevel: toplevel,
-                            isFocusable: false,
-                            isSizable: false,
-                            buildDecor: (context, toplevel, content) =>
-                              !Breakpoints.small.isActive(context)
-                                ? Container(
-                                    width: toplevel.size != null ? (toplevel.size!.width ?? 0).toDouble() : null,
-                                    child: Column(
-                                      children: [
-                                        ToplevelDecor(
-                                          toplevel: toplevel,
-                                        ),
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.only(
-                                            bottomLeft: Radius.circular(12),
-                                            bottomRight: Radius.circular(12),
+                            onClose();
+                          },
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: ToplevelView(
+                              toplevel: toplevel,
+                              isFocusable: false,
+                              isSizable: false,
+                              buildDecor: (context, toplevel, content) =>
+                                !Breakpoints.small.isActive(context)
+                                  ? Container(
+                                      width: toplevel.size != null ? (toplevel.size!.width ?? 0).toDouble() : null,
+                                      child: Column(
+                                        children: [
+                                          ToplevelDecor(
+                                            toplevel: toplevel,
                                           ),
-                                          child: content,
-                                        ),
-                                      ],
-                                    ),
-                                  ) : null,
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(12),
+                                              bottomRight: Radius.circular(12),
+                                            ),
+                                            child: content,
+                                          ),
+                                        ],
+                                      ),
+                                    ) : null,
+                            ),
                           ),
                         ),
-                      ),
-                    )
-                ).toList(),
+                      )
+                  ).toList(),
+                ),
               ),
-            )) : null,
+            ) : null,
         Padding(
           padding: const EdgeInsets.all(8),
           child: GridView(

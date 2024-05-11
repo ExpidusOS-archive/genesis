@@ -11,10 +11,11 @@ enum WindowManagerMode {
 class WindowManager extends ChangeNotifier {
   WindowManager({
     this.mode = WindowManagerMode.stacking,
-  });
+  }) : _next_layer = 0;
 
   WindowManagerMode mode;
   List<Window> _wins = [];
+  int _next_layer;
 
   void dispose() {}
 
@@ -24,6 +25,7 @@ class WindowManager extends ChangeNotifier {
     }
 
     final win = Window._(this, toplevel);
+    win._layer = _next_layer++;
     _wins.add(win);
     notifyListeners();
     return win;
@@ -75,5 +77,11 @@ class Window extends ChangeNotifier {
   set minimized(bool value) {
     _minimized = value;
     notifyListeners();
+  }
+
+  bool get isOnTop => layer == (manager._next_layer - 1);
+
+  void raiseToTop() {
+    layer = manager._next_layer++;
   }
 }
