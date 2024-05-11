@@ -16,6 +16,7 @@ class SystemLayout extends StatelessWidget {
     required this.body,
     this.userMode = false,
     this.isLocked = false,
+    this.hasDisplayServer = false,
     this.bottomSheet,
     this.bottomNavigationBar,
     this.userName = null,
@@ -24,6 +25,7 @@ class SystemLayout extends StatelessWidget {
   final Widget body;
   final bool userMode;
   final bool isLocked;
+  final bool hasDisplayServer;
   final Widget? bottomSheet;
   final Widget? bottomNavigationBar;
   final String? userName;
@@ -116,6 +118,7 @@ class SystemLayout extends StatelessWidget {
                   child: Builder(
                     builder: (context) =>
                       UserDrawer(
+                        hasDisplayServer: hasDisplayServer,
                         onClose: () {
                           material.Scaffold.of(context).closeDrawer();
                         },

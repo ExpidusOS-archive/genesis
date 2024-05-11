@@ -17,64 +17,67 @@ class UserDrawer extends StatelessWidget {
   const UserDrawer({
     super.key,
     required this.onClose,
+    this.hasDisplayServer = false,
   });
 
   final VoidCallback onClose;
+  final bool hasDisplayServer;
 
   @override
   Widget build(BuildContext context) => 
     ListView(
       children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: context.watch<DisplayServer>().toplevels.map(
-              (toplevel) =>
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: InkWell(
-                    onTap: () {
-                      final wm = Provider.of<WindowManager>(context, listen: false);
-                      final win = wm.fromToplevel(toplevel);
+        hasDisplayServer
+          ? SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: context.watch<DisplayServer>().toplevels.map(
+                  (toplevel) =>
+                    Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: InkWell(
+                        onTap: () {
+                          final wm = Provider.of<WindowManager>(context, listen: false);
+                          final win = wm.fromToplevel(toplevel);
 
-                      win.toplevel.setActive(true);
-                      win.minimized = false;
-                      win.layer++;
+                          win.toplevel.setActive(true);
+                          win.minimized = false;
+                          win.layer++;
 
-                      onClose();
-                    },
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: ToplevelView(
-                        toplevel: toplevel,
-                        isFocusable: false,
-                        isSizable: false,
-                        buildDecor: (context, toplevel, content) =>
-                          !Breakpoints.small.isActive(context)
-                            ? Container(
-                                width: toplevel.size != null ? (toplevel.size!.width ?? 0).toDouble() : null,
-                                child: Column(
-                                  children: [
-                                    ToplevelDecor(
-                                      toplevel: toplevel,
+                          onClose();
+                        },
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: ToplevelView(
+                            toplevel: toplevel,
+                            isFocusable: false,
+                            isSizable: false,
+                            buildDecor: (context, toplevel, content) =>
+                              !Breakpoints.small.isActive(context)
+                                ? Container(
+                                    width: toplevel.size != null ? (toplevel.size!.width ?? 0).toDouble() : null,
+                                    child: Column(
+                                      children: [
+                                        ToplevelDecor(
+                                          toplevel: toplevel,
+                                        ),
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(12),
+                                            bottomRight: Radius.circular(12),
+                                          ),
+                                          child: content,
+                                        ),
+                                      ],
                                     ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.only(
-                                        bottomLeft: Radius.circular(12),
-                                        bottomRight: Radius.circular(12),
-                                      ),
-                                      child: content,
-                                    ),
-                                  ],
-                                ),
-                              ) : null,
+                                  ) : null,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                )
-            ).toList(),
-          ),
-        ),
+                    )
+                ).toList(),
+              ),
+            ) : null,
         Padding(
           padding: const EdgeInsets.all(8),
           child: GridView.count(
@@ -114,6 +117,6 @@ class UserDrawer extends StatelessWidget {
               ).toList(),
           ),
         ),
-      ],
+      ].where((e) => e != null).toList().cast<Widget>(),
     );
 }

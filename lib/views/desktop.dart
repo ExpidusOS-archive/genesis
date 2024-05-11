@@ -108,6 +108,7 @@ class _DesktopViewState extends State<DesktopView> {
       key: _key,
       userMode: true,
       userName: widget.userName,
+      hasDisplayServer: _displayServer != null,
       body: Container(
         decoration: BoxDecoration(
           image: getWallpaper(
