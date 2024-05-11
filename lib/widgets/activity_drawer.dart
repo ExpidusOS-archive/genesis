@@ -1,3 +1,4 @@
+import 'dart:io' as io;
 import 'dart:io' if (dart.library.html) '../logic/io_none.dart';
 
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
@@ -104,7 +105,7 @@ class ActivityDrawer extends StatelessWidget {
                                 width: 64,
                                 height: 64,
                               ) : Image.file(
-                                    File(app.icon!),
+                                    io.File(app.icon!),
                                     width: 64,
                                     height: 64,
                                   )) : Icon(Icons.tablet, size: 58),
