@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter_svg/src/utilities/_file_none.dart' as io;
 
 class File extends io.File {
