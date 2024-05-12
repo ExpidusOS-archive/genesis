@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 
 import '../logic/display.dart';
+import '../logic/outputs.dart';
 import '../logic/wm.dart';
 
 import 'toplevel.dart';
@@ -83,60 +84,26 @@ class WindowView extends StatelessWidget {
     );
 }
 
-class WindowManagerView extends StatefulWidget {
+class WindowManagerView extends StatelessWidget {
   const WindowManagerView({
     super.key,
     required this.displayServer,
-    this.mode = WindowManagerMode.floating,
+    required this.windowManager,
+    required this.output,
+    required this.outputIndex,
   });
 
   final DisplayServer displayServer;
-  final WindowManagerMode mode;
-
-  @override
-  State<WindowManagerView> createState() => WindowManagerViewState();
-
-  static WindowManagerViewState? maybeOf(BuildContext context) =>
-    context.findAncestorStateOfType<WindowManagerViewState>();
-
-  static WindowManagerViewState of(BuildContext context) => maybeOf(context)!;
-}
-
-class WindowManagerViewState extends State<WindowManagerView> {
-  WindowManager _instance = WindowManager();
-  late StreamSubscription<DisplayServerToplevel> _toplevelAdded;
-  late StreamSubscription<DisplayServerToplevel> _toplevelRemoved;
-
-  WindowManager get instance => _instance;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _instance.mode = widget.mode;
-
-    _toplevelAdded = widget.displayServer.toplevelAdded.listen((toplevel) {
-      _instance.fromToplevel(toplevel);
-    });
-
-    _toplevelRemoved = widget.displayServer.toplevelRemoved.listen((toplevel) {
-      _instance.removeToplevel(toplevel);
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _instance.dispose();
-    _toplevelAdded.cancel();
-    _toplevelRemoved.cancel();
-  }
+  final WindowManager windowManager;
+  final Output output;
+  final int outputIndex;
 
   List<Window> _getWindows(BuildContext context) {
-    final displayServer = context.watch<DisplayServer>();
-    final wm = context.watch<WindowManager>();
+    final _displayServer = context.watch<DisplayServer>();
+    final _wm = context.watch<WindowManager>();
 
-    final list = displayServer.toplevels.map((toplevel) => wm.fromToplevel(toplevel))
+    final list = _displayServer.toplevels.map((toplevel) => _wm.fromToplevel(toplevel))
+      .where((win) => win.monitor == outputIndex)
       .where((win) => !win.minimized).toList();
     list.sort((a, b) => a.layer.compareTo(b.layer));
     return list;
@@ -171,15 +138,15 @@ class WindowManagerViewState extends State<WindowManagerView> {
   Widget build(BuildContext context) =>
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<DisplayServer>.value(value: widget.displayServer),
-        ChangeNotifierProvider<WindowManager>.value(value: _instance),
+        ChangeNotifierProvider<DisplayServer>.value(value: displayServer),
+        ChangeNotifierProvider<WindowManager>.value(value: windowManager),
       ],
       child: Builder(
         builder: (<WindowManagerMode, WidgetBuilder>{
           WindowManagerMode.tiling: _buildTiling,
           WindowManagerMode.floating: _buildFloating,
           WindowManagerMode.stacking: _buildStacking,
-        })[widget.mode]!,
+        })[windowManager.mode]!,
       ),
     );
 }

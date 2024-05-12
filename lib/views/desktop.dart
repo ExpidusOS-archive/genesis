@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
@@ -40,8 +42,12 @@ class _DesktopViewState extends State<DesktopView> {
 
   String? sessionName = null;
   DisplayServer? _displayServer = null;
+  WindowManager? _windowManager = null;
+
+  late StreamSubscription<DisplayServerToplevel> _toplevelAdded;
+  late StreamSubscription<DisplayServerToplevel> _toplevelRemoved;
+
   GlobalKey _key = GlobalKey();
-  GlobalKey<WindowManagerViewState> _wmKey = GlobalKey();
 
   void _syncOutputs() {
     final outputs = Provider.of<OutputManager>(_key.currentContext!, listen: false);
@@ -57,6 +63,10 @@ class _DesktopViewState extends State<DesktopView> {
       }
     }
 
+    _windowManager = WindowManager(
+      mode: Breakpoints.small.isActive(_key.currentContext!) ? WindowManagerMode.stacking : WindowManagerMode.floating,
+    );
+
     final displayManager = Provider.of<DisplayManager>(_key.currentContext!, listen: false);
 
     _displayServer = await displayManager.start(
@@ -65,6 +75,14 @@ class _DesktopViewState extends State<DesktopView> {
 
     final outputs = Provider.of<OutputManager>(_key.currentContext!, listen: false);
     outputs.addListener(_syncOutputs);
+
+    _toplevelAdded = _displayServer!.toplevelAdded.listen((toplevel) {
+      _windowManager!.fromToplevel(toplevel);
+    });
+
+    _toplevelRemoved = _displayServer!.toplevelRemoved.listen((toplevel) {
+      _windowManager!.removeToplevel(toplevel);
+    });
 
     _syncOutputs();
   }
@@ -88,6 +106,12 @@ class _DesktopViewState extends State<DesktopView> {
       });
     }
 
+    if (_windowManager != null) {
+      _toplevelAdded.cancel();
+      _toplevelRemoved.cancel();
+      _windowManager!.dispose();
+    }
+
     if (_displayServer != null) {
       _displayServer!.stop();
     }
@@ -104,35 +128,37 @@ class _DesktopViewState extends State<DesktopView> {
 
   @override
   Widget build(BuildContext context) {
-    Widget value = SystemLayout(
+    Widget value = SystemLayout.bodyBuilder(
       key: _key,
       userMode: true,
       userName: widget.userName,
       hasDisplayServer: _displayServer != null,
-      body: Container(
-        decoration: BoxDecoration(
-          image: getWallpaper(
-            path: (Breakpoints.small.isActive(context) ? widget.mobileWallpaper : widget.desktopWallpaper) ?? widget.wallpaper,
-            fallback: AssetImage('assets/wallpaper/${Breakpoints.small.isActive(context) ? 'mobile' : 'desktop'}/default.jpg'),
-          )
+      bodyBuilder: (context, output, outputIndex) =>
+        Container(
+          decoration: BoxDecoration(
+            image: getWallpaper(
+              path: (Breakpoints.small.isActive(context) ? widget.mobileWallpaper : widget.desktopWallpaper) ?? widget.wallpaper,
+              fallback: AssetImage('assets/wallpaper/${Breakpoints.small.isActive(context) ? 'mobile' : 'desktop'}/default.jpg'),
+            ),
+          ),
+          constraints: BoxConstraints.expand(),
+          child: _displayServer != null && _windowManager != null
+            ? WindowManagerView(
+                displayServer: _displayServer!,
+                windowManager: _windowManager!,
+                output: output,
+                outputIndex: outputIndex,
+              ) : null,
         ),
-        constraints: BoxConstraints.expand(),
-        child: _displayServer != null
-          ? WindowManagerView(
-              key: _wmKey,
-              displayServer: _displayServer!,
-              mode: Breakpoints.small.isActive(context) ? WindowManagerMode.stacking : WindowManagerMode.floating,
-            ) : null,
-      ),
       bottomNavigationBar: Breakpoints.small.isActive(context)
         ? SystemNavbar() : null,
     );
 
-    if (_displayServer != null) {
+    if (_displayServer != null && _windowManager != null) {
       value = ChangeNotifierProvider<DisplayServer>.value(
         value: _displayServer!,
         child: ChangeNotifierProvider<WindowManager>(
-          create: (context) => _wmKey!.currentState!.instance,
+          create: (context) => _windowManager!,
           child: value,
         ),
       );

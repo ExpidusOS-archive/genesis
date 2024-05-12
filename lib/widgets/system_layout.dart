@@ -3,6 +3,9 @@ import 'package:flutter/material.dart' as material;
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
+import 'package:provider/provider.dart';
+
+import '../logic/outputs.dart';
 
 import 'activity_drawer.dart';
 import 'account_profile.dart';
@@ -20,9 +23,21 @@ class SystemLayout extends StatelessWidget {
     this.bottomSheet,
     this.bottomNavigationBar,
     this.userName = null,
-  });
+  }) : bodyBuilder = null;
 
-  final Widget body;
+  const SystemLayout.bodyBuilder({
+    super.key,
+    required this.bodyBuilder,
+    this.userMode = false,
+    this.isLocked = false,
+    this.hasDisplayServer = false,
+    this.bottomSheet,
+    this.bottomNavigationBar,
+    this.userName = null,
+  }) : body = null;
+
+  final Widget? body;
+  final Widget Function(BuildContext context, Output output, int outputIndex)? bodyBuilder;
   final bool userMode;
   final bool isLocked;
   final bool hasDisplayServer;
@@ -30,7 +45,7 @@ class SystemLayout extends StatelessWidget {
   final Widget? bottomNavigationBar;
   final String? userName;
 
-  Widget _buildMobile(BuildContext context) =>
+  Widget _buildMobile(BuildContext context, Output output, int outputIndex) =>
     BackdropScaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kSystemBarHeight),
@@ -84,13 +99,13 @@ class SystemLayout extends StatelessWidget {
           ),
       ),
       frontLayerScrim: Theme.of(context).colorScheme.background,
-      frontLayer: body,
+      frontLayer: body ?? bodyBuilder!(context, output, outputIndex),
       bottomSheet: bottomSheet,
       bottomNavigationBar: bottomNavigationBar,
       extendBody: true,
     );
 
-  Widget _buildDesktop(BuildContext context) =>
+  Widget _buildDesktop(BuildContext context, Output output, int outputIndex) =>
     Scaffold(
       appBar: const PreferredSize(
         preferredSize: const Size(double.infinity, kSystemBarHeight + 4.0),
@@ -151,7 +166,7 @@ class SystemLayout extends StatelessWidget {
           ),
         ),
       ),
-      body: body,
+      body: body ?? bodyBuilder!(context, output, outputIndex),
       bottomSheet: bottomSheet,
       bottomNavigationBar: bottomNavigationBar,
       extendBody: true,
@@ -160,23 +175,26 @@ class SystemLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
     OutputLayout(
-      builder: (context) =>
-        AdaptiveLayout(
-          body: SlotLayout(
-            config: {
-              Breakpoints.small: SlotLayout.from(
-                key: const Key('Body Small'),
-                builder: _buildMobile,
-              ),
-              Breakpoints.medium: SlotLayout.from(
-                key: const Key('Body Medium'),
-                builder: _buildDesktop,
-              ),
-              Breakpoints.large: SlotLayout.from(
-                key: const Key('Body Large'),
-                builder: _buildDesktop,
-              ),
-            },
+      builder: (context, output, outputIndex) =>
+        Provider<Output>.value(
+          value: output,
+          child: AdaptiveLayout(
+            body: SlotLayout(
+              config: {
+                Breakpoints.small: SlotLayout.from(
+                  key: const Key('Body Small'),
+                  builder: (context) => _buildMobile(context, output, outputIndex),
+                ),
+                Breakpoints.medium: SlotLayout.from(
+                  key: const Key('Body Medium'),
+                  builder: (context) => _buildDesktop(context, output, outputIndex),
+                ),
+                Breakpoints.large: SlotLayout.from(
+                  key: const Key('Body Large'),
+                  builder: (context) => _buildDesktop(context, output, outputIndex),
+                ),
+              },
+            ),
           ),
         ),
     );
