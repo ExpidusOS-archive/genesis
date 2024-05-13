@@ -207,6 +207,7 @@ class DisplayServerToplevel extends ChangeNotifier {
   DisplayServerToplevel._(this._server, this.id) :
     _active = false,
     _suspended = false,
+    _maximized = false,
     _hasDecorations = false;
 
   final DisplayServer _server;
@@ -248,6 +249,9 @@ class DisplayServerToplevel extends ChangeNotifier {
   bool _suspended;
   bool get suspended => _suspended;
 
+  bool _maximized;
+  bool get maximized => _maximized;
+
   bool _hasDecorations;
   bool get hasDecorations => _hasDecorations;
 
@@ -277,6 +281,7 @@ class DisplayServerToplevel extends ChangeNotifier {
     _maxSize = DisplayServerToplevelSize.fromJSON(data['maxSize']);
     _active = data['active'];
     _suspended = data['suspended'];
+    _maximized = data['maximized'];
     _hasDecorations = data['hasDecorations'];
     notifyListeners();
   }
@@ -307,6 +312,16 @@ class DisplayServerToplevel extends ChangeNotifier {
       'name': _server.name,
       'id': id,
       'suspended': suspended,
+    });
+    await sync();
+  }
+
+  Future<void> setMaximized(bool isMaximized) async {
+    _maximized = isMaximized;
+    await DisplayManager.channel.invokeMethod('setToplevel', <String, dynamic>{
+      'name': _server.name,
+      'id': id,
+      'maximized': maximized,
     });
     await sync();
   }

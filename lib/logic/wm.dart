@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 
 import 'display.dart';
@@ -43,6 +44,7 @@ class Window extends ChangeNotifier {
 
   final WindowManager manager;
   final DisplayServerToplevel toplevel;
+  Size? _size;
 
   @override
   void notifyListeners() {
@@ -90,5 +92,16 @@ class Window extends ChangeNotifier {
 
   void raiseToTop() {
     layer = manager._next_layer++;
+  }
+
+  Future<void> restore() async {
+    if (_size != null) {
+      await toplevel.setSize(_size!.width.toInt(), _size!.height.toInt());
+    }
+  }
+
+  Future<void> maximize(Size desktopSize) async {
+    _size = Size(toplevel.size!.width!.toDouble(), toplevel.size!.height!.toDouble());
+    await toplevel.setSize(desktopSize.width.toInt(), desktopSize.height.toInt());
   }
 }

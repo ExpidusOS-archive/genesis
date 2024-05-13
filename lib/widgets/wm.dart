@@ -14,10 +14,12 @@ class WindowView extends StatelessWidget {
   const WindowView({
     super.key,
     required this.win,
+    required this.desktopSize,
     this.mode = null,
   });
 
   final Window win;
+  final Size desktopSize;
   final WindowManagerMode? mode;
 
   Widget _buildInner(BuildContext context) {
@@ -36,6 +38,13 @@ class WindowView extends StatelessWidget {
                     toplevel: toplevel,
                     onMinimize: () {
                       win.minimized = true;
+                    },
+                    onMaximize: () {
+                      if (win.toplevel.maximized) {
+                        win.restore();
+                      } else {
+                        win.maximize(desktopSize);
+                      }
                     },
                     onClose: () {
                       win.toplevel.close();
@@ -84,7 +93,7 @@ class WindowView extends StatelessWidget {
     );
 }
 
-class WindowManagerView extends StatelessWidget {
+class WindowManagerView extends StatefulWidget {
   const WindowManagerView({
     super.key,
     required this.displayServer,
@@ -98,12 +107,17 @@ class WindowManagerView extends StatelessWidget {
   final Output output;
   final int outputIndex;
 
-  List<Window> _getWindows(BuildContext context) {
-    final _displayServer = context.watch<DisplayServer>();
-    final _wm = context.watch<WindowManager>();
+  @override
+  State<WindowManagerView> createState() => _WindowManagerViewState();
+}
 
-    final list = _displayServer.toplevels.map((toplevel) => _wm.fromToplevel(toplevel))
-      .where((win) => win.monitor == outputIndex)
+class _WindowManagerViewState extends State<WindowManagerView> {
+  List<Window> _getWindows(BuildContext context) {
+    final displayServer = context.watch<DisplayServer>();
+    final wm = context.watch<WindowManager>();
+
+    final list = displayServer.toplevels.map((toplevel) => wm.fromToplevel(toplevel))
+      .where((win) => win.monitor == widget.outputIndex)
       .where((win) => !win.minimized).toList();
     list.sort((a, b) => a.layer.compareTo(b.layer));
     return list;
@@ -115,14 +129,20 @@ class WindowManagerView extends StatelessWidget {
         maxCrossAxisExtent: MediaQuery.of(context).size.width,
       ),
       children: _getWindows(context).map(
-        (win) => WindowView(win: win)
+        (win) => WindowView(
+          win: win,
+          desktopSize: (context.findRenderObject() as RenderBox).size,
+        )
       ).toList(),
     );
 
   Widget _buildFloating(BuildContext context) =>
     Stack(
       children: _getWindows(context).map(
-        (win) => WindowView(win: win),
+        (win) => WindowView(
+          win: win,
+          desktopSize: (context.findRenderObject() as RenderBox).size,
+        ),
       ).toList(),
     );
 
@@ -130,7 +150,10 @@ class WindowManagerView extends StatelessWidget {
     Stack(
       fit: StackFit.expand,
       children: _getWindows(context).map(
-        (win) => WindowView(win: win),
+        (win) => WindowView(
+          win: win,
+          desktopSize: (context.findRenderObject() as RenderBox).size,
+        ),
       ).toList(),
     );
 
@@ -138,15 +161,15 @@ class WindowManagerView extends StatelessWidget {
   Widget build(BuildContext context) =>
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<DisplayServer>.value(value: displayServer),
-        ChangeNotifierProvider<WindowManager>.value(value: windowManager),
+        ChangeNotifierProvider<DisplayServer>.value(value: widget.displayServer),
+        ChangeNotifierProvider<WindowManager>.value(value: widget.windowManager),
       ],
       child: Builder(
         builder: (<WindowManagerMode, WidgetBuilder>{
           WindowManagerMode.tiling: _buildTiling,
           WindowManagerMode.floating: _buildFloating,
           WindowManagerMode.stacking: _buildStacking,
-        })[windowManager.mode]!,
+        })[widget.windowManager.mode]!,
       ),
     );
 }
