@@ -128,7 +128,7 @@ class _DesktopViewState extends State<DesktopView> {
 
   @override
   Widget build(BuildContext context) {
-    Widget value = SystemLayout.bodyBuilder(
+    Widget value = SystemLayout.builder(
       key: _key,
       userMode: true,
       userName: widget.userName,
@@ -150,13 +150,17 @@ class _DesktopViewState extends State<DesktopView> {
                 outputIndex: outputIndex,
               ) : null,
         ),
-      bottomNavigationBar: Breakpoints.small.isActive(context)
-        ? SystemNavbar() : null,
+      bottomNavigationBarBuilder: Breakpoints.small.isActive(context)
+        ? (context, output, outputIndex) =>
+          SystemNavbar(
+            outputIndex: outputIndex,
+            hasDisplayServer: _displayServer != null && _windowManager != null,
+          ) : null,
     );
 
     if (_displayServer != null && _windowManager != null) {
-      value = ChangeNotifierProvider<DisplayServer>.value(
-        value: _displayServer!,
+      value = ChangeNotifierProvider<DisplayServer>(
+        create: (context) => _displayServer!,
         child: ChangeNotifierProvider<WindowManager>(
           create: (context) => _windowManager!,
           child: value,

@@ -5,7 +5,14 @@ import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
 import 'activity_drawer.dart';
 
 class SystemNavbar extends StatefulWidget {
-  const SystemNavbar({ super.key });
+  const SystemNavbar({
+    super.key,
+    required this.outputIndex,
+    this.hasDisplayServer = false,
+  });
+
+  final int outputIndex;
+  final bool hasDisplayServer;
 
   @override
   State<SystemNavbar> createState() => _SystemNavbarState();
@@ -34,6 +41,8 @@ class _SystemNavbarState extends State<SystemNavbar> {
               } else {
                 _controller = material.Scaffold.of(context).showBottomSheet((context) =>
                   ActivityDrawer(
+                    outputIndex: widget.outputIndex,
+                    hasDisplayServer: widget.hasDisplayServer,
                     onClose: () {
                       _controller!.close();
                     },

@@ -13,6 +13,8 @@ import 'output_layout.dart';
 import 'system_bar.dart';
 import 'system_drawer.dart';
 
+typedef Widget? SystemLayoutBuilder(BuildContext context, Output output, int outputIndex);
+
 class SystemLayout extends StatelessWidget {
   const SystemLayout({
     super.key,
@@ -23,27 +25,36 @@ class SystemLayout extends StatelessWidget {
     this.bottomSheet,
     this.bottomNavigationBar,
     this.userName = null,
-  }) : bodyBuilder = null;
+  }) : bodyBuilder = null,
+       bottomNavigationBarBuilder = null;
 
-  const SystemLayout.bodyBuilder({
+  const SystemLayout.builder({
     super.key,
     required this.bodyBuilder,
     this.userMode = false,
     this.isLocked = false,
     this.hasDisplayServer = false,
     this.bottomSheet,
-    this.bottomNavigationBar,
+    this.bottomNavigationBarBuilder,
     this.userName = null,
-  }) : body = null;
+  }) : body = null,
+       bottomNavigationBar = null;
 
   final Widget? body;
-  final Widget Function(BuildContext context, Output output, int outputIndex)? bodyBuilder;
+  final SystemLayoutBuilder? bodyBuilder;
   final bool userMode;
   final bool isLocked;
   final bool hasDisplayServer;
   final Widget? bottomSheet;
   final Widget? bottomNavigationBar;
+  final SystemLayoutBuilder? bottomNavigationBarBuilder;
   final String? userName;
+
+  Widget? _makeWidget(BuildContext context, Output output, int outputIndex, Widget? a, SystemLayoutBuilder? buildable) {
+    if (a != null) return a!;
+    if (buildable != null) return buildable!(context, output, outputIndex);
+    return null;
+  }
 
   Widget _buildMobile(BuildContext context, Output output, int outputIndex) =>
     BackdropScaffold(
@@ -99,9 +110,9 @@ class SystemLayout extends StatelessWidget {
           ),
       ),
       frontLayerScrim: Theme.of(context).colorScheme.background,
-      frontLayer: body ?? bodyBuilder!(context, output, outputIndex),
+      frontLayer: _makeWidget(context, output, outputIndex, body, bodyBuilder) ?? const SizedBox(),
       bottomSheet: bottomSheet,
-      bottomNavigationBar: bottomNavigationBar,
+      bottomNavigationBar: _makeWidget(context, output, outputIndex, bottomNavigationBar, bottomNavigationBarBuilder),
       extendBody: true,
     );
 
@@ -134,6 +145,7 @@ class SystemLayout extends StatelessWidget {
                     builder: (context) =>
                       ActivityDrawer(
                         hasDisplayServer: hasDisplayServer,
+                        outputIndex: outputIndex,
                         onClose: () {
                           material.Scaffold.of(context).closeDrawer();
                         },
@@ -166,9 +178,9 @@ class SystemLayout extends StatelessWidget {
           ),
         ),
       ),
-      body: body ?? bodyBuilder!(context, output, outputIndex),
+      body: _makeWidget(context, output, outputIndex, body, bodyBuilder),
       bottomSheet: bottomSheet,
-      bottomNavigationBar: bottomNavigationBar,
+      bottomNavigationBar: _makeWidget(context, output, outputIndex, bottomNavigationBar, bottomNavigationBarBuilder),
       extendBody: true,
     );
 

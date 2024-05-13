@@ -18,11 +18,23 @@ class ActivityDrawer extends StatelessWidget {
   const ActivityDrawer({
     super.key,
     required this.onClose,
+    required this.outputIndex,
     this.hasDisplayServer = false,
   });
 
   final VoidCallback onClose;
+  final int outputIndex;
   final bool hasDisplayServer;
+
+  List<Window> _getWindows(BuildContext context) {
+    final displayServer = context.watch<DisplayServer>();
+    final wm = context.watch<WindowManager>();
+
+    final list = displayServer.toplevels.map((toplevel) => wm.fromToplevel(toplevel))
+      .where((win) => win.monitor == outputIndex).toList();
+    list.sort((a, b) => a.layer.compareTo(b.layer));
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) => 
@@ -30,19 +42,16 @@ class ActivityDrawer extends StatelessWidget {
       children: [
         hasDisplayServer
           ? Container(
-              height: context.watch<DisplayServer>().toplevels.isEmpty ? 0 : MediaQuery.of(context).size.height / 3,
+              height: _getWindows(context).isEmpty ? 0 : MediaQuery.of(context).size.height / 3,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: context.watch<DisplayServer>().toplevels.map(
-                    (toplevel) =>
+                  children: _getWindows(context).map(
+                    (win) =>
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: InkWell(
                           onTap: () {
-                            final wm = Provider.of<WindowManager>(context, listen: false);
-                            final win = wm.fromToplevel(toplevel);
-
                             win.toplevel.setActive(true);
                             win.minimized = false;
                             win.raiseToTop();
@@ -52,7 +61,7 @@ class ActivityDrawer extends StatelessWidget {
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: ToplevelView(
-                              toplevel: toplevel,
+                              toplevel: win.toplevel,
                               isFocusable: false,
                               isSizable: false,
                               buildDecor: (context, toplevel, content) =>
