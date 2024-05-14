@@ -45,6 +45,8 @@ class Window extends ChangeNotifier {
   final WindowManager manager;
   final DisplayServerToplevel toplevel;
   Size? _size;
+  double? _old_x;
+  double? _old_y;
 
   @override
   void notifyListeners() {
@@ -97,11 +99,28 @@ class Window extends ChangeNotifier {
   Future<void> restore() async {
     if (_size != null) {
       await toplevel.setSize(_size!.width.toInt(), _size!.height.toInt());
+      await toplevel.setMaximized(false);
+
+      x = _old_x ?? 0;
+      y = _old_y ?? 0;
+
+      _old_x = 0;
+      _old_y = 0;
+      _size = null;
     }
   }
 
   Future<void> maximize(Size desktopSize) async {
     _size = Size(toplevel.size!.width!.toDouble(), toplevel.size!.height!.toDouble());
+    raiseToTop();
+
+    _old_x = x;
+    _old_y = y;
+
+    x = 0;
+    y = 0;
+
+    await toplevel.setMaximized(true);
     await toplevel.setSize(desktopSize.width.toInt(), desktopSize.height.toInt());
   }
 }

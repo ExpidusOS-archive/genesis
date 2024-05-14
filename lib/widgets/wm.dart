@@ -50,6 +50,8 @@ class WindowView extends StatelessWidget {
                       win.toplevel.close();
                     },
                     onDrag: (info) {
+                      if (win.toplevel.maximized) win.restore();
+
                       // FIXME: a bug where multiple windows can drag at the same time after being raised.
                       if (!_win.isOnTop) _win.raiseToTop();
 

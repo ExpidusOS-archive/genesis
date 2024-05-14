@@ -32,7 +32,7 @@ class ToplevelDecor extends StatelessWidget {
       onMaximize != null
         ? IconButton(
             onPressed: onMaximize!,
-            icon: Icon(Icons.windowMaximize),
+            icon: Icon(toplevel.maximized ? Icons.windowRestore : Icons.windowMaximize),
           ) : null,
       onClose != null
         ? IconButton(
