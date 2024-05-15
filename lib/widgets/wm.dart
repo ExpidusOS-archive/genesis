@@ -8,7 +8,7 @@ import '../logic/display.dart';
 import '../logic/outputs.dart';
 import '../logic/wm.dart';
 
-import 'toplevel.dart';
+import 'surface.dart';
 
 class WindowView extends StatelessWidget {
   const WindowView({
@@ -26,31 +26,31 @@ class WindowView extends StatelessWidget {
     final _win = context.watch<Window>();
     final _mode = mode ?? _win.manager.mode;
 
-    Widget content = ToplevelView(
-      toplevel: _win.toplevel,
-      buildDecor: (context, toplevel, content) =>
+    Widget content = SurfaceView(
+      surface: _win.surface,
+      buildDecor: (context, surface, content) =>
         !Breakpoints.small.isActive(context)
           ? Container(
-              width: toplevel.size != null ? (toplevel.size!.width ?? 0).toDouble() : null,
+              width: surface.size != null ? (surface.size!.width ?? 0).toDouble() : null,
               child: Column(
                 children: [
-                  ToplevelDecor(
-                    toplevel: toplevel,
+                  SurfaceDecor(
+                    surface: surface,
                     onMinimize: () {
                       win.minimized = true;
                     },
                     onMaximize: () {
-                      if (win.toplevel.maximized) {
+                      if (win.surface.maximized) {
                         win.restore();
                       } else {
                         win.maximize(desktopSize);
                       }
                     },
                     onClose: () {
-                      win.toplevel.close();
+                      win.surface.close();
                     },
                     onDrag: (info) {
-                      if (win.toplevel.maximized) win.restore();
+                      if (win.surface.maximized) win.restore();
 
                       // FIXME: a bug where multiple windows can drag at the same time after being raised.
                       if (!_win.isOnTop) _win.raiseToTop();
@@ -76,8 +76,8 @@ class WindowView extends StatelessWidget {
         top: _win.y,
         left: _win.x,
         child: Container(
-          width: _win.toplevel.size != null ? (_win.toplevel.size!.width ?? 0).toDouble() : null,
-          height: _win.toplevel.size != null ? (_win.toplevel.size!.height ?? 0).toDouble() + (kToolbarHeight / 1.5) : null,
+          width: _win.surface.size != null ? (_win.surface.size!.width ?? 0).toDouble() : null,
+          height: _win.surface.size != null ? (_win.surface.size!.height ?? 0).toDouble() + (kToolbarHeight / 1.5) : null,
           child: content,
         ),
       );
@@ -118,7 +118,7 @@ class _WindowManagerViewState extends State<WindowManagerView> {
     final displayServer = context.watch<DisplayServer>();
     final wm = context.watch<WindowManager>();
 
-    final list = displayServer.toplevels.map((toplevel) => wm.fromToplevel(toplevel))
+    final list = displayServer.surfaces.map((surface) => wm.fromSurface(surface))
       .where((win) => win.monitor == widget.outputIndex)
       .where((win) => !win.minimized).toList();
     list.sort((a, b) => a.layer.compareTo(b.layer));

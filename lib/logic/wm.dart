@@ -20,30 +20,30 @@ class WindowManager extends ChangeNotifier {
 
   void dispose() {}
 
-  Window fromToplevel(DisplayServerToplevel toplevel) {
+  Window fromSurface(DisplayServerSurface surface) {
     for (final win in _wins) {
-      if (win.toplevel == toplevel) return win;
+      if (win.surface == surface) return win;
     }
 
-    final win = Window._(this, toplevel);
+    final win = Window._(this, surface);
     win._layer = _next_layer++;
     _wins.add(win);
     notifyListeners();
     return win;
   }
 
-  void removeToplevel(DisplayServerToplevel toplevel) {
-    _wins.removeWhere((win) => win.toplevel == toplevel);
+  void removeSurface(DisplayServerSurface surface) {
+    _wins.removeWhere((win) => win.surface == surface);
     notifyListeners();
   }
 }
 
 class Window extends ChangeNotifier {
-  Window._(this.manager, this.toplevel) :
+  Window._(this.manager, this.surface) :
     _x = 0, _y = 0, _layer = 0, _monitor = 0, _minimized = false;
 
   final WindowManager manager;
-  final DisplayServerToplevel toplevel;
+  final DisplayServerSurface surface;
   Size? _size;
   double? _old_x;
   double? _old_y;
@@ -98,8 +98,8 @@ class Window extends ChangeNotifier {
 
   Future<void> restore() async {
     if (_size != null) {
-      await toplevel.setSize(_size!.width.toInt(), _size!.height.toInt());
-      await toplevel.setMaximized(false);
+      await surface.setSize(_size!.width.toInt(), _size!.height.toInt());
+      await surface.setMaximized(false);
 
       x = _old_x ?? 0;
       y = _old_y ?? 0;
@@ -111,7 +111,7 @@ class Window extends ChangeNotifier {
   }
 
   Future<void> maximize(Size desktopSize) async {
-    _size = Size(toplevel.size!.width!.toDouble(), toplevel.size!.height!.toDouble());
+    _size = Size(surface.size!.width!.toDouble(), surface.size!.height!.toDouble());
     raiseToTop();
 
     _old_x = x;
@@ -120,7 +120,7 @@ class Window extends ChangeNotifier {
     x = 0;
     y = 0;
 
-    await toplevel.setMaximized(true);
-    await toplevel.setSize(desktopSize.width.toInt(), desktopSize.height.toInt());
+    await surface.setMaximized(true);
+    await surface.setSize(desktopSize.width.toInt(), desktopSize.height.toInt());
   }
 }

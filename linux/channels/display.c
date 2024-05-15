@@ -192,7 +192,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
-  } else if (strcmp(fl_method_call_get_name(method_call), "getToplevel") == 0) {
+  } else if (strcmp(fl_method_call_get_name(method_call), "getSurface") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
     const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
     int id = fl_value_get_int(fl_value_lookup_string(args, "id"));
@@ -205,7 +205,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     DisplayChannelDisplay* disp = g_hash_table_lookup(self->displays, name);
 
     if (!g_hash_table_contains(disp->toplevels, &id)) {
-      fl_method_call_respond_error(method_call, "Linux", "Toplevel does not exist", NULL, NULL);
+      fl_method_call_respond_error(method_call, "Linux", "Surface does not exist", NULL, NULL);
       return;
     }
 
@@ -262,7 +262,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     fl_value_set(value, fl_value_new_string("hasDecorations"), fl_value_new_bool(toplevel->has_decor));
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
-  } else if (strcmp(fl_method_call_get_name(method_call), "setToplevel") == 0) {
+  } else if (strcmp(fl_method_call_get_name(method_call), "setSurface") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
     const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
     int id = fl_value_get_int(fl_value_lookup_string(args, "id"));
@@ -275,7 +275,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     DisplayChannelDisplay* disp = g_hash_table_lookup(self->displays, name);
 
     if (!g_hash_table_contains(disp->toplevels, &id)) {
-      fl_method_call_respond_error(method_call, "Linux", "Toplevel does not exist", NULL, NULL);
+      fl_method_call_respond_error(method_call, "Linux", "Surface does not exist", NULL, NULL);
       return;
     }
 
@@ -313,7 +313,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
-  } else if (strcmp(fl_method_call_get_name(method_call), "requestToplevel") == 0) {
+  } else if (strcmp(fl_method_call_get_name(method_call), "requestSurface") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
     const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
     int id = fl_value_get_int(fl_value_lookup_string(args, "id"));
@@ -326,7 +326,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     DisplayChannelDisplay* disp = g_hash_table_lookup(self->displays, name);
 
     if (!g_hash_table_contains(disp->toplevels, &id)) {
-      fl_method_call_respond_error(method_call, "Linux", "Toplevel does not exist", NULL, NULL);
+      fl_method_call_respond_error(method_call, "Linux", "Surface does not exist", NULL, NULL);
       return;
     }
 

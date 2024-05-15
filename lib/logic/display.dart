@@ -14,76 +14,76 @@ class DisplayManager extends ChangeNotifier {
     channel.setMethodCallHandler((call) async {
       print(call.arguments);
       switch (call.method) {
-        case 'newToplevel':
+        case 'newSurface':
           final server = find(call.arguments['name']);
           if (server == null) break;
 
-          final toplevel = DisplayServerToplevel._(server, call.arguments['id']);
+          final surface = DisplayServerSurface._(server, call.arguments['id']);
 
-          server!._toplevelAddedCtrl.add(toplevel);
-          server!._toplevels.add(toplevel);
+          server!._surfaceAddedCtrl.add(surface);
+          server!._surfaces.add(surface);
           server!.notifyListeners();
           break;
-        case 'removeToplevel':
+        case 'removeSurface':
           final server = find(call.arguments['name']);
           if (server == null) break;
 
-          final toplevel = server._toplevels.firstWhere((item) => item.id == call.arguments['id']);
+          final surface = server._surfaces.firstWhere((item) => item.id == call.arguments['id']);
 
-          server!._toplevelRemovedCtrl.add(toplevel);
-          server!._toplevels.removeWhere((item) => item.id == call.arguments['id']);
+          server!._surfaces.add(surface);
+          server!._surfaces.removeWhere((item) => item.id == call.arguments['id']);
           server!.notifyListeners();
           break;
-        case 'requestToplevel':
+        case 'requestSurface':
           final server = find(call.arguments['name']);
           if (server == null) break;
 
-          final toplevel = server._toplevels.firstWhere((item) => item.id == call.arguments['id']);
+          final surface = server._surfaces.firstWhere((item) => item.id == call.arguments['id']);
 
           switch (call.arguments['reqName']) {
             case 'map':
-              toplevel.sync();
+              surface.sync();
               break;
             default:
-              toplevel.notifyListeners();
+              surface.notifyListeners();
               server.notifyListeners();
               break;
           }
 
-          toplevel._reqCtrl.add(call.arguments['reqName']);
+          surface._reqCtrl.add(call.arguments['reqName']);
           break;
-        case 'notifyToplevel':
+        case 'notifySurface':
           final server = find(call.arguments['name']);
           if (server == null) break;
 
-          final toplevel = server._toplevels.firstWhere((item) => item.id == call.arguments['id']);
+          final surface = server._surfaces.firstWhere((item) => item.id == call.arguments['id']);
 
           switch (call.arguments['propName']) {
             case 'appId':
-              toplevel._appId = call.arguments['propValue'];
-              toplevel.notifyListeners();
+              surface._appId = call.arguments['propValue'];
+              surface.notifyListeners();
               break;
             case 'title':
-              toplevel._title = call.arguments['propValue'];
-              toplevel.notifyListeners();
+              surface._title = call.arguments['propValue'];
+              surface.notifyListeners();
               break;
             case 'texture':
-              toplevel._texture = call.arguments['propValue'];
-              toplevel.notifyListeners();
+              surface._texture = call.arguments['propValue'];
+              surface.notifyListeners();
               break;
             case 'parent':
-              toplevel._parent = call.arguments['propValue'];
-              toplevel.notifyListeners();
+              surface._parent = call.arguments['propValue'];
+              surface.notifyListeners();
               break;
             case 'hasDecorations':
-              toplevel._hasDecorations = call.arguments['propValue'];
-              toplevel.notifyListeners();
+              surface._hasDecorations = call.arguments['propValue'];
+              surface.notifyListeners();
               break;
             default:
               throw MissingPluginException();
           }
 
-          toplevel._notifyCtrl.add(DisplayServerToplevelNotify(
+          surface._notifyCtrl.add(DisplayServerSurfaceNotify(
             propName: call.arguments['propName'],
             propValue: call.arguments['propValue'],
           ));
@@ -140,14 +140,14 @@ class DisplayServer extends ChangeNotifier {
   final DisplayManager _manager;
   final String name;
 
-  List<DisplayServerToplevel> _toplevels = [];
-  UnmodifiableListView<DisplayServerToplevel> get toplevels => UnmodifiableListView(_toplevels);
+  List<DisplayServerSurface> _surfaces = [];
+  UnmodifiableListView<DisplayServerSurface> get surfaces => UnmodifiableListView(_surfaces);
 
-  StreamController<DisplayServerToplevel> _toplevelAddedCtrl = StreamController();
-  Stream<DisplayServerToplevel> get toplevelAdded => _toplevelAddedCtrl.stream.asBroadcastStream();
+  StreamController<DisplayServerSurface> _surfaceAddedCtrl = StreamController();
+  Stream<DisplayServerSurface> get surfaceAdded => _surfaceAddedCtrl.stream.asBroadcastStream();
 
-  StreamController<DisplayServerToplevel> _toplevelRemovedCtrl = StreamController();
-  Stream<DisplayServerToplevel> get toplevelRemoved => _toplevelRemovedCtrl.stream.asBroadcastStream();
+  StreamController<DisplayServerSurface> _surfaceRemovedCtrl = StreamController();
+  Stream<DisplayServerSurface> get surfaceRemoved => _surfaceRemovedCtrl.stream.asBroadcastStream();
 
   Future<void> stop() async {
     await DisplayManager.channel.invokeMethod('stop', name);
@@ -164,8 +164,8 @@ class DisplayServer extends ChangeNotifier {
   }
 }
 
-class DisplayServerToplevelNotify {
-  const DisplayServerToplevelNotify({
+class DisplayServerSurfaceNotify {
+  const DisplayServerSurfaceNotify({
     required this.propName,
     required this.propValue,
   });
@@ -174,8 +174,8 @@ class DisplayServerToplevelNotify {
   final String propValue;
 }
 
-class DisplayServerToplevelSize {
-  const DisplayServerToplevelSize({
+class DisplayServerSurfaceSize {
+  const DisplayServerSurfaceSize({
     this.width,
     this.height,
   });
@@ -190,21 +190,21 @@ class DisplayServerToplevelSize {
     };
   }
 
-  static DisplayServerToplevelSize? fromJSON(dynamic data) {
+  static DisplayServerSurfaceSize? fromJSON(dynamic data) {
     final width = data['width'] > 0 ? data['width'] : null;
     final height = data['height'] > 0 ? data['height'] : null;
 
     if (width == null && height == null) return null;
 
-    return DisplayServerToplevelSize(
+    return DisplayServerSurfaceSize(
       width: width,
       height: height,
     );
   }
 }
 
-class DisplayServerToplevel extends ChangeNotifier {
-  DisplayServerToplevel._(this._server, this.id) :
+class DisplayServerSurface extends ChangeNotifier {
+  DisplayServerSurface._(this._server, this.id) :
     _active = false,
     _suspended = false,
     _maximized = false,
@@ -213,8 +213,8 @@ class DisplayServerToplevel extends ChangeNotifier {
   final DisplayServer _server;
   final int id;
 
-  StreamController<DisplayServerToplevelNotify> _notifyCtrl = StreamController();
-  Stream<DisplayServerToplevelNotify> get notify => _notifyCtrl.stream.asBroadcastStream();
+  StreamController<DisplayServerSurfaceNotify> _notifyCtrl = StreamController();
+  Stream<DisplayServerSurfaceNotify> get notify => _notifyCtrl.stream.asBroadcastStream();
 
   StreamController<String> _reqCtrl = StreamController();
   Stream<String> get req => _reqCtrl.stream.asBroadcastStream();
@@ -229,19 +229,19 @@ class DisplayServerToplevel extends ChangeNotifier {
   int? get texture => _texture;
 
   int? _parent;
-  DisplayServerToplevel? get parent {
+  DisplayServerSurface? get parent {
     if (_parent == null) return null;
-    return _server._toplevels.firstWhere((item) => item.id == _parent);
+    return _server._surfaces.firstWhere((item) => item.id == _parent);
   }
 
-  DisplayServerToplevelSize? _size;
-  DisplayServerToplevelSize? get size => _size;
+  DisplayServerSurfaceSize? _size;
+  DisplayServerSurfaceSize? get size => _size;
 
-  DisplayServerToplevelSize? _maxSize;
-  DisplayServerToplevelSize? get maxSize => _maxSize;
+  DisplayServerSurfaceSize? _maxSize;
+  DisplayServerSurfaceSize? get maxSize => _maxSize;
 
-  DisplayServerToplevelSize? _minSize;
-  DisplayServerToplevelSize? get minSize => _minSize;
+  DisplayServerSurfaceSize? _minSize;
+  DisplayServerSurfaceSize? get minSize => _minSize;
 
   bool _active;
   bool get active => _active;
@@ -258,7 +258,7 @@ class DisplayServerToplevel extends ChangeNotifier {
   Future<void> close() => sendRequest('close');
 
   Future<void> sendRequest(String name) async {
-    await DisplayManager.channel.invokeMethod('requestToplevel', <String, dynamic>{
+    await DisplayManager.channel.invokeMethod('requestSurface', <String, dynamic>{
       'name': _server.name,
       'id': id,
       'reqName': name,
@@ -266,7 +266,7 @@ class DisplayServerToplevel extends ChangeNotifier {
   }
 
   Future<void> sync() async {
-    final data = await DisplayManager.channel.invokeMethod('getToplevel', <String, dynamic>{
+    final data = await DisplayManager.channel.invokeMethod('getSurface', <String, dynamic>{
       'name': _server.name,
       'id': id,
     });
@@ -276,9 +276,9 @@ class DisplayServerToplevel extends ChangeNotifier {
     _title = data['title'];
     _texture = data['texture'];
     _parent = data['parent'];
-    _size = DisplayServerToplevelSize.fromJSON(data['size']);
-    _minSize = DisplayServerToplevelSize.fromJSON(data['minSize']);
-    _maxSize = DisplayServerToplevelSize.fromJSON(data['maxSize']);
+    _size = DisplayServerSurfaceSize.fromJSON(data['size']);
+    _minSize = DisplayServerSurfaceSize.fromJSON(data['minSize']);
+    _maxSize = DisplayServerSurfaceSize.fromJSON(data['maxSize']);
     _active = data['active'];
     _suspended = data['suspended'];
     _maximized = data['maximized'];
@@ -287,8 +287,8 @@ class DisplayServerToplevel extends ChangeNotifier {
   }
 
   Future<void> setSize(int width, int height) async {
-    _size = DisplayServerToplevelSize(width: width, height: height);
-    await DisplayManager.channel.invokeMethod('setToplevel', <String, dynamic>{
+    _size = DisplayServerSurfaceSize(width: width, height: height);
+    await DisplayManager.channel.invokeMethod('setSurface', <String, dynamic>{
       'name': _server.name,
       'id': id,
       'size': size!.toJSON(),
@@ -298,7 +298,7 @@ class DisplayServerToplevel extends ChangeNotifier {
 
   Future<void> setActive(bool isActive) async {
     _active = isActive;
-    await DisplayManager.channel.invokeMethod('setToplevel', <String, dynamic>{
+    await DisplayManager.channel.invokeMethod('setSurface', <String, dynamic>{
       'name': _server.name,
       'id': id,
       'active': active,
@@ -308,7 +308,7 @@ class DisplayServerToplevel extends ChangeNotifier {
 
   Future<void> setSuspended(bool isSuspended) async {
     _suspended = isSuspended;
-    await DisplayManager.channel.invokeMethod('setToplevel', <String, dynamic>{
+    await DisplayManager.channel.invokeMethod('setSurface', <String, dynamic>{
       'name': _server.name,
       'id': id,
       'suspended': suspended,
@@ -318,7 +318,7 @@ class DisplayServerToplevel extends ChangeNotifier {
 
   Future<void> setMaximized(bool isMaximized) async {
     _maximized = isMaximized;
-    await DisplayManager.channel.invokeMethod('setToplevel', <String, dynamic>{
+    await DisplayManager.channel.invokeMethod('setSurface', <String, dynamic>{
       'name': _server.name,
       'id': id,
       'maximized': maximized,

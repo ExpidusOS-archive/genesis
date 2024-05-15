@@ -44,8 +44,8 @@ class _DesktopViewState extends State<DesktopView> {
   DisplayServer? _displayServer = null;
   WindowManager? _windowManager = null;
 
-  late StreamSubscription<DisplayServerToplevel> _toplevelAdded;
-  late StreamSubscription<DisplayServerToplevel> _toplevelRemoved;
+  late StreamSubscription<DisplayServerSurface> _surfaceAdded;
+  late StreamSubscription<DisplayServerSurface> _surfaceRemoved;
 
   GlobalKey _key = GlobalKey();
 
@@ -76,12 +76,12 @@ class _DesktopViewState extends State<DesktopView> {
     final outputs = Provider.of<OutputManager>(_key.currentContext!, listen: false);
     outputs.addListener(_syncOutputs);
 
-    _toplevelAdded = _displayServer!.toplevelAdded.listen((toplevel) {
-      _windowManager!.fromToplevel(toplevel);
+    _surfaceAdded = _displayServer!.surfaceAdded.listen((surface) {
+      _windowManager!.fromSurface(surface);
     });
 
-    _toplevelRemoved = _displayServer!.toplevelRemoved.listen((toplevel) {
-      _windowManager!.removeToplevel(toplevel);
+    _surfaceRemoved = _displayServer!.surfaceRemoved.listen((surface) {
+      _windowManager!.removeSurface(surface);
     });
 
     _syncOutputs();
@@ -107,8 +107,8 @@ class _DesktopViewState extends State<DesktopView> {
     }
 
     if (_windowManager != null) {
-      _toplevelAdded.cancel();
-      _toplevelRemoved.cancel();
+      _surfaceAdded.cancel();
+      _surfaceRemoved.cancel();
       _windowManager!.dispose();
     }
 

@@ -15,7 +15,7 @@ static void xdg_toplevel_emit_request(DisplayChannelToplevel* self, const char* 
   fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->display->socket));
   fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
   fl_value_set(value, fl_value_new_string("reqName"), fl_value_new_string(name));
-  invoke_method(self->display->channel->channel, "requestToplevel", value);
+  invoke_method(self->display->channel->channel, "requestSurface", value);
 }
 
 void xdg_toplevel_emit_prop(DisplayChannelToplevel* self, const char* name, FlValue* pvalue) {
@@ -24,7 +24,7 @@ void xdg_toplevel_emit_prop(DisplayChannelToplevel* self, const char* name, FlVa
   fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
   fl_value_set(value, fl_value_new_string("propName"), fl_value_new_string(name));
   fl_value_set(value, fl_value_new_string("propValue"), pvalue);
-  invoke_method(self->display->channel->channel, "notifyToplevel", value);
+  invoke_method(self->display->channel->channel, "notifySurface", value);
 }
 
 static void xdg_toplevel_map(struct wl_listener* listener, void* data) {
@@ -50,7 +50,7 @@ static void xdg_toplevel_destroy(struct wl_listener* listener, void* data) {
   g_autoptr(FlValue) value = fl_value_new_map();
   fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->display->socket));
   fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(self->id));
-  invoke_method(self->display->channel->channel, "removeToplevel", value);
+  invoke_method(self->display->channel->channel, "removeSurface", value);
 
   wl_list_remove(&self->map.link);
   wl_list_remove(&self->unmap.link);
@@ -279,7 +279,7 @@ void xdg_surface_new(struct wl_listener* listener, void* data) {
     g_autoptr(FlValue) value = fl_value_new_map();
     fl_value_set(value, fl_value_new_string("name"), fl_value_new_string(self->socket));
     fl_value_set(value, fl_value_new_string("id"), fl_value_new_int(toplevel->id));
-    invoke_method(self->channel->channel, "newToplevel", value);
+    invoke_method(self->channel->channel, "newSurface", value);
 
     g_hash_table_insert(self->toplevels, &toplevel->id, self);
   }
