@@ -46,8 +46,8 @@
               pubspecLock = lib.importJSON ./pubspec.lock.json;
 
               gitHashes = {
-                libtokyo = "sha256-U+hG+y6mTwxduo6QyNeCk659J0N/Y4ef7q0dsBzzwAU=";
-                libtokyo_flutter = "sha256-U+hG+y6mTwxduo6QyNeCk659J0N/Y4ef7q0dsBzzwAU=";
+                libtokyo = "sha256-Zn30UmppXnzhs+t+EQNwAhaTPjCCxoN0a+AbH6bietg=";
+                libtokyo_flutter = "sha256-Zn30UmppXnzhs+t+EQNwAhaTPjCCxoN0a+AbH6bietg=";
               };
 
               postInstall = ''
