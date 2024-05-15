@@ -8,6 +8,7 @@
     };
     nixos-apple-silicon.url = "github:tpwrules/nixos-apple-silicon/777e10ec2094a0ac92e61cbfe338063d1e64646e";
     flake-utils.url = "github:numtide/flake-utils";
+    flutter-v322.url = "github:ExpidusOS/nixpkgs/feat/flutter-3.22.0";
   };
 
   outputs = {
@@ -17,6 +18,7 @@
     nixos-mobile,
     nixos-apple-silicon,
     flake-utils,
+    flutter-v322,
     ...
   }@inputs:
     (flake-utils.lib.eachDefaultSystem (system:
@@ -75,6 +77,11 @@
             ];
           })
         ] ++ [
+          (f: p: rec {
+            flutterPackages = p.recurseIntoAttrs (p.callPackages "${flutter-v322}/pkgs/development/compilers/flutter" {});
+            flutter = flutterPackages.stable;
+            flutter322 = flutterPackages.v3_22;
+          })
           overlay
         ]);
 

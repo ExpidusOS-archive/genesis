@@ -33,6 +33,22 @@
         "type": "github"
       }
     },
+    "flutter-v322": {
+      "locked": {
+        "lastModified": 1715738287,
+        "narHash": "sha256-TSCZKrGQso/IptUpGzMLTOv2SJ9fLROkO/cspaJmj+o=",
+        "owner": "ExpidusOS",
+        "repo": "nixpkgs",
+        "rev": "6dc60b12248110796cf9c6dca13d8f9c5f2075bf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ExpidusOS",
+        "ref": "feat/flutter-3.22.0",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixos-apple-silicon": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -104,11 +120,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1715161350,
-        "narHash": "sha256-5ZU8DVwHO0gjw2sKoKkToYOXMJFRBpRsa17Ebm8fgj0=",
+        "lastModified": 1715653339,
+        "narHash": "sha256-7lR9tpVXviSccl07GXI0+ve/natd24HAkuy1sQp0OlI=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "c4200cb341ee794775185ecd4105fbbfb5ca73a0",
+        "rev": "abd6d48f8c77bea7dc51beb2adfa6ed3950d2585",
         "type": "github"
       },
       "original": {
@@ -121,6 +137,7 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "flutter-v322": "flutter-v322",
         "nixos-apple-silicon": "nixos-apple-silicon",
         "nixos-hardware": "nixos-hardware",
         "nixos-mobile": "nixos-mobile",
