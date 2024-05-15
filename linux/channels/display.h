@@ -25,45 +25,12 @@ extern "C" {
 #include <wayland-client.h>
 
 #include "display/backend.h"
-#include "display/texture.h"
 
 #ifdef __cplusplus
 #undef static
 #endif
 
 #include "../application.h"
-
-struct _DisplayChannel;
-struct _DisplayChannelDisplay;
-
-typedef struct _DisplayChannelToplevel {
-  struct _DisplayChannelDisplay* display;
-  size_t id;
-  bool has_decor;
-
-  struct wlr_xdg_toplevel* xdg;
-  struct wlr_xdg_toplevel_decoration_v1* decor;
-
-  struct wl_listener map;
-  struct wl_listener unmap;
-  struct wl_listener destroy;
-  struct wl_listener new_subsurface;
-  struct wl_listener commit;
-
-  struct wl_listener request_maximize;
-  struct wl_listener request_fullscreen;
-  struct wl_listener request_minimize;
-  struct wl_listener request_move;
-  struct wl_listener request_resize;
-  struct wl_listener request_show_window_menu;
-  struct wl_listener set_parent;
-  struct wl_listener set_title;
-  struct wl_listener set_app_id;
-
-  struct wl_listener decor_request_mode;
-
-  DisplayChannelTexture* texture;
-} DisplayChannelToplevel;
 
 typedef struct _DisplayChannelDisplay {
   struct wlr_backend* backend;
@@ -82,8 +49,8 @@ typedef struct _DisplayChannelDisplay {
   struct wl_listener toplevel_decor_new;
 
   GList* outputs;
-  GHashTable* toplevels;
-  size_t toplevel_id;
+  GHashTable* surfaces;
+  size_t surface_id;
 
   GIOChannel* wl_poll;
   guint wl_poll_id;
