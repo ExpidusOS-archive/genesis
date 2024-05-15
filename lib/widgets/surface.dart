@@ -5,17 +5,17 @@ import 'package:provider/provider.dart';
 
 import '../logic/display.dart';
 
-class ToplevelDecor extends StatelessWidget {
-  const ToplevelDecor({
+class SurfaceDecor extends StatelessWidget {
+  const SurfaceDecor({
     super.key,
-    required this.toplevel,
+    required this.surface,
     this.onMinimize,
     this.onMaximize,
     this.onClose,
     this.onDrag,
   });
 
-  final DisplayServerToplevel toplevel;
+  final DisplayServerSurface surface;
   final VoidCallback? onMinimize;
   final VoidCallback? onMaximize;
   final VoidCallback? onClose;
@@ -32,7 +32,7 @@ class ToplevelDecor extends StatelessWidget {
       onMaximize != null
         ? IconButton(
             onPressed: onMaximize!,
-            icon: Icon(toplevel.maximized ? Icons.windowRestore : Icons.windowMaximize),
+            icon: Icon(surface.maximized ? Icons.windowRestore : Icons.windowMaximize),
           ) : null,
       onClose != null
         ? IconButton(
@@ -44,7 +44,7 @@ class ToplevelDecor extends StatelessWidget {
     Widget value = AppBar(
       automaticallyImplyLeading: false,
       primary: false,
-      title: Text(toplevel.title ?? 'Untitled Window'),
+      title: Text(surface.title ?? 'Untitled Window'),
       toolbarHeight: kToolbarHeight / 1.5,
       shape: ContinuousRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -69,31 +69,31 @@ class ToplevelDecor extends StatelessWidget {
   }
 }
 
-class ToplevelView extends StatefulWidget {
-  const ToplevelView({
+class SurfaceView extends StatefulWidget {
+  const SurfaceView({
     super.key,
-    required this.toplevel,
+    required this.surface,
     this.isFocusable = true,
     this.isSizable = true,
     this.buildDecor = null,
   });
 
-  final DisplayServerToplevel toplevel;
+  final DisplayServerSurface surface;
   final bool isFocusable;
   final bool isSizable;
-  final Widget? Function(BuildContext context, DisplayServerToplevel toplevel, Widget content)? buildDecor;
+  final Widget? Function(BuildContext context, DisplayServerSurface surface, Widget content)? buildDecor;
 
   @override
-  State<ToplevelView> createState() => _ToplevelViewState();
+  State<SurfaceView> createState() => _SurfaceViewState();
 }
 
-class _ToplevelViewState extends State<ToplevelView> {
+class _SurfaceViewState extends State<SurfaceView> {
   GlobalKey key = GlobalKey();
 
   void _sendSize() {
-    if (key.currentContext != null && widget.toplevel.texture != null && widget.isSizable) {
+    if (key.currentContext != null && widget.surface.texture != null && widget.isSizable) {
       final box = key.currentContext!.findRenderObject() as RenderBox;
-      widget.toplevel.setSize(box.size.width.toInt(), box.size.height.toInt());
+      widget.surface.setSize(box.size.width.toInt(), box.size.height.toInt());
     }
   }
 
@@ -107,17 +107,17 @@ class _ToplevelViewState extends State<ToplevelView> {
   }
 
   @override
-  Widget _buildContent(BuildContext context, DisplayServerToplevel toplevel) {
-    Widget content = toplevel.texture == null
+  Widget _buildContent(BuildContext context, DisplayServerSurface surface) {
+    Widget content = surface.texture == null
       ? SizedBox() : Texture(
-          textureId: toplevel.texture!,
+          textureId: surface.texture!,
         );
 
     if (widget.isFocusable) {
       content = Focus(
         onFocusChange: (isFocused) {
-          toplevel.setActive(isFocused);
-          toplevel.setSuspended(!isFocused);
+          surface.setActive(isFocused);
+          surface.setSuspended(!isFocused);
         },
         child: content,
       );
@@ -131,23 +131,23 @@ class _ToplevelViewState extends State<ToplevelView> {
         },
         child: SizeChangedLayoutNotifier(
           child: ConstrainedBox(
-            constraints: toplevel.buildBoxConstraints(),
+            constraints: surface.buildBoxConstraints(),
             child: content,
           ),
         ),
       );
     }
 
-    if (toplevel.size != null) {
+    if (surface.size != null) {
       content = SizedBox(
-        width: toplevel.size!.width == null ? null : toplevel.size!.width!.toDouble(),
-        height: toplevel.size!.height == null ? null : toplevel.size!.height!.toDouble(),
+        width: surface.size!.width == null ? null : surface.size!.width!.toDouble(),
+        height: surface.size!.height == null ? null : surface.size!.height!.toDouble(),
         child: content,
       );
     }
 
-    if (!toplevel.hasDecorations && widget.buildDecor != null) {
-      content = widget.buildDecor!(context, toplevel, content) ?? content;
+    if (!surface.hasDecorations && widget.buildDecor != null) {
+      content = widget.buildDecor!(context, surface, content) ?? content;
     }
     return content;
   }
@@ -155,10 +155,10 @@ class _ToplevelViewState extends State<ToplevelView> {
   @override
   Widget build(BuildContext context) =>
     ChangeNotifierProvider.value(
-      value: widget.toplevel,
-      child: Consumer<DisplayServerToplevel>(
+      value: widget.surface,
+      child: Consumer<DisplayServerSurface>(
         key: key,
-        builder: (context, toplevel, _) => _buildContent(context, toplevel),
+        builder: (context, surface, _) => _buildContent(context, surface),
       ),
     );
 }

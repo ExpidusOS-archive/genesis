@@ -2,13 +2,11 @@
 
 #include <EGL/egl.h>
 
+#include "display/surface.h"
 #include "display.h"
 #include "session.h"
 #include "../application-priv.h"
 #include "../messaging.h"
-
-void xdg_toplevel_emit_prop(DisplayChannelToplevel* self, const char* name, FlValue* pvalue);
-void xdg_surface_new(struct wl_listener* listener, void* data);
 
 static gchar* get_string(FlValue* value) {
   if (fl_value_get_type(value) != FL_VALUE_TYPE_STRING) return g_strdup("Unknown");
@@ -24,18 +22,18 @@ static void toplevel_decor_new(struct wl_listener* listener, void* data) {
   DisplayChannelDisplay* self = wl_container_of(listener, self, toplevel_decor_new);
   struct wlr_xdg_toplevel_decoration_v1* decor = data;
 
-  DisplayChannelToplevel* toplevel = decor->toplevel->base->data;
-  toplevel->decor = decor;
-  wl_signal_add(&decor->events.request_mode, &toplevel->decor_request_mode);
+  DisplayChannelSurface* surface = decor->toplevel->base->data;
+  surface->decor = decor;
+  wl_signal_add(&decor->events.request_mode, &surface->decor_request_mode);
 
   if (decor->requested_mode != WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_NONE) {
     wlr_xdg_toplevel_decoration_v1_set_mode(decor, decor->requested_mode);
-    toplevel->has_decor = decor->requested_mode == WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+    surface->has_decor = decor->requested_mode == WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
   } else {
-    toplevel->has_decor = false;
+    surface->has_decor = false;
   }
 
-  xdg_toplevel_emit_prop(toplevel, "hasDecorations", fl_value_new_bool(toplevel->has_decor));
+  xdg_toplevel_emit_prop(surface, "hasDecorations", fl_value_new_bool(surface->has_decor));
 }
 
 static gboolean display_channel_wl_poll(GIOChannel* src, GIOCondition cond, gpointer user_data) {
@@ -104,8 +102,8 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     disp->outputs = NULL;
-    disp->toplevel_id = 1;
-    disp->toplevels = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, NULL);
+    disp->surface_id = 1;
+    disp->surfaces = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, NULL);
     disp->channel = self;
 
     disp->compositor = wlr_compositor_create(wl_display, 5, NULL);
@@ -192,7 +190,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
-  } else if (strcmp(fl_method_call_get_name(method_call), "getToplevel") == 0) {
+  } else if (strcmp(fl_method_call_get_name(method_call), "getSurface") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
     const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
     int id = fl_value_get_int(fl_value_lookup_string(args, "id"));
@@ -204,31 +202,31 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 
     DisplayChannelDisplay* disp = g_hash_table_lookup(self->displays, name);
 
-    if (!g_hash_table_contains(disp->toplevels, &id)) {
-      fl_method_call_respond_error(method_call, "Linux", "Toplevel does not exist", NULL, NULL);
+    if (!g_hash_table_contains(disp->surfaces, &id)) {
+      fl_method_call_respond_error(method_call, "Linux", "Surface does not exist", NULL, NULL);
       return;
     }
 
-    DisplayChannelToplevel* toplevel = g_hash_table_lookup(disp->toplevels, &id);
-    g_assert(toplevel->id == id);
+    DisplayChannelSurface* surface = g_hash_table_lookup(disp->surfaces, &id);
+    g_assert(surface->id == id);
 
     g_autoptr(FlValue) value = fl_value_new_map();
-    fl_value_set(value, fl_value_new_string("title"), new_string(toplevel->xdg->title));
-    fl_value_set(value, fl_value_new_string("appId"), new_string(toplevel->xdg->app_id));
+    fl_value_set(value, fl_value_new_string("title"), new_string(surface->xdg->title));
+    fl_value_set(value, fl_value_new_string("appId"), new_string(surface->xdg->app_id));
 
-    if (toplevel->xdg->parent != NULL && toplevel->xdg->parent->base->data != NULL) {
-      DisplayChannelToplevel* parent = (DisplayChannelToplevel*)toplevel->xdg->parent->base->data;
+    if (surface->xdg->parent != NULL && surface->xdg->parent->base->data != NULL) {
+      DisplayChannelSurface* parent = (DisplayChannelSurface*)surface->xdg->parent->base->data;
       fl_value_set(value, fl_value_new_string("parent"), fl_value_new_int(parent->id));
     } else {
       fl_value_set(value, fl_value_new_string("parent"), fl_value_new_null());
     }
 
-    if (toplevel->texture != NULL) {
+    if (surface->texture != NULL) {
       bool has_init;
-      g_object_get(G_OBJECT(toplevel->texture), "has-init", &has_init, NULL);
+      g_object_get(G_OBJECT(surface->texture), "has-init", &has_init, NULL);
 
       if (has_init) {
-        fl_value_set(value, fl_value_new_string("texture"), fl_value_new_int((uintptr_t)FL_TEXTURE(toplevel->texture)));
+        fl_value_set(value, fl_value_new_string("texture"), fl_value_new_int((uintptr_t)FL_TEXTURE(surface->texture)));
       } else {
         fl_value_set(value, fl_value_new_string("texture"), fl_value_new_null());
       }
@@ -237,7 +235,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     struct wlr_box geom;
-    wlr_xdg_surface_get_geometry(toplevel->xdg->base, &geom);
+    wlr_xdg_surface_get_geometry(surface->xdg->base, &geom);
 
     FlValue* value_size = fl_value_new_map();
     fl_value_set(value_size, fl_value_new_string("width"), fl_value_new_int(geom.width));
@@ -245,24 +243,24 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     fl_value_set(value, fl_value_new_string("size"), value_size);
 
     FlValue* value_size_max = fl_value_new_map();
-    fl_value_set(value_size_max, fl_value_new_string("width"), fl_value_new_int(toplevel->xdg->current.max_width));
-    fl_value_set(value_size_max, fl_value_new_string("height"), fl_value_new_int(toplevel->xdg->current.max_height));
+    fl_value_set(value_size_max, fl_value_new_string("width"), fl_value_new_int(surface->xdg->current.max_width));
+    fl_value_set(value_size_max, fl_value_new_string("height"), fl_value_new_int(surface->xdg->current.max_height));
     fl_value_set(value, fl_value_new_string("maxSize"), value_size_max);
 
     FlValue* value_size_min = fl_value_new_map();
-    fl_value_set(value_size_min, fl_value_new_string("width"), fl_value_new_int(toplevel->xdg->current.min_width));
-    fl_value_set(value_size_min, fl_value_new_string("height"), fl_value_new_int(toplevel->xdg->current.min_height));
+    fl_value_set(value_size_min, fl_value_new_string("width"), fl_value_new_int(surface->xdg->current.min_width));
+    fl_value_set(value_size_min, fl_value_new_string("height"), fl_value_new_int(surface->xdg->current.min_height));
     fl_value_set(value, fl_value_new_string("minSize"), value_size_min);
 
-    fl_value_set(value, fl_value_new_string("maximized"), fl_value_new_bool(toplevel->xdg->current.maximized));
-    fl_value_set(value, fl_value_new_string("fullscreen"), fl_value_new_bool(toplevel->xdg->current.fullscreen));
-    fl_value_set(value, fl_value_new_string("resizing"), fl_value_new_bool(toplevel->xdg->current.resizing));
-    fl_value_set(value, fl_value_new_string("active"), fl_value_new_bool(toplevel->xdg->current.activated));
-    fl_value_set(value, fl_value_new_string("suspended"), fl_value_new_bool(toplevel->xdg->current.suspended));
-    fl_value_set(value, fl_value_new_string("hasDecorations"), fl_value_new_bool(toplevel->has_decor));
+    fl_value_set(value, fl_value_new_string("maximized"), fl_value_new_bool(surface->xdg->current.maximized));
+    fl_value_set(value, fl_value_new_string("fullscreen"), fl_value_new_bool(surface->xdg->current.fullscreen));
+    fl_value_set(value, fl_value_new_string("resizing"), fl_value_new_bool(surface->xdg->current.resizing));
+    fl_value_set(value, fl_value_new_string("active"), fl_value_new_bool(surface->xdg->current.activated));
+    fl_value_set(value, fl_value_new_string("suspended"), fl_value_new_bool(surface->xdg->current.suspended));
+    fl_value_set(value, fl_value_new_string("hasDecorations"), fl_value_new_bool(surface->has_decor));
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
-  } else if (strcmp(fl_method_call_get_name(method_call), "setToplevel") == 0) {
+  } else if (strcmp(fl_method_call_get_name(method_call), "setSurface") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
     const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
     int id = fl_value_get_int(fl_value_lookup_string(args, "id"));
@@ -274,46 +272,46 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 
     DisplayChannelDisplay* disp = g_hash_table_lookup(self->displays, name);
 
-    if (!g_hash_table_contains(disp->toplevels, &id)) {
-      fl_method_call_respond_error(method_call, "Linux", "Toplevel does not exist", NULL, NULL);
+    if (!g_hash_table_contains(disp->surfaces, &id)) {
+      fl_method_call_respond_error(method_call, "Linux", "Surface does not exist", NULL, NULL);
       return;
     }
 
-    DisplayChannelToplevel* toplevel = g_hash_table_lookup(disp->toplevels, &id);
-    g_assert(toplevel->id == id);
+    DisplayChannelSurface* surface = g_hash_table_lookup(disp->surfaces, &id);
+    g_assert(surface->id == id);
 
     FlValue* value_size = fl_value_lookup_string(args, "size");
     if (value_size != NULL) {
-      wlr_xdg_toplevel_set_size(toplevel->xdg, fl_value_get_int(fl_value_lookup_string(value_size, "width")), fl_value_get_int(fl_value_lookup_string(value_size, "height")));
+      wlr_xdg_toplevel_set_size(surface->xdg, fl_value_get_int(fl_value_lookup_string(value_size, "width")), fl_value_get_int(fl_value_lookup_string(value_size, "height")));
     }
 
     FlValue* value_maximized = fl_value_lookup_string(args, "maximized");
     if (value_maximized != NULL) {
-      wlr_xdg_toplevel_set_maximized(toplevel->xdg, fl_value_get_bool(value_maximized));
+      wlr_xdg_toplevel_set_maximized(surface->xdg, fl_value_get_bool(value_maximized));
     }
 
     FlValue* value_fullscreen = fl_value_lookup_string(args, "fullscreen");
     if (value_fullscreen != NULL) {
-      wlr_xdg_toplevel_set_fullscreen(toplevel->xdg, fl_value_get_bool(value_fullscreen));
+      wlr_xdg_toplevel_set_fullscreen(surface->xdg, fl_value_get_bool(value_fullscreen));
     }
 
     FlValue* value_resizing = fl_value_lookup_string(args, "resizing");
     if (value_resizing != NULL) {
-      wlr_xdg_toplevel_set_resizing(toplevel->xdg, fl_value_get_bool(value_resizing));
+      wlr_xdg_toplevel_set_resizing(surface->xdg, fl_value_get_bool(value_resizing));
     }
 
     FlValue* value_active = fl_value_lookup_string(args, "active");
     if (value_active != NULL) {
-      wlr_xdg_toplevel_set_activated(toplevel->xdg, fl_value_get_bool(value_active));
+      wlr_xdg_toplevel_set_activated(surface->xdg, fl_value_get_bool(value_active));
     }
 
     FlValue* value_suspended = fl_value_lookup_string(args, "suspended");
     if (value_suspended != NULL) {
-      wlr_xdg_toplevel_set_suspended(toplevel->xdg, fl_value_get_bool(value_suspended));
+      wlr_xdg_toplevel_set_suspended(surface->xdg, fl_value_get_bool(value_suspended));
     }
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
-  } else if (strcmp(fl_method_call_get_name(method_call), "requestToplevel") == 0) {
+  } else if (strcmp(fl_method_call_get_name(method_call), "requestSurface") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
     const gchar* name = fl_value_get_string(fl_value_lookup_string(args, "name"));
     int id = fl_value_get_int(fl_value_lookup_string(args, "id"));
@@ -325,17 +323,17 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 
     DisplayChannelDisplay* disp = g_hash_table_lookup(self->displays, name);
 
-    if (!g_hash_table_contains(disp->toplevels, &id)) {
-      fl_method_call_respond_error(method_call, "Linux", "Toplevel does not exist", NULL, NULL);
+    if (!g_hash_table_contains(disp->surfaces, &id)) {
+      fl_method_call_respond_error(method_call, "Linux", "Surface does not exist", NULL, NULL);
       return;
     }
 
-    DisplayChannelToplevel* toplevel = g_hash_table_lookup(disp->toplevels, &id);
-    g_assert(toplevel->id == id);
+    DisplayChannelSurface* surface = g_hash_table_lookup(disp->surfaces, &id);
+    g_assert(surface->id == id);
 
     const gchar* req_name = fl_value_get_string(fl_value_lookup_string(args, "reqName"));
     if (strcmp(req_name, "close") == 0) {
-      wlr_xdg_toplevel_send_close(toplevel->xdg);
+      wlr_xdg_toplevel_send_close(surface->xdg);
       response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
     } else {
       response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
@@ -355,7 +353,7 @@ static void destroy_display(DisplayChannelDisplay* self) {
   g_io_channel_unref(self->wl_poll);
 
   g_clear_list(&self->outputs, (GDestroyNotify)wlr_output_destroy_global);
-  g_hash_table_unref(self->toplevels);
+  g_hash_table_unref(self->surfaces);
 
   wlr_backend_destroy(self->backend);
 

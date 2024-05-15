@@ -124,7 +124,7 @@ add_executable(${BINARY_NAME}
   "channels/display/backend.c"
   "channels/display/pixel-format.c"
   "channels/display/texture.c"
-  "channels/display/toplevel.c"
+  "channels/display/surface.c"
   "channels/display.c"
   "channels/outputs.cc"
   "channels/session.cc"

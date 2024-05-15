@@ -12,7 +12,7 @@ import '../logic/applications.dart';
 import '../logic/display.dart';
 import '../logic/wm.dart';
 
-import 'toplevel.dart';
+import 'surface.dart';
 
 class ActivityDrawer extends StatelessWidget {
   const ActivityDrawer({
@@ -30,7 +30,7 @@ class ActivityDrawer extends StatelessWidget {
     final displayServer = context.watch<DisplayServer>();
     final wm = context.watch<WindowManager>();
 
-    final list = displayServer.toplevels.map((toplevel) => wm.fromToplevel(toplevel))
+    final list = displayServer.surfaces.map((surface) => wm.fromSurface(surface))
       .where((win) => win.monitor == outputIndex).toList();
     list.sort((a, b) => a.layer.compareTo(b.layer));
     return list;
@@ -52,7 +52,7 @@ class ActivityDrawer extends StatelessWidget {
                         padding: const EdgeInsets.all(8),
                         child: InkWell(
                           onTap: () {
-                            win.toplevel.setActive(true);
+                            win.surface.setActive(true);
                             win.minimized = false;
                             win.raiseToTop();
 
@@ -60,18 +60,18 @@ class ActivityDrawer extends StatelessWidget {
                           },
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
-                            child: ToplevelView(
-                              toplevel: win.toplevel,
+                            child: SurfaceView(
+                              surface: win.surface,
                               isFocusable: false,
                               isSizable: false,
-                              buildDecor: (context, toplevel, content) =>
+                              buildDecor: (context, surface, content) =>
                                 !Breakpoints.small.isActive(context)
                                   ? Container(
-                                      width: toplevel.size != null ? (toplevel.size!.width ?? 0).toDouble() : null,
+                                      width: surface.size != null ? (surface.size!.width ?? 0).toDouble() : null,
                                       child: Column(
                                         children: [
-                                          ToplevelDecor(
-                                            toplevel: toplevel,
+                                          SurfaceDecor(
+                                            surface: surface,
                                           ),
                                           ClipRRect(
                                             borderRadius: BorderRadius.only(
