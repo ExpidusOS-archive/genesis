@@ -43,4 +43,5 @@ app.*.map.json
 /android/app/release
 
 *.qcow2
+*.img
 result
