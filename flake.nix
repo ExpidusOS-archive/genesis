@@ -122,7 +122,13 @@
               inherit (nixpkgs) lib;
             in import "${nixos-mobile}" {
               inherit system pkgs device;
-              configuration = import ./nix/module.nix;
+              configuration = { config, lib, ... }: {
+                imports = [ ./nix/module.nix ];
+
+                config = lib.mkIf (device == "pine64-pinephone") {
+                  services.cage.environment.LIBGL_ALWAYS_SOFTWARE = "1";
+                };
+              };
             };
 
           mkQemu = system: mkSystem [

@@ -34,22 +34,29 @@ class OutputLayout extends StatelessWidget {
         return Stack(
           children: mngr.outputs.asMap().entries.map(
             (entry) {
+              final size = Size(entry.value.geometry.width.toDouble(), entry.value.geometry.height.toDouble());
+
               Widget widget = Transform.translate(
                 offset: Offset(
                   (entry.value.geometry.x * entry.value.scale).toDouble(),
                   (entry.value.geometry.y * entry.value.scale).toDouble(),
                 ),
                 child: SizedBox(
-                  width: (entry.value.geometry.width * entry.value.scale).toDouble(),
-                  height: (entry.value.geometry.height * entry.value.scale).toDouble(),
-                  child: Builder(
-                    builder: (context) =>
-                      builder(context, entry.value, entry.key),
-                  ),
+                  width: entry.value.geometry.width.toDouble(),
+                  height: entry.value.geometry.height.toDouble(),
+                  child: size < toplevelSize
+                    ? Transform.scale(
+                        scale: entry.value.scale.toDouble(),
+                        child: Builder(
+                          builder: (context) =>
+                            builder(context, entry.value, entry.key),
+                        ),
+                      ) : Builder(
+                        builder: (context) =>
+                          builder(context, entry.value, entry.key),
+                      ),
                 ),
               );
-
-              final size = Size(entry.value.geometry.width.toDouble(), entry.value.geometry.height.toDouble());
 
               if (toplevelSize >= size) {
                 widget = MediaQuery(
