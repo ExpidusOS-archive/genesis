@@ -95,10 +95,12 @@
               mesa-demos
             ];
           };
+
+          pkgs = self.legacyPackages.${system};
         in {
           default = mkShell pkgs self.packages.${system}.default;
         } // lib.optionalAttrs (isAsahi) {
-          asahi = mkShell self.legacyPackages.${system}.pkgsAsahi self.packages.${system}.asahi;
+          asahi = mkShell pkgs.pkgsAsahi self.packages.${system}.asahi;
         };
       })) // {
         nixosConfigurations = let
