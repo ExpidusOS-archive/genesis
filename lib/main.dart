@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'logic/account.dart';
 import 'logic/applications.dart';
 import 'logic/display.dart';
+import 'logic/network.dart';
 import 'logic/outputs.dart';
 import 'logic/power.dart';
 import 'logic/route_args.dart';
@@ -67,6 +68,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
   late AccountManager _accountManager;
   late ApplicationsManager _applicationsManager;
   late DisplayManager _displayManager;
+  late NetworkManager _networkManager;
   late OutputManager _outputManager;
   late PowerManager _powerManager;
 
@@ -77,7 +79,12 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
     _accountManager = AccountManager();
     _applicationsManager = ApplicationsManager();
     _displayManager = DisplayManager();
+
+    _networkManager = NetworkManager.auto();
+    _networkManager.connect();
+
     _outputManager = OutputManager();
+
     _powerManager = PowerManager.auto();
     _powerManager.connect();
   }
@@ -85,6 +92,8 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
   @override
   void dispose() {
     super.dispose();
+
+    _networkManager.disconnect();
     _powerManager.disconnect();
   }
 
@@ -95,6 +104,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
         ChangeNotifierProvider(create: (_) => _accountManager),
         Provider(create: (_) => _applicationsManager),
         ChangeNotifierProvider(create: (_) => _displayManager),
+        Provider(create: (_) => _networkManager),
         ChangeNotifierProvider(create: (_) => _outputManager),
         Provider(create: (_) => _powerManager),
       ],
