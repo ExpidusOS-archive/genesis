@@ -115,7 +115,6 @@ add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}" -DWLR_USE_UNSTABLE)
 add_executable(${BINARY_NAME}
   "main.cc"
   "application.cc"
-  "messaging.c"
   "channels/account.cc"
   "channels/applications.cc"
   "channels/auth.cc"

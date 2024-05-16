@@ -30,10 +30,11 @@ class OutputLayout extends StatelessWidget {
           );
         }
 
+        final toplevelSize = MediaQuery.of(context).size;
         return Stack(
           children: mngr.outputs.asMap().entries.map(
-            (entry) =>
-              Transform.translate(
+            (entry) {
+              Widget widget = Transform.translate(
                 offset: Offset(
                   (entry.value.geometry.x * entry.value.scale).toDouble(),
                   (entry.value.geometry.y * entry.value.scale).toDouble(),
@@ -46,7 +47,20 @@ class OutputLayout extends StatelessWidget {
                       builder(context, entry.value, entry.key),
                   ),
                 ),
-              )
+              );
+
+              final size = Size(entry.value.geometry.width.toDouble(), entry.value.geometry.height.toDouble());
+
+              if (toplevelSize >= size) {
+                widget = MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    size: size,
+                  ),
+                  child: widget,
+                );
+              }
+              return widget;
+            }
           ).toList(),
         );
       },

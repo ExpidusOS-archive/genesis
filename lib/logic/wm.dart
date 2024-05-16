@@ -122,5 +122,6 @@ class Window extends ChangeNotifier {
 
     await surface.setMaximized(true);
     await surface.setSize(desktopSize.width.toInt(), desktopSize.height.toInt());
+    print(desktopSize);
   }
 }

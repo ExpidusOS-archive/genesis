@@ -6,7 +6,6 @@
 #include "display.h"
 #include "session.h"
 #include "../application-priv.h"
-#include "../messaging.h"
 
 static gchar* get_string(FlValue* value) {
   if (fl_value_get_type(value) != FL_VALUE_TYPE_STRING) return g_strdup("Unknown");
@@ -280,34 +279,44 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     DisplayChannelSurface* surface = g_hash_table_lookup(disp->surfaces, &id);
     g_assert(surface->id == id);
 
+    uint32_t i = 0;
+
     FlValue* value_size = fl_value_lookup_string(args, "size");
     if (value_size != NULL) {
-      wlr_xdg_toplevel_set_size(surface->xdg, fl_value_get_int(fl_value_lookup_string(value_size, "width")), fl_value_get_int(fl_value_lookup_string(value_size, "height")));
+      i += wlr_xdg_toplevel_set_size(surface->xdg, fl_value_get_int(fl_value_lookup_string(value_size, "width")), fl_value_get_int(fl_value_lookup_string(value_size, "height")));
     }
 
     FlValue* value_maximized = fl_value_lookup_string(args, "maximized");
     if (value_maximized != NULL) {
-      wlr_xdg_toplevel_set_maximized(surface->xdg, fl_value_get_bool(value_maximized));
+      i += wlr_xdg_toplevel_set_maximized(surface->xdg, fl_value_get_bool(value_maximized));
     }
 
     FlValue* value_fullscreen = fl_value_lookup_string(args, "fullscreen");
     if (value_fullscreen != NULL) {
-      wlr_xdg_toplevel_set_fullscreen(surface->xdg, fl_value_get_bool(value_fullscreen));
+      i += wlr_xdg_toplevel_set_fullscreen(surface->xdg, fl_value_get_bool(value_fullscreen));
     }
 
     FlValue* value_resizing = fl_value_lookup_string(args, "resizing");
     if (value_resizing != NULL) {
-      wlr_xdg_toplevel_set_resizing(surface->xdg, fl_value_get_bool(value_resizing));
+      i += wlr_xdg_toplevel_set_resizing(surface->xdg, fl_value_get_bool(value_resizing));
     }
 
     FlValue* value_active = fl_value_lookup_string(args, "active");
     if (value_active != NULL) {
-      wlr_xdg_toplevel_set_activated(surface->xdg, fl_value_get_bool(value_active));
+      i += wlr_xdg_toplevel_set_activated(surface->xdg, fl_value_get_bool(value_active));
     }
 
     FlValue* value_suspended = fl_value_lookup_string(args, "suspended");
     if (value_suspended != NULL) {
-      wlr_xdg_toplevel_set_suspended(surface->xdg, fl_value_get_bool(value_suspended));
+      i += wlr_xdg_toplevel_set_suspended(surface->xdg, fl_value_get_bool(value_suspended));
+    }
+
+    if (i > 0) {
+      struct wl_display* wl_display = display_channel_backend_get_display(disp->backend);
+      struct wl_event_loop* wl_event_loop = wl_display_get_event_loop(wl_display);
+
+      wl_event_loop_dispatch(wl_event_loop, 0);
+      wl_display_flush_clients(wl_display);
     }
 
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));

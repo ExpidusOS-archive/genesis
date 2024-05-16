@@ -190,27 +190,22 @@ class SystemLayout extends StatelessWidget {
       builder: (context, output, outputIndex) =>
         Provider<Output>.value(
           value: output,
-          child: MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              size: Size(output.geometry.width.toDouble(), output.geometry.height.toDouble()),
-            ),
-            child: AdaptiveLayout(
-              body: SlotLayout(
-                config: {
-                  Breakpoints.small: SlotLayout.from(
-                    key: const Key('Body Small'),
-                    builder: (context) => _buildMobile(context, output, outputIndex),
-                  ),
-                  Breakpoints.medium: SlotLayout.from(
-                    key: const Key('Body Medium'),
-                    builder: (context) => _buildDesktop(context, output, outputIndex),
-                  ),
-                  Breakpoints.large: SlotLayout.from(
-                    key: const Key('Body Large'),
-                    builder: (context) => _buildDesktop(context, output, outputIndex),
-                  ),
-                },
-              ),
+          child: AdaptiveLayout(
+            body: SlotLayout(
+              config: {
+                Breakpoints.small: SlotLayout.from(
+                  key: const Key('Body Small'),
+                  builder: (context) => _buildMobile(context, output, outputIndex),
+                ),
+                Breakpoints.medium: SlotLayout.from(
+                  key: const Key('Body Medium'),
+                  builder: (context) => _buildDesktop(context, output, outputIndex),
+                ),
+                Breakpoints.large: SlotLayout.from(
+                  key: const Key('Body Large'),
+                  builder: (context) => _buildDesktop(context, output, outputIndex),
+                ),
+              },
             ),
           ),
         ),
