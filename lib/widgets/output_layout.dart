@@ -44,17 +44,20 @@ class OutputLayout extends StatelessWidget {
                 child: SizedBox(
                   width: entry.value.geometry.width.toDouble(),
                   height: entry.value.geometry.height.toDouble(),
-                  child: size < toplevelSize
-                    ? Transform.scale(
-                        scale: entry.value.scale.toDouble(),
-                        child: Builder(
+                  child: AspectRatio(
+                    aspectRatio: entry.value.geometry.width.toDouble() / entry.value.geometry.height.toDouble(),
+                    child: size < toplevelSize
+                      ? Transform.scale(
+                          scale: entry.value.scale.toDouble(),
+                          child: Builder(
+                            builder: (context) =>
+                              builder(context, entry.value, entry.key),
+                          ),
+                        ) : Builder(
                           builder: (context) =>
                             builder(context, entry.value, entry.key),
                         ),
-                      ) : Builder(
-                        builder: (context) =>
-                          builder(context, entry.value, entry.key),
-                      ),
+                  ),
                 ),
               );
 
