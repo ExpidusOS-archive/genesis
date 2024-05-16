@@ -64,7 +64,7 @@ class _DesktopViewState extends State<DesktopView> {
     }
 
     _windowManager = WindowManager(
-      mode: Breakpoints.small.isActive(_key.currentContext!) ? WindowManagerMode.stacking : WindowManagerMode.floating,
+      mode: Breakpoints.large.isActive(_key.currentContext!) ? WindowManagerMode.floating : WindowManagerMode.stacking,
     );
 
     final displayManager = Provider.of<DisplayManager>(_key.currentContext!, listen: false);
@@ -137,8 +137,8 @@ class _DesktopViewState extends State<DesktopView> {
         Container(
           decoration: BoxDecoration(
             image: getWallpaper(
-              path: (Breakpoints.small.isActive(context) ? widget.mobileWallpaper : widget.desktopWallpaper) ?? widget.wallpaper,
-              fallback: AssetImage('assets/wallpaper/${Breakpoints.small.isActive(context) ? 'mobile' : 'desktop'}/default.jpg'),
+              path: (Breakpoints.large.isActive(context) ? widget.desktopWallpaper : widget.mobileWallpaper) ?? widget.wallpaper,
+              fallback: AssetImage('assets/wallpaper/${Breakpoints.large.isActive(context) ? 'desktop' : 'mobile'}/default.jpg'),
             ),
           ),
           constraints: BoxConstraints.expand(),
@@ -150,7 +150,7 @@ class _DesktopViewState extends State<DesktopView> {
                 outputIndex: outputIndex,
               ) : null,
         ),
-      bottomNavigationBarBuilder: Breakpoints.small.isActive(context)
+      bottomNavigationBarBuilder: !Breakpoints.large.isActive(context)
         ? (context, output, outputIndex) =>
           SystemNavbar(
             outputIndex: outputIndex,

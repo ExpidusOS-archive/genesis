@@ -134,8 +134,8 @@ class _LoginViewState extends State<LoginView> {
       body: Container(
         decoration: BoxDecoration(
           image: getWallpaper(
-            path: (Breakpoints.small.isActive(context) ? widget.mobileWallpaper : widget.desktopWallpaper) ?? widget.wallpaper,
-            fallback: AssetImage('assets/wallpaper/${Breakpoints.small.isActive(context) ? 'mobile' : 'desktop'}/default.jpg'),
+            path: (Breakpoints.large.isActive(context) ? widget.desktopWallpaper : widget.mobileWallpaper) ?? widget.wallpaper,
+            fallback: AssetImage('assets/wallpaper/${Breakpoints.large.isActive(context) ? 'desktop' : 'mobile'}/default.jpg'),
           ),
         ),
         child: Center(

@@ -82,7 +82,7 @@ class SystemLayout extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    userMode && Breakpoints.small.isActive(context)
+                    userMode && !Breakpoints.large.isActive(context)
                       ? Row(
                           children: [
                             Expanded(
@@ -199,7 +199,7 @@ class SystemLayout extends StatelessWidget {
                 ),
                 Breakpoints.medium: SlotLayout.from(
                   key: const Key('Body Medium'),
-                  builder: (context) => _buildDesktop(context, output, outputIndex),
+                  builder: (context) => _buildMobile(context, output, outputIndex),
                 ),
                 Breakpoints.large: SlotLayout.from(
                   key: const Key('Body Large'),

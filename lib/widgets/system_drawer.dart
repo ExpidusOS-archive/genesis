@@ -33,7 +33,7 @@ class _SystemDrawerState extends State<SystemDrawer> {
       child: ListView(
         shrinkWrap: true,
         children: [
-          widget.userMode && !Breakpoints.small.isActive(context)
+          widget.userMode && Breakpoints.large.isActive(context)
             ? (widget.userName == null ? AccountProfile() : AccountProfile.name(name: widget.userName!)) : null,
           Row(
             children: [

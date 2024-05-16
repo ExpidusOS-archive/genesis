@@ -29,7 +29,7 @@ class WindowView extends StatelessWidget {
     Widget content = SurfaceView(
       surface: _win.surface,
       buildDecor: (context, surface, content) =>
-        !Breakpoints.small.isActive(context)
+        Breakpoints.large.isActive(context)
           ? Container(
               width: surface.size != null ? (surface.size!.width ?? 0).toDouble() : null,
               child: Column(

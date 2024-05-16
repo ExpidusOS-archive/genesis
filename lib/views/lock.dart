@@ -34,8 +34,8 @@ class LockView extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           image: getWallpaper(
-            path: (Breakpoints.small.isActive(context) ? mobileWallpaper : desktopWallpaper) ?? wallpaper,
-            fallback: AssetImage('assets/wallpaper/${Breakpoints.small.isActive(context) ? 'mobile' : 'desktop'}/default.jpg'),
+            path: (Breakpoints.large.isActive(context) ? desktopWallpaper : mobileWallpaper) ?? wallpaper,
+            fallback: AssetImage('assets/wallpaper/${Breakpoints.large.isActive(context) ? 'desktop' : 'mobile'}/default.jpg'),
           ),
         ),
         child: Stack(
