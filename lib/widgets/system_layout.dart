@@ -187,6 +187,7 @@ class SystemLayout extends StatelessWidget {
       body: _makeWidget(context, output, outputIndex, body, bodyBuilder),
       bottomSheet: bottomSheet,
       bottomNavigationBar: _makeWidget(context, output, outputIndex, bottomNavigationBar, bottomNavigationBarBuilder),
+      backgroundColor: Color(Colors.transparent.value),
       extendBody: true,
     );
 

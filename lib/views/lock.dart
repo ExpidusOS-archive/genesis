@@ -26,18 +26,19 @@ class LockView extends StatelessWidget {
   final String? userName;
 
   @override
-  Widget build(BuildContext context) =>
-    SystemLayout(
+  Widget build(BuildContext context) {
+    Widget widget = SystemLayout(
       userMode: true,
       isLocked: true,
       userName: userName,
       body: Container(
-        decoration: BoxDecoration(
-          image: getWallpaper(
-            path: (Breakpoints.large.isActive(context) ? desktopWallpaper : mobileWallpaper) ?? wallpaper,
-            fallback: AssetImage('assets/wallpaper/${Breakpoints.large.isActive(context) ? 'desktop' : 'mobile'}/default.jpg'),
-          ),
-        ),
+        decoration: !Breakpoints.large.isActive(context)
+          ? BoxDecoration(
+              image: getWallpaper(
+                path: mobileWallpaper ?? wallpaper,
+                fallback: AssetImage('assets/wallpaper/mobile/default.jpg'),
+              ),
+            ) : null,
         child: Stack(
           children: [
             Center(
@@ -105,4 +106,19 @@ class LockView extends StatelessWidget {
         ),
       ),
     );
+
+    if (Breakpoints.large.isActive(context)) {
+      widget = Container(
+        decoration: BoxDecoration(
+          image: getWallpaper(
+            path: desktopWallpaper ?? wallpaper,
+            fallback: AssetImage('assets/wallpaper/desktop/default.jpg'),
+          ),
+        ),
+        child: widget,
+      );
+    }
+
+    return widget;
+  }
 }

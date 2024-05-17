@@ -135,12 +135,13 @@ class _DesktopViewState extends State<DesktopView> {
       hasDisplayServer: _displayServer != null,
       bodyBuilder: (context, output, outputIndex) =>
         Container(
-          decoration: BoxDecoration(
-            image: getWallpaper(
-              path: (Breakpoints.large.isActive(context) ? widget.desktopWallpaper : widget.mobileWallpaper) ?? widget.wallpaper,
-              fallback: AssetImage('assets/wallpaper/${Breakpoints.large.isActive(context) ? 'desktop' : 'mobile'}/default.jpg'),
-            ),
-          ),
+          decoration: !Breakpoints.large.isActive(context)
+            ? BoxDecoration(
+                image: getWallpaper(
+                  path: widget.mobileWallpaper ?? widget.wallpaper,
+                  fallback: AssetImage('assets/wallpaper/mobile/default.jpg'),
+                ),
+              ) : null,
           constraints: BoxConstraints.expand(),
           child: _displayServer != null && _windowManager != null
             ? NotificationListener<SizeChangedLayoutNotification>(
@@ -165,6 +166,18 @@ class _DesktopViewState extends State<DesktopView> {
             hasDisplayServer: _displayServer != null && _windowManager != null,
           ) : null,
     );
+
+    if (Breakpoints.large.isActive(context)) {
+      value = Container(
+        decoration: BoxDecoration(
+          image: getWallpaper(
+            path: widget.desktopWallpaper ?? widget.wallpaper,
+            fallback: AssetImage('assets/wallpaper/desktop/default.jpg'),
+          ),
+        ),
+        child: value,
+      );
+    }
 
     if (_displayServer != null && _windowManager != null) {
       value = ChangeNotifierProvider<DisplayServer>(
