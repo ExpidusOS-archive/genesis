@@ -15,11 +15,15 @@ class SystemDrawer extends StatefulWidget {
     this.userMode = false,
     this.isLocked = false,
     this.userName = null,
+    this.padding = 8.0,
+    this.accountIconSize = 40.0,
   });
 
   final bool userMode;
   final bool isLocked;
   final String? userName;
+  final double padding;
+  final double accountIconSize;
 
   @override
   State<SystemDrawer> createState() => _SystemDrawerState();
@@ -31,12 +35,20 @@ class _SystemDrawerState extends State<SystemDrawer> {
   @override
   Widget build(BuildContext context) =>
     Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(widget.padding),
       child: ListView(
         shrinkWrap: true,
         children: [
           widget.userMode && Breakpoints.large.isActive(context)
-            ? (widget.userName == null ? AccountProfile() : AccountProfile.name(name: widget.userName!)) : null,
+            ? (widget.userName == null
+              ? AccountProfile(
+                  iconSize: widget.accountIconSize,
+                  spacing: widget.padding,
+                ) : AccountProfile.name(
+                  iconSize: widget.accountIconSize,
+                  name: widget.userName!,
+                  spacing: widget.padding,
+                )) : null,
           Row(
             children: [
               Expanded(
@@ -66,6 +78,7 @@ class _SystemDrawerState extends State<SystemDrawer> {
                           builder: (context) =>
                             PowerDialog(
                               isLocked: widget.isLocked,
+                              spacing: widget.padding,
                             ),
                         ),
                       icon: Icon(Icons.powerOff),

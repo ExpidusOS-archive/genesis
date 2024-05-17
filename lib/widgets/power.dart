@@ -9,9 +9,11 @@ class PowerDialog extends StatelessWidget {
   const PowerDialog({
     super.key,
     this.isLocked = false,
+    this.spacing = 8,
   });
 
   final bool isLocked;
+  final double spacing;
 
   @override
   Widget build(BuildContext context) =>
@@ -24,7 +26,7 @@ class PowerDialog extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(spacing),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -41,7 +43,7 @@ class PowerDialog extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(spacing),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -77,7 +79,7 @@ class PowerDialog extends StatelessWidget {
                     children: [
                   canReboot
                     ? Padding(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(spacing),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -91,7 +93,7 @@ class PowerDialog extends StatelessWidget {
                       ) : null,
                   canShutdown
                     ? Padding(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(spacing),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [

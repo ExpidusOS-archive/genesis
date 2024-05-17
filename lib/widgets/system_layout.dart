@@ -94,8 +94,16 @@ class SystemLayout extends StatelessWidget {
                                 color: Theme.of(context).colorScheme.background,
                                 margin: EdgeInsets.zero,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: userName == null ? AccountProfile() : AccountProfile.name(name: userName!),
+                                  padding: EdgeInsets.all(8 * output.units),
+                                  child: userName == null
+                                    ? AccountProfile(
+                                        spacing: 8 * output.units,
+                                        iconSize: 40 * output.units,
+                                      ) : AccountProfile.name(
+                                        name: userName!,
+                                        spacing: 8 * output.units,
+                                        iconSize: 40 * output.units,
+                                      ),
                                 ),
                               ),
                             ),
@@ -104,6 +112,8 @@ class SystemLayout extends StatelessWidget {
                     SystemDrawer(
                       userMode: userMode,
                       isLocked: isLocked,
+                      padding: 8 * output.units,
+                      accountIconSize: 40 * output.units,
                     ),
                   ].where((e) => e != null).toList().cast<Widget>(),
                 ),
@@ -133,7 +143,7 @@ class SystemLayout extends StatelessWidget {
       ),
       drawer: userMode && !isLocked
         ? Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.0 * output.units),
             child: Drawer(
               width: double.infinity,
               shape: RoundedRectangleBorder(
@@ -152,6 +162,9 @@ class SystemLayout extends StatelessWidget {
                       ActivityDrawer(
                         hasDisplayServer: hasDisplayServer,
                         outputIndex: outputIndex,
+                        padding: 8 * output.units,
+                        iconSize: 64 * output.units,
+                        axisExtent: 84 * output.units,
                         onClose: () {
                           material.Scaffold.of(context).closeDrawer();
                         },
@@ -179,6 +192,8 @@ class SystemLayout extends StatelessWidget {
                 userMode: userMode,
                 isLocked: isLocked,
                 userName: userName,
+                padding: 8 * output.units,
+                accountIconSize: 40 * output.units,
               ),
             ),
           ),

@@ -15,11 +15,13 @@ class WindowView extends StatelessWidget {
     super.key,
     required this.win,
     required this.desktopSize,
+    this.decorHeight = kSurfaceDecorHeight,
     this.mode = null,
   });
 
   final Window win;
   final Size desktopSize;
+  final double decorHeight;
   final WindowManagerMode? mode;
 
   Widget _buildInner(BuildContext context) {
@@ -36,6 +38,7 @@ class WindowView extends StatelessWidget {
                 children: [
                   SurfaceDecor(
                     surface: surface,
+                    height: decorHeight,
                     onMinimize: () {
                       win.minimized = true;
                     },
@@ -77,7 +80,7 @@ class WindowView extends StatelessWidget {
         left: _win.x,
         child: Container(
           width: _win.surface.size != null ? (_win.surface.size!.width ?? 0).toDouble() : null,
-          height: _win.surface.size != null ? (_win.surface.size!.height ?? 0).toDouble() + (kToolbarHeight / 1.5) : null,
+          height: _win.surface.size != null ? (_win.surface.size!.height ?? 0).toDouble() + decorHeight : null,
           child: content,
         ),
       );
@@ -102,12 +105,14 @@ class WindowManagerView extends StatefulWidget {
     required this.windowManager,
     required this.output,
     required this.outputIndex,
+    this.decorHeight = kSurfaceDecorHeight,
   });
 
   final DisplayServer displayServer;
   final WindowManager windowManager;
   final Output output;
   final int outputIndex;
+  final double decorHeight;
 
   @override
   State<WindowManagerView> createState() => _WindowManagerViewState();
@@ -134,6 +139,7 @@ class _WindowManagerViewState extends State<WindowManagerView> {
         (win) => WindowView(
           win: win,
           desktopSize: (context.findRenderObject() as RenderBox).size,
+          decorHeight: widget.decorHeight,
         )
       ).toList(),
     );
@@ -144,6 +150,7 @@ class _WindowManagerViewState extends State<WindowManagerView> {
         (win) => WindowView(
           win: win,
           desktopSize: (context.findRenderObject() as RenderBox).size,
+          decorHeight: widget.decorHeight,
         ),
       ).toList(),
     );
@@ -155,6 +162,7 @@ class _WindowManagerViewState extends State<WindowManagerView> {
         (win) => WindowView(
           win: win,
           desktopSize: (context.findRenderObject() as RenderBox).size,
+          decorHeight: widget.decorHeight,
         ),
       ).toList(),
     );

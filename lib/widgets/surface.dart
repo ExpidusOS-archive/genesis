@@ -5,10 +5,13 @@ import 'package:provider/provider.dart';
 
 import '../logic/display.dart';
 
+const kSurfaceDecorHeight = kToolbarHeight / 1.5;
+
 class SurfaceDecor extends StatelessWidget {
   const SurfaceDecor({
     super.key,
     required this.surface,
+    this.height = kSurfaceDecorHeight,
     this.onMinimize,
     this.onMaximize,
     this.onClose,
@@ -16,6 +19,7 @@ class SurfaceDecor extends StatelessWidget {
   });
 
   final DisplayServerSurface surface;
+  final double height;
   final VoidCallback? onMinimize;
   final VoidCallback? onMaximize;
   final VoidCallback? onClose;
@@ -45,7 +49,7 @@ class SurfaceDecor extends StatelessWidget {
       automaticallyImplyLeading: false,
       primary: false,
       title: Text(surface.title ?? 'Untitled Window'),
-      toolbarHeight: kToolbarHeight / 1.5,
+      toolbarHeight: height,
       shape: ContinuousRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(12),
@@ -66,6 +70,11 @@ class SurfaceDecor extends StatelessWidget {
     }
 
     return value;
+  }
+
+  static double heightFor(BuildContext context) {
+    final theme = AppBarTheme.of(context);
+    return (theme.toolbarHeight ?? kToolbarHeight) / 1.5;
   }
 }
 

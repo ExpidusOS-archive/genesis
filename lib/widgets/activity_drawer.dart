@@ -20,11 +20,17 @@ class ActivityDrawer extends StatelessWidget {
     required this.onClose,
     required this.outputIndex,
     this.hasDisplayServer = false,
+    this.padding = 8,
+    this.iconSize = 64,
+    this.axisExtent = 84,
   });
 
   final VoidCallback onClose;
   final int outputIndex;
   final bool hasDisplayServer;
+  final double padding;
+  final double iconSize;
+  final double axisExtent;
 
   List<Window> _getWindows(BuildContext context) {
     final displayServer = context.watch<DisplayServer>();
@@ -49,7 +55,7 @@ class ActivityDrawer extends StatelessWidget {
                   children: _getWindows(context).map(
                     (win) =>
                       Padding(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(padding),
                         child: InkWell(
                           onTap: () {
                             win.surface.setActive(true);
@@ -92,11 +98,11 @@ class ActivityDrawer extends StatelessWidget {
               ),
             ) : null,
         Padding(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(padding),
           child: GridView(
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 84,
-              mainAxisExtent: 84,
+              maxCrossAxisExtent: axisExtent,
+              mainAxisExtent: axisExtent,
             ),
             shrinkWrap: true,
             children: (Provider.of<ApplicationsManager>(context).applications.toList()..where((app) => !app.isHidden))
@@ -114,12 +120,12 @@ class ActivityDrawer extends StatelessWidget {
                           ? (path.extension(app.icon!) == '.svg'
                             ? SvgPicture.file(
                                 File(app.icon!),
-                                width: 64,
-                                height: 64,
+                                width: iconSize,
+                                height: iconSize,
                               ) : Image.file(
                                     io.File(app.icon!),
-                                    width: 64,
-                                    height: 64,
+                                    width: iconSize,
+                                    height: iconSize,
                                   )) : Icon(Icons.tablet, size: 58),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),

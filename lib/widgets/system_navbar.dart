@@ -9,10 +9,16 @@ class SystemNavbar extends StatefulWidget {
     super.key,
     required this.outputIndex,
     this.hasDisplayServer = false,
+    this.padding = 8,
+    this.iconSize = 64,
+    this.axisExtent = 84,
   });
 
   final int outputIndex;
   final bool hasDisplayServer;
+  final double padding;
+  final double iconSize;
+  final double axisExtent;
 
   @override
   State<SystemNavbar> createState() => _SystemNavbarState();
@@ -43,6 +49,9 @@ class _SystemNavbarState extends State<SystemNavbar> {
                   ActivityDrawer(
                     outputIndex: widget.outputIndex,
                     hasDisplayServer: widget.hasDisplayServer,
+                    padding: widget.padding,
+                    iconSize: widget.iconSize,
+                    axisExtent: widget.axisExtent,
                     onClose: () {
                       _controller!.close();
                     },

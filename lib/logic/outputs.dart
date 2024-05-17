@@ -124,7 +124,10 @@ class Output {
     return resDiag / physDiag;
   }
 
-  double get units => scale * (dpi / 100.0);
+  double get units {
+    if (dpi == 0.0) return 1.0;
+    return scale * (dpi / 100.0);
+  }
 
   Map<String, Object?> toJSON() {
     return {

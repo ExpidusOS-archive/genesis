@@ -72,6 +72,6 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
 
   static double heightFor(BuildContext context) {
     final theme = AppBarTheme.of(context);
-    return (theme.toolbarHeight ?? kSystemBarHeight) / 1.5;
+    return (theme.toolbarHeight ?? kToolbarHeight) / 1.5;
   }
 }

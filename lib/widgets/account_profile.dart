@@ -13,6 +13,7 @@ class AccountProfile extends StatelessWidget {
     this.direction = Axis.horizontal,
     this.iconSize = 40,
     this.textStyle,
+    this.spacing,
   }) : uid = null, name = null;
 
   const AccountProfile.uid({
@@ -21,6 +22,7 @@ class AccountProfile extends StatelessWidget {
     this.direction = Axis.horizontal,
     this.iconSize = 40,
     this.textStyle,
+    this.spacing,
   }) : name = null;
 
   const AccountProfile.name({
@@ -29,6 +31,7 @@ class AccountProfile extends StatelessWidget {
     this.direction = Axis.horizontal,
     this.iconSize = 40,
     this.textStyle,
+    this.spacing,
   }) : uid = null;
 
   final int? uid;
@@ -36,6 +39,7 @@ class AccountProfile extends StatelessWidget {
   final Axis direction;
   final double iconSize;
   final TextStyle? textStyle;
+  final double? spacing;
 
   @override
   Widget build(BuildContext context) =>
@@ -65,7 +69,7 @@ class AccountProfile extends StatelessWidget {
                   ),
                 ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              padding: EdgeInsets.symmetric(horizontal: spacing ?? 4.0),
               child: Text(
                 displayName ?? '',
                 style: textStyle ?? Theme.of(context).textTheme.titleLarge,

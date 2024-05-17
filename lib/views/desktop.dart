@@ -14,6 +14,7 @@ import '../logic/wm.dart';
 
 import '../widgets/system_layout.dart';
 import '../widgets/system_navbar.dart';
+import '../widgets/surface.dart';
 import '../widgets/wm.dart';
 
 class DesktopView extends StatefulWidget {
@@ -155,6 +156,7 @@ class _DesktopViewState extends State<DesktopView> {
                     windowManager: _windowManager!,
                     output: output,
                     outputIndex: outputIndex,
+                    decorHeight: SurfaceDecor.heightFor(context),
                   ),
                 ),
               ) : null,
@@ -164,6 +166,9 @@ class _DesktopViewState extends State<DesktopView> {
           SystemNavbar(
             outputIndex: outputIndex,
             hasDisplayServer: _displayServer != null && _windowManager != null,
+            padding: 8 * output.units,
+            iconSize: 64 * output.units,
+            axisExtent: 84 * output.units,
           ) : null,
     );
 
