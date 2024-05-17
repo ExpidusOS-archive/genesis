@@ -45,7 +45,7 @@ class OutputLayout extends StatelessWidget {
                   width: entry.value.geometry.width.toDouble(),
                   height: entry.value.geometry.height.toDouble(),
                   child: AspectRatio(
-                    aspectRatio: entry.value.geometry.width.toDouble() / entry.value.geometry.height.toDouble(),
+                    aspectRatio: size.width > size.height ? size.width / size.height : size.height / size.width,
                     child: size < toplevelSize
                       ? Transform.scale(
                           scale: entry.value.scale.toDouble(),
