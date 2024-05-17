@@ -143,11 +143,19 @@ class _DesktopViewState extends State<DesktopView> {
           ),
           constraints: BoxConstraints.expand(),
           child: _displayServer != null && _windowManager != null
-            ? WindowManagerView(
-                displayServer: _displayServer!,
-                windowManager: _windowManager!,
-                output: output,
-                outputIndex: outputIndex,
+            ? NotificationListener<SizeChangedLayoutNotification>(
+                onNotification: (notif) {
+                  _windowManager!.mode = Breakpoints.large.isActive(_key.currentContext!) ? WindowManagerMode.floating : WindowManagerMode.stacking;
+                  return true;
+                },
+                child: SizeChangedLayoutNotifier(
+                  child: WindowManagerView(
+                    displayServer: _displayServer!,
+                    windowManager: _windowManager!,
+                    output: output,
+                    outputIndex: outputIndex,
+                  ),
+                ),
               ) : null,
         ),
       bottomNavigationBarBuilder: !Breakpoints.large.isActive(context)

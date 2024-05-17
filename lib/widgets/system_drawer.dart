@@ -1,8 +1,10 @@
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
+import 'package:provider/provider.dart';
 
 import '../logic/power.dart';
+import '../logic/outputs.dart';
 
 import 'account_profile.dart';
 import 'power.dart';
@@ -86,6 +88,11 @@ class _SystemDrawerState extends State<SystemDrawer> {
                   onChanged: () => setState(() {}),
                 ),
               ),
+          ),
+          ListTile(
+            title: Text(
+              '${Provider.of<Output>(context).toJSON()}'
+            ),
           ),
         ].where((e) => e != null).toList().cast<Widget>(),
       ),

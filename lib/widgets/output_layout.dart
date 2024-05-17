@@ -4,6 +4,7 @@ import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:provider/provider.dart';
 
 import '../logic/outputs.dart';
+import '../logic/theme.dart';
 
 class OutputLayout extends StatelessWidget {
   const OutputLayout({
@@ -25,6 +26,7 @@ class OutputLayout extends StatelessWidget {
                 width: MediaQuery.of(context).size.width.toInt(),
                 height: MediaQuery.of(context).size.height.toInt(),
               ), 
+              size: OutputSize(),
             ),
             0
           );
@@ -36,40 +38,35 @@ class OutputLayout extends StatelessWidget {
             (entry) {
               final size = Size(entry.value.geometry.width.toDouble(), entry.value.geometry.height.toDouble());
 
-              Widget widget = Transform.translate(
+              Widget widget = Builder(
+                builder: (context) =>
+                  builder(context, entry.value, entry.key),
+              );
+
+              if (size <= toplevelSize) {
+                widget = MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    devicePixelRatio: entry.value.units,
+                    size: Size(size.width / entry.value.units, size.height / entry.value.units),
+                  ),
+                  child: Theme(
+                    data: scaleThemeFor(Theme.of(context), entry.value.units),
+                    child: widget,
+                  ),
+                );
+              }
+
+              return Transform.translate(
                 offset: Offset(
-                  (entry.value.geometry.x * entry.value.scale).toDouble(),
-                  (entry.value.geometry.y * entry.value.scale).toDouble(),
+                  entry.value.geometry.x.toDouble(),
+                  entry.value.geometry.y.toDouble(),
                 ),
                 child: SizedBox(
                   width: entry.value.geometry.width.toDouble(),
                   height: entry.value.geometry.height.toDouble(),
-                  child: AspectRatio(
-                    aspectRatio: size.width > size.height ? size.width / size.height : size.height / size.width,
-                    child: size < toplevelSize
-                      ? Transform.scale(
-                          scale: entry.value.scale.toDouble(),
-                          child: Builder(
-                            builder: (context) =>
-                              builder(context, entry.value, entry.key),
-                          ),
-                        ) : Builder(
-                          builder: (context) =>
-                            builder(context, entry.value, entry.key),
-                        ),
-                  ),
+                  child: widget,
                 ),
               );
-
-              if (toplevelSize >= size) {
-                widget = MediaQuery(
-                  data: MediaQuery.of(context).copyWith(
-                    size: size,
-                  ),
-                  child: widget,
-                );
-              }
-              return widget;
             }
           ).toList(),
         );

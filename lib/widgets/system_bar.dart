@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart' show Scaffold;
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme, Scaffold;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
+import 'package:provider/provider.dart';
+
+import '../logic/outputs.dart';
 
 import 'clock.dart';
 import 'power.dart';
@@ -8,20 +11,27 @@ import 'power.dart';
 const kSystemBarHeight = kToolbarHeight / 1.5;
 
 class SystemBar extends StatelessWidget implements PreferredSizeWidget {
-  const SystemBar({ super.key });
+  const SystemBar({
+    super.key,
+    this.height,
+    this.spacing = 4.0,
+  });
+
+  final double? height;
+  final double spacing;
 
   @override
-  Size get preferredSize => const Size.fromHeight(kSystemBarHeight);
+  Size get preferredSize => Size.fromHeight(height ?? kSystemBarHeight);
 
   Widget _buildActions(BuildContext context) =>
     Row(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          padding: EdgeInsets.symmetric(horizontal: spacing),
           child: const PowerBar(),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          padding: EdgeInsets.symmetric(horizontal: spacing),
           child: const DigitalClock(),
         ),
       ],
@@ -57,5 +67,11 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
             },
           ) : _buildActions(context),
       ],
+      toolbarHeight: height ?? kSystemBarHeight,
     );
+
+  static double heightFor(BuildContext context) {
+    final theme = AppBarTheme.of(context);
+    return (theme.toolbarHeight ?? kSystemBarHeight) / 1.5;
+  }
 }

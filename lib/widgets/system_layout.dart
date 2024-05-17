@@ -59,11 +59,14 @@ class SystemLayout extends StatelessWidget {
   Widget _buildMobile(BuildContext context, Output output, int outputIndex) =>
     BackdropScaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kSystemBarHeight),
+        preferredSize: Size.fromHeight(SystemBar.heightFor(context)),
         child: Builder(
           builder: (context) =>
             GestureDetector(
-              child: const SystemBar(),
+              child: SystemBar(
+                height: SystemBar.heightFor(context),
+                spacing: 4.0 * output.units,
+              ),
               onVerticalDragDown: (details) => Backdrop.of(context).fling(),
             ),
         ),
@@ -118,11 +121,14 @@ class SystemLayout extends StatelessWidget {
 
   Widget _buildDesktop(BuildContext context, Output output, int outputIndex) =>
     Scaffold(
-      appBar: const PreferredSize(
-        preferredSize: const Size(double.infinity, kSystemBarHeight + 4.0),
-        child: const Padding(
-          padding: EdgeInsets.all(4.0),
-          child: const SystemBar(),
+      appBar: PreferredSize(
+        preferredSize: Size(double.infinity, SystemBar.heightFor(context) + (8.0 * output.units)),
+        child: Padding(
+          padding: EdgeInsets.all(4.0 * output.units),
+          child: SystemBar(
+            height: SystemBar.heightFor(context),
+            spacing: 4.0 * output.units,
+          ),
         ),
       ),
       drawer: userMode && !isLocked
