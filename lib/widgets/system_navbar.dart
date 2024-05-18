@@ -20,6 +20,7 @@ class SystemNavbar extends StatefulWidget {
   final double padding;
   final double iconSize;
   final double axisExtent;
+  final double height;
 
   @override
   State<SystemNavbar> createState() => _SystemNavbarState();

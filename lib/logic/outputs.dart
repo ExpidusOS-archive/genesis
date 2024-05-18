@@ -126,7 +126,7 @@ class Output {
 
   double get units {
     if (dpi == 0.0) return 1.0;
-    return scale * (dpi / 100.0);
+    return scale * (dpi / 96.0);
   }
 
   Map<String, Object?> toJSON() {
