@@ -8,6 +8,7 @@
       };
       accounts-daemon.enable = true;
       upower.enable = true;
+      logind.powerKey = "ignore";
     };
 
     users.users.${config.services.cage.user} = {
