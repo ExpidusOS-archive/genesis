@@ -4,6 +4,8 @@ import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
 
 import 'activity_drawer.dart';
 
+const kSystemNavbarHeight = kToolbarHeight / 1.4;
+
 class SystemNavbar extends StatefulWidget {
   const SystemNavbar({
     super.key,
@@ -12,7 +14,7 @@ class SystemNavbar extends StatefulWidget {
     this.padding = 8,
     this.iconSize = 64,
     this.axisExtent = 84,
-    this.height = 45,
+    this.height = kSystemNavbarHeight,
   });
 
   final int outputIndex;
@@ -24,6 +26,11 @@ class SystemNavbar extends StatefulWidget {
 
   @override
   State<SystemNavbar> createState() => _SystemNavbarState();
+
+  static double heightFor(BuildContext context) {
+    final theme = BottomAppBarTheme.of(context);
+    return (theme.height ?? 80) / 1.4;
+  }
 }
 
 class _SystemNavbarState extends State<SystemNavbar> {
@@ -39,7 +46,7 @@ class _SystemNavbarState extends State<SystemNavbar> {
         children: [
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.chevronLeft, size: widget.height - (widget.padding * 2)),
+            icon: Icon(Icons.chevronLeft, size: widget.height - widget.padding),
           ),
           IconButton(
             onPressed: () {
@@ -60,11 +67,11 @@ class _SystemNavbarState extends State<SystemNavbar> {
                   ));
               }
             },
-            icon: Icon(Icons.circleDot, size: widget.height - (widget.padding * 2)),
+            icon: Icon(Icons.circleDot, size: widget.height - widget.padding),
           ),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.bars, size: widget.height - (widget.padding * 2)),
+            icon: Icon(Icons.bars, size: widget.height - widget.padding),
           ),
         ],
       ),
