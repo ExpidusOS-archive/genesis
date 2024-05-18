@@ -12,6 +12,7 @@ class SystemNavbar extends StatefulWidget {
     this.padding = 8,
     this.iconSize = 64,
     this.axisExtent = 84,
+    this.height = 45,
   });
 
   final int outputIndex;
@@ -30,7 +31,7 @@ class _SystemNavbarState extends State<SystemNavbar> {
   @override
   Widget build(BuildContext context) =>
     BottomAppBar(
-      height: 45,
+      height: widget.height,
       padding: EdgeInsets.zero,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

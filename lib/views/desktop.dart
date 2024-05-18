@@ -169,6 +169,7 @@ class _DesktopViewState extends State<DesktopView> {
             padding: 8 * output.units,
             iconSize: 64 * output.units,
             axisExtent: 84 * output.units,
+            height: 45 * output.units,
           ) : null,
     );
 
