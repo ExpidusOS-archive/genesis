@@ -18,6 +18,11 @@ AppBarTheme scaleAppBarThemeFor(AppBarTheme orig, double scale) =>
     toolbarTextStyle: scaleTextStyleFor(orig.toolbarTextStyle!, scale),
   );
 
+BottomAppBarTheme scaleBottomAppBarThemeFor(BottomAppBarTheme orig, double scale) =>
+  orig.copyWith(
+    height: 80 * scale,
+  );
+
 DrawerThemeData scaleDrawerThemeFor(DrawerThemeData orig, double scale) =>
   orig.copyWith(
     width: 304 * scale,
@@ -45,7 +50,9 @@ TextTheme scaleTextThemeFor(TextTheme orig, double scale) =>
 ThemeData scaleThemeFor(ThemeData orig, double scale) =>
   orig.copyWith(
     appBarTheme: scaleAppBarThemeFor(orig.appBarTheme!, scale),
+    bottomAppBarTheme: scaleBottomAppBarThemeFor(orig.bottomAppBarTheme!, scale),
     drawerTheme: scaleDrawerThemeFor(orig.drawerTheme!, scale),
+    primaryIconTheme: scaleIconThemeFor(orig.primaryIconTheme!, scale),
     iconTheme: scaleIconThemeFor(orig.iconTheme!, scale),
     textTheme: scaleTextThemeFor(orig.textTheme, scale),
   );

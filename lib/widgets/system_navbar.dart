@@ -39,7 +39,7 @@ class _SystemNavbarState extends State<SystemNavbar> {
         children: [
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.chevronLeft),
+            icon: Icon(Icons.chevronLeft, size: widget.height - (widget.padding * 2)),
           ),
           IconButton(
             onPressed: () {
@@ -60,11 +60,11 @@ class _SystemNavbarState extends State<SystemNavbar> {
                   ));
               }
             },
-            icon: Icon(Icons.circleDot),
+            icon: Icon(Icons.circleDot, size: widget.height - (widget.padding * 2)),
           ),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.bars),
+            icon: Icon(Icons.bars, size: widget.height - (widget.padding * 2)),
           ),
         ],
       ),
