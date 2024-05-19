@@ -166,9 +166,9 @@ class _DesktopViewState extends State<DesktopView> {
           SystemNavbar(
             outputIndex: outputIndex,
             hasDisplayServer: _displayServer != null && _windowManager != null,
-            padding: 8 * output.units,
-            iconSize: 64 * output.units,
-            axisExtent: 84 * output.units,
+            padding: output.applyScale(8),
+            iconSize: output.applyScale(64),
+            axisExtent: output.applyScale(84),
             height: SystemNavbar.heightFor(context),
           ) : null,
     );

@@ -65,7 +65,7 @@ class SystemLayout extends StatelessWidget {
             GestureDetector(
               child: SystemBar(
                 height: SystemBar.heightFor(context),
-                spacing: 4.0 * output.units,
+                spacing: output.applyScale(4.0),
               ),
               onVerticalDragDown: (details) => Backdrop.of(context).fling(),
             ),
@@ -94,15 +94,15 @@ class SystemLayout extends StatelessWidget {
                                 color: Theme.of(context).colorScheme.background,
                                 margin: EdgeInsets.zero,
                                 child: Padding(
-                                  padding: EdgeInsets.all(8 * output.units),
+                                  padding: EdgeInsets.all(output.applyScale(8)),
                                   child: userName == null
                                     ? AccountProfile(
-                                        spacing: 8 * output.units,
-                                        iconSize: 40 * output.units,
+                                        spacing: output.applyScale(8),
+                                        iconSize: output.applyScale(40),
                                       ) : AccountProfile.name(
                                         name: userName!,
-                                        spacing: 8 * output.units,
-                                        iconSize: 40 * output.units,
+                                        spacing: output.applyScale(8),
+                                        iconSize: output.applyScale(40),
                                       ),
                                 ),
                               ),
@@ -112,8 +112,8 @@ class SystemLayout extends StatelessWidget {
                     SystemDrawer(
                       userMode: userMode,
                       isLocked: isLocked,
-                      padding: 8 * output.units,
-                      accountIconSize: 40 * output.units,
+                      padding: output.applyScale(8),
+                      accountIconSize: output.applyScale(40),
                     ),
                   ].where((e) => e != null).toList().cast<Widget>(),
                 ),
@@ -132,18 +132,18 @@ class SystemLayout extends StatelessWidget {
   Widget _buildDesktop(BuildContext context, Output output, int outputIndex) =>
     Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size(double.infinity, SystemBar.heightFor(context) + (8.0 * output.units)),
+        preferredSize: Size(double.infinity, SystemBar.heightFor(context) + output.applyScale(8.0)),
         child: Padding(
-          padding: EdgeInsets.all(4.0 * output.units),
+          padding: EdgeInsets.all(output.applyScale(4.0)),
           child: SystemBar(
             height: SystemBar.heightFor(context),
-            spacing: 4.0 * output.units,
+            spacing: output.applyScale(4.0),
           ),
         ),
       ),
       drawer: userMode && !isLocked
         ? Padding(
-            padding: EdgeInsets.all(8.0 * output.units),
+            padding: EdgeInsets.all(output.applyScale(8.0)),
             child: Drawer(
               width: double.infinity,
               shape: RoundedRectangleBorder(
@@ -162,9 +162,9 @@ class SystemLayout extends StatelessWidget {
                       ActivityDrawer(
                         hasDisplayServer: hasDisplayServer,
                         outputIndex: outputIndex,
-                        padding: 8 * output.units,
-                        iconSize: 64 * output.units,
-                        axisExtent: 84 * output.units,
+                        padding: output.applyScale(8),
+                        iconSize: output.applyScale(64),
+                        axisExtent: output.applyScale(84),
                         onClose: () {
                           material.Scaffold.of(context).closeDrawer();
                         },
@@ -192,8 +192,8 @@ class SystemLayout extends StatelessWidget {
                 userMode: userMode,
                 isLocked: isLocked,
                 userName: userName,
-                padding: 8 * output.units,
-                accountIconSize: 40 * output.units,
+                padding: output.applyScale(8),
+                accountIconSize: output.applyScale(40),
               ),
             ),
           ),

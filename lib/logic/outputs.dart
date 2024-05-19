@@ -121,13 +121,11 @@ class Output {
   double get dpi {
     final resDiag = sqrt(pow(geometry.width.toDouble(), 2) + pow(geometry.height.toDouble(), 2));
     final physDiag = sqrt(pow(size.width.toDouble() / 25.4, 2) + pow(size.height.toDouble() / 25.4, 2));
-    return resDiag / physDiag;
+    final value = resDiag / physDiag;
+    return value > 0 ? value : 96.0;
   }
 
-  double get units {
-    if (dpi == 0.0) return 1.0;
-    return scale * (dpi / 96.0);
-  }
+  double applyScale(double i) => (i * dpi) / 96.0;
 
   Map<String, Object?> toJSON() {
     return {

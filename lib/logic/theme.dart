@@ -1,34 +1,36 @@
 import 'package:flutter/material.dart';
 
-TextStyle scaleTextStyleFor(TextStyle orig, double scale) =>
+import 'misc.dart';
+
+TextStyle scaleTextStyleFor(TextStyle orig, ScaleFunction scale) =>
   orig.copyWith(
-    fontSize: orig.fontSize! * scale,
+    fontSize: scale(orig.fontSize!),
   );
 
-IconThemeData scaleIconThemeFor(IconThemeData orig, double scale) =>
+IconThemeData scaleIconThemeFor(IconThemeData orig, ScaleFunction scale) =>
   orig.copyWith(
-    size: 24.0 * scale,
+    size: scale(24),
   );
 
-AppBarTheme scaleAppBarThemeFor(AppBarTheme orig, double scale) =>
+AppBarTheme scaleAppBarThemeFor(AppBarTheme orig, ScaleFunction scale) =>
   orig.copyWith(
-    toolbarHeight: kToolbarHeight * scale,
+    toolbarHeight: scale(kToolbarHeight),
     iconTheme: scaleIconThemeFor(orig.iconTheme!, scale),
     titleTextStyle: scaleTextStyleFor(orig.titleTextStyle!, scale),
     toolbarTextStyle: scaleTextStyleFor(orig.toolbarTextStyle!, scale),
   );
 
-BottomAppBarTheme scaleBottomAppBarThemeFor(BottomAppBarTheme orig, double scale) =>
+BottomAppBarTheme scaleBottomAppBarThemeFor(BottomAppBarTheme orig, ScaleFunction scale) =>
   orig.copyWith(
-    height: 80 * scale,
+    height: scale(80),
   );
 
-DrawerThemeData scaleDrawerThemeFor(DrawerThemeData orig, double scale) =>
+DrawerThemeData scaleDrawerThemeFor(DrawerThemeData orig, ScaleFunction scale) =>
   orig.copyWith(
-    width: 304 * scale,
+    width: scale(304),
   );
 
-TextTheme scaleTextThemeFor(TextTheme orig, double scale) =>
+TextTheme scaleTextThemeFor(TextTheme orig, ScaleFunction scale) =>
   orig.copyWith(
     bodyLarge: scaleTextStyleFor(orig.bodyLarge!, scale),
     bodyMedium: scaleTextStyleFor(orig.bodyMedium!, scale),
@@ -47,7 +49,7 @@ TextTheme scaleTextThemeFor(TextTheme orig, double scale) =>
     titleSmall: scaleTextStyleFor(orig.titleSmall!, scale),
   );
 
-ThemeData scaleThemeFor(ThemeData orig, double scale) =>
+ThemeData scaleThemeFor(ThemeData orig, ScaleFunction scale) =>
   orig.copyWith(
     appBarTheme: scaleAppBarThemeFor(orig.appBarTheme!, scale),
     bottomAppBarTheme: scaleBottomAppBarThemeFor(orig.bottomAppBarTheme!, scale),

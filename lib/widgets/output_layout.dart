@@ -46,11 +46,11 @@ class OutputLayout extends StatelessWidget {
               if (size <= toplevelSize) {
                 widget = MediaQuery(
                   data: MediaQuery.of(context).copyWith(
-                    devicePixelRatio: entry.value.units,
+                    devicePixelRatio: 1.0,
                     size: size,
                   ),
                   child: Theme(
-                    data: scaleThemeFor(Theme.of(context), entry.value.units),
+                    data: scaleThemeFor(Theme.of(context), entry.value.applyScale),
                     child: widget,
                   ),
                 );
