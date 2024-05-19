@@ -4,7 +4,7 @@ import 'package:libtokyo/libtokyo.dart' hide TokyoApp, Scaffold;
 
 import 'activity_drawer.dart';
 
-const kSystemNavbarHeight = kToolbarHeight / 1.4;
+const kSystemNavbarHeight = kToolbarHeight / 2.0;
 
 class SystemNavbar extends StatefulWidget {
   const SystemNavbar({
@@ -29,7 +29,7 @@ class SystemNavbar extends StatefulWidget {
 
   static double heightFor(BuildContext context) {
     final theme = BottomAppBarTheme.of(context);
-    return (theme.height ?? 80) / 1.4;
+    return (theme.height ?? kToolbarHeight) / 2.0;
   }
 }
 

@@ -8,7 +8,7 @@ import '../logic/outputs.dart';
 import 'clock.dart';
 import 'power.dart';
 
-const kSystemBarHeight = kToolbarHeight / 1.5;
+const kSystemBarHeight = kToolbarHeight / 2.0;
 
 class SystemBar extends StatelessWidget implements PreferredSizeWidget {
   const SystemBar({
@@ -72,6 +72,6 @@ class SystemBar extends StatelessWidget implements PreferredSizeWidget {
 
   static double heightFor(BuildContext context) {
     final theme = AppBarTheme.of(context);
-    return (theme.toolbarHeight ?? kToolbarHeight) / 1.5;
+    return (theme.toolbarHeight ?? kToolbarHeight) / 2.0;
   }
 }
