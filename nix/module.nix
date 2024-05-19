@@ -11,6 +11,9 @@
       logind.powerKey = "ignore";
     };
 
+    hardware.sensor.iio.enable = true;
+    programs.feedbackd.enable = true;
+
     users.users.${config.services.cage.user} = {
       initialPassword = "123456";
       isNormalUser = true;

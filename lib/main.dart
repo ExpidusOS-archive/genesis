@@ -12,6 +12,7 @@ import 'logic/network.dart';
 import 'logic/outputs.dart';
 import 'logic/power.dart';
 import 'logic/route_args.dart';
+import 'logic/sensors.dart';
 
 import 'views/desktop.dart';
 import 'views/lock.dart';
@@ -71,6 +72,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
   late NetworkManager _networkManager;
   late OutputManager _outputManager;
   late PowerManager _powerManager;
+  late SensorsManager _sensorsManager;
 
   @override
   void initState() {
@@ -87,6 +89,9 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
 
     _powerManager = PowerManager.auto();
     _powerManager.connect();
+
+    _sensorsManager = SensorsManager.auto();
+    _sensorsManager.connect();
   }
 
   @override
@@ -95,6 +100,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
 
     _networkManager.disconnect();
     _powerManager.disconnect();
+    _sensorsManager.disconnect();
   }
 
   @override
@@ -107,6 +113,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
         Provider(create: (_) => _networkManager),
         ChangeNotifierProvider(create: (_) => _outputManager),
         Provider(create: (_) => _powerManager),
+        Provider(create: (_) => _sensorsManager),
       ],
       child: TokyoApp(
         title: 'Genesis Shell',
