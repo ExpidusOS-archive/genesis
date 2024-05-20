@@ -12,7 +12,7 @@ class OutputLayout extends StatelessWidget {
     required this.builder,
   });
 
-  final Widget Function(BuildContext context, Output output, int i) builder;
+  final Widget Function(BuildContext context, Output output, int i, bool shouldScale) builder;
 
   @override
   Widget build(BuildContext context) =>
@@ -28,7 +28,7 @@ class OutputLayout extends StatelessWidget {
               ), 
               size: OutputSize(),
             ),
-            0
+            0, false
           );
         }
 
@@ -40,7 +40,7 @@ class OutputLayout extends StatelessWidget {
 
               Widget widget = Builder(
                 builder: (context) =>
-                  builder(context, entry.value, entry.key),
+                  builder(context, entry.value, entry.key, size <= toplevelSize),
               );
 
               if (size <= toplevelSize) {

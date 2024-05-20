@@ -13,7 +13,7 @@ import 'output_layout.dart';
 import 'system_bar.dart';
 import 'system_drawer.dart';
 
-typedef Widget? SystemLayoutBuilder(BuildContext context, Output output, int outputIndex);
+typedef Widget? SystemLayoutBuilder(BuildContext context, Output output, int outputIndex, bool shouldScale);
 
 class SystemLayout extends StatelessWidget {
   const SystemLayout({
@@ -50,13 +50,13 @@ class SystemLayout extends StatelessWidget {
   final SystemLayoutBuilder? bottomNavigationBarBuilder;
   final String? userName;
 
-  Widget? _makeWidget(BuildContext context, Output output, int outputIndex, Widget? a, SystemLayoutBuilder? buildable) {
+  Widget? _makeWidget(BuildContext context, Output output, int outputIndex, bool shouldScale, Widget? a, SystemLayoutBuilder? buildable) {
     if (a != null) return a!;
-    if (buildable != null) return buildable!(context, output, outputIndex);
+    if (buildable != null) return buildable!(context, output, outputIndex, shouldScale);
     return null;
   }
 
-  Widget _buildMobile(BuildContext context, Output output, int outputIndex) =>
+  Widget _buildMobile(BuildContext context, Output output, int outputIndex, bool shouldScale) =>
     BackdropScaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(SystemBar.heightFor(context)),
@@ -65,7 +65,7 @@ class SystemLayout extends StatelessWidget {
             GestureDetector(
               child: SystemBar(
                 height: SystemBar.heightFor(context),
-                spacing: output.applyScale(4.0),
+                spacing: shouldScale ? output.applyScale(4.0) : 4.0,
               ),
               onVerticalDragDown: (details) => Backdrop.of(context).fling(),
             ),
@@ -94,15 +94,15 @@ class SystemLayout extends StatelessWidget {
                                 color: Theme.of(context).colorScheme.background,
                                 margin: EdgeInsets.zero,
                                 child: Padding(
-                                  padding: EdgeInsets.all(output.applyScale(8)),
+                                  padding: EdgeInsets.all(shouldScale ? output.applyScale(8) : 8),
                                   child: userName == null
                                     ? AccountProfile(
-                                        spacing: output.applyScale(8),
-                                        iconSize: output.applyScale(40),
+                                        spacing: shouldScale ? output.applyScale(8) : 8,
+                                        iconSize: shouldScale ? output.applyScale(40) : 40,
                                       ) : AccountProfile.name(
                                         name: userName!,
-                                        spacing: output.applyScale(8),
-                                        iconSize: output.applyScale(40),
+                                        spacing: shouldScale ? output.applyScale(8) : 8,
+                                        iconSize: shouldScale ? output.applyScale(40) : 40,
                                       ),
                                 ),
                               ),
@@ -112,8 +112,8 @@ class SystemLayout extends StatelessWidget {
                     SystemDrawer(
                       userMode: userMode,
                       isLocked: isLocked,
-                      padding: output.applyScale(8),
-                      accountIconSize: output.applyScale(40),
+                      padding: shouldScale ? output.applyScale(8) : 8,
+                      accountIconSize: shouldScale ? output.applyScale(40) : 40,
                     ),
                   ].where((e) => e != null).toList().cast<Widget>(),
                 ),
@@ -123,27 +123,27 @@ class SystemLayout extends StatelessWidget {
           ),
       ),
       frontLayerScrim: Theme.of(context).colorScheme.background,
-      frontLayer: _makeWidget(context, output, outputIndex, body, bodyBuilder) ?? const SizedBox(),
+      frontLayer: _makeWidget(context, output, outputIndex, shouldScale, body, bodyBuilder) ?? const SizedBox(),
       bottomSheet: bottomSheet,
-      bottomNavigationBar: _makeWidget(context, output, outputIndex, bottomNavigationBar, bottomNavigationBarBuilder),
+      bottomNavigationBar: _makeWidget(context, output, outputIndex, shouldScale, bottomNavigationBar, bottomNavigationBarBuilder),
       extendBody: true,
     );
 
-  Widget _buildDesktop(BuildContext context, Output output, int outputIndex) =>
+  Widget _buildDesktop(BuildContext context, Output output, int outputIndex, bool shouldScale) =>
     Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size(double.infinity, SystemBar.heightFor(context) + output.applyScale(8.0)),
+        preferredSize: Size(double.infinity, SystemBar.heightFor(context) + (shouldScale ? output.applyScale(8.0) : 8.0)),
         child: Padding(
-          padding: EdgeInsets.all(output.applyScale(4.0)),
+          padding: EdgeInsets.all(shouldScale ? output.applyScale(4.0) : 4.0),
           child: SystemBar(
             height: SystemBar.heightFor(context),
-            spacing: output.applyScale(4.0),
+            spacing: shouldScale ? output.applyScale(4.0) : 4.0,
           ),
         ),
       ),
       drawer: userMode && !isLocked
         ? Padding(
-            padding: EdgeInsets.all(output.applyScale(8.0)),
+            padding: EdgeInsets.all(shouldScale ? output.applyScale(8.0) : 8.0),
             child: Drawer(
               width: double.infinity,
               shape: RoundedRectangleBorder(
@@ -162,9 +162,9 @@ class SystemLayout extends StatelessWidget {
                       ActivityDrawer(
                         hasDisplayServer: hasDisplayServer,
                         outputIndex: outputIndex,
-                        padding: output.applyScale(8),
-                        iconSize: output.applyScale(64),
-                        axisExtent: output.applyScale(84),
+                        padding: shouldScale ? output.applyScale(8) : 8,
+                        iconSize: shouldScale ? output.applyScale(64) : 64,
+                        axisExtent: shouldScale ? output.applyScale(84) : 84,
                         onClose: () {
                           material.Scaffold.of(context).closeDrawer();
                         },
@@ -175,7 +175,7 @@ class SystemLayout extends StatelessWidget {
             ),
           ) : null,
       endDrawer: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(shouldScale ? output.applyScale(8) : 8),
         child: Drawer(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
@@ -192,16 +192,16 @@ class SystemLayout extends StatelessWidget {
                 userMode: userMode,
                 isLocked: isLocked,
                 userName: userName,
-                padding: output.applyScale(8),
-                accountIconSize: output.applyScale(40),
+                padding: shouldScale ? output.applyScale(8) : 8,
+                accountIconSize: shouldScale ? output.applyScale(40) : 40,
               ),
             ),
           ),
         ),
       ),
-      body: _makeWidget(context, output, outputIndex, body, bodyBuilder),
+      body: _makeWidget(context, output, outputIndex, shouldScale, body, bodyBuilder),
       bottomSheet: bottomSheet,
-      bottomNavigationBar: _makeWidget(context, output, outputIndex, bottomNavigationBar, bottomNavigationBarBuilder),
+      bottomNavigationBar: _makeWidget(context, output, outputIndex, shouldScale, bottomNavigationBar, bottomNavigationBarBuilder),
       backgroundColor: Color(Colors.transparent.value),
       extendBody: true,
     );
@@ -209,7 +209,7 @@ class SystemLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
     OutputLayout(
-      builder: (context, output, outputIndex) =>
+      builder: (context, output, outputIndex, shouldScale) =>
         Provider<Output>.value(
           value: output,
           child: AdaptiveLayout(
@@ -217,15 +217,15 @@ class SystemLayout extends StatelessWidget {
               config: {
                 Breakpoints.small: SlotLayout.from(
                   key: const Key('Body Small'),
-                  builder: (context) => _buildMobile(context, output, outputIndex),
+                  builder: (context) => _buildMobile(context, output, outputIndex, shouldScale),
                 ),
                 Breakpoints.medium: SlotLayout.from(
                   key: const Key('Body Medium'),
-                  builder: (context) => _buildMobile(context, output, outputIndex),
+                  builder: (context) => _buildMobile(context, output, outputIndex, shouldScale),
                 ),
                 Breakpoints.large: SlotLayout.from(
                   key: const Key('Body Large'),
-                  builder: (context) => _buildDesktop(context, output, outputIndex),
+                  builder: (context) => _buildDesktop(context, output, outputIndex, shouldScale),
                 ),
               },
             ),

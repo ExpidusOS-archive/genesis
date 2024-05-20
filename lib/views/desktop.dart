@@ -134,7 +134,7 @@ class _DesktopViewState extends State<DesktopView> {
       userMode: true,
       userName: widget.userName,
       hasDisplayServer: _displayServer != null,
-      bodyBuilder: (context, output, outputIndex) =>
+      bodyBuilder: (context, output, outputIndex, shouldScale) =>
         Container(
           decoration: !Breakpoints.large.isActive(context)
             ? BoxDecoration(
@@ -162,13 +162,13 @@ class _DesktopViewState extends State<DesktopView> {
               ) : null,
         ),
       bottomNavigationBarBuilder: !Breakpoints.large.isActive(context)
-        ? (context, output, outputIndex) =>
+        ? (context, output, outputIndex, shouldScale) =>
           SystemNavbar(
             outputIndex: outputIndex,
             hasDisplayServer: _displayServer != null && _windowManager != null,
-            padding: output.applyScale(8),
-            iconSize: output.applyScale(64),
-            axisExtent: output.applyScale(84),
+            padding: shouldScale ? output.applyScale(8) : 8,
+            iconSize: shouldScale ? output.applyScale(64) : 64,
+            axisExtent: shouldScale ? output.applyScale(84) : 84,
             height: SystemNavbar.heightFor(context),
           ) : null,
     );
