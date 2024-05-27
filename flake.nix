@@ -6,7 +6,7 @@
       url = "github:RossComputerGuy/mobile-nixos/fix/impure";
       flake = false;
     };
-    nixos-apple-silicon.url = "github:tpwrules/nixos-apple-silicon/777e10ec2094a0ac92e61cbfe338063d1e64646e";
+    nixos-apple-silicon.url = "github:tpwrules/nixos-apple-silicon/1b16e4290a5e4a59c75ef53617d597e02078791e";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
