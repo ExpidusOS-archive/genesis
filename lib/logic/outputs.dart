@@ -30,7 +30,6 @@ class OutputManager extends ChangeNotifier {
   void _sync() {
     channel.invokeListMethod('list').then((list) {
       _outputs.clear();
-      print(list);
       _outputs.addAll(list!.map(
         (item) =>
           Output(

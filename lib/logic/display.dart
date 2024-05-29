@@ -275,7 +275,6 @@ class DisplayServerSurface extends ChangeNotifier {
       'name': _server.name,
       'id': id,
     });
-    print(data);
 
     _appId = data['appId'];
     _title = data['title'];

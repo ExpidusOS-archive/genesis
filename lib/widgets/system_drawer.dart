@@ -102,11 +102,6 @@ class _SystemDrawerState extends State<SystemDrawer> {
                 ),
               ),
           ),
-          ListTile(
-            title: Text(
-              '${Provider.of<Output>(context).toJSON()}'
-            ),
-          ),
         ].where((e) => e != null).toList().cast<Widget>(),
       ),
     );
