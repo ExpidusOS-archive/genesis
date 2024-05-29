@@ -235,6 +235,7 @@ void xdg_surface_new(struct wl_listener* listener, void* data) {
     surface->texture = NULL;
     surface->decor = NULL;
     surface->has_decor = true;
+    surface->monitor = 0;
 
     surface->map.notify = xdg_toplevel_map;
     wl_signal_add(&xdg_surface->surface->events.map, &surface->map);

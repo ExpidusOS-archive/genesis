@@ -345,11 +345,32 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     }
 
     DisplayChannelSurface* surface = g_hash_table_lookup(disp->surfaces, &id);
-    g_assert(surface->id == id);
+    if (surface->id != id) {
+      fl_method_call_respond_error(method_call, "Linux", "Surface is not valid", NULL, NULL);
+      return;
+    }
 
     const gchar* req_name = fl_value_get_string(fl_value_lookup_string(args, "reqName"));
     if (strcmp(req_name, "close") == 0) {
       wlr_xdg_toplevel_send_close(surface->xdg);
+      response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
+    } else if (strcmp(req_name, "enter") == 0) {
+      struct wlr_output* output = g_list_nth_data(disp->outputs, surface->monitor);
+      if (output == NULL) {
+        fl_method_call_respond_error(method_call, "Linux", "Output does not exist", fl_value_new_int(surface->monitor), NULL);
+        return;
+      }
+
+      wlr_surface_send_enter(surface->xdg->base->surface, output);
+      response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
+    } else if (strcmp(req_name, "leave") == 0) {
+      struct wlr_output* output = g_list_nth_data(disp->outputs, surface->monitor);
+      if (output == NULL) {
+        fl_method_call_respond_error(method_call, "Linux", "Output does not exist", fl_value_new_int(surface->monitor), NULL);
+        return;
+      }
+
+      wlr_surface_send_leave(surface->xdg->base->surface, output);
       response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
     } else {
       response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());

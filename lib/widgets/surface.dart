@@ -128,7 +128,11 @@ class _SurfaceViewState extends State<SurfaceView> {
           surface.setActive(isFocused);
           surface.setSuspended(!isFocused);
         },
-        child: content,
+        child: MouseRegion(
+          onEnter: (_) => surface.enter(),
+          onExit: (_) => surface.leave(),
+          child: content,
+        ),
       );
     }
 
@@ -148,9 +152,11 @@ class _SurfaceViewState extends State<SurfaceView> {
     }
 
     if (surface.size != null) {
+      final width = surface.size!.width == null ? 0.0 : surface.size!.width!.toDouble();
+      final height = surface.size!.height == null ? 0.0 : surface.size!.height!.toDouble();
       content = SizedBox(
-        width: surface.size!.width == null ? null : surface.size!.width!.toDouble(),
-        height: surface.size!.height == null ? null : surface.size!.height!.toDouble(),
+        width: width > 0 ? width : null,
+        height: height > 0 ? height : null,
         child: content,
       );
     }

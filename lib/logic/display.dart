@@ -259,6 +259,8 @@ class DisplayServerSurface extends ChangeNotifier {
   int get monitor => _monitor;
 
   Future<void> close() => sendRequest('close');
+  Future<void> enter() => sendRequest('enter');
+  Future<void> leave() => sendRequest('leave');
 
   Future<void> sendRequest(String name) async {
     await DisplayManager.channel.invokeMethod('requestSurface', <String, dynamic>{
