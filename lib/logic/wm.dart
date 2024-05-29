@@ -40,7 +40,7 @@ class WindowManager extends ChangeNotifier {
 
 class Window extends ChangeNotifier {
   Window._(this.manager, this.surface) :
-    _x = 0, _y = 0, _layer = 0, _monitor = 0, _minimized = false;
+    _x = 0, _y = 0, _layer = 0, _minimized = false;
 
   final WindowManager manager;
   final DisplayServerSurface surface;
@@ -72,13 +72,6 @@ class Window extends ChangeNotifier {
   int get layer => _layer;
   set layer(int value) {
     _layer = value;
-    notifyListeners();
-  }
-
-  int _monitor;
-  int get monitor => _monitor;
-  set monitor(int value) {
-    _monitor = value;
     notifyListeners();
   }
 

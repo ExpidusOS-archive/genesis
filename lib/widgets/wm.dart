@@ -124,7 +124,7 @@ class _WindowManagerViewState extends State<WindowManagerView> {
     final wm = context.watch<WindowManager>();
 
     final list = displayServer.surfaces.map((surface) => wm.fromSurface(surface))
-      .where((win) => win.monitor == widget.outputIndex)
+      .where((win) => win.surface.monitor == widget.outputIndex)
       .where((win) => !win.minimized).toList();
     list.sort((a, b) => a.layer.compareTo(b.layer));
     return list;

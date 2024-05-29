@@ -12,7 +12,6 @@ class DisplayManager extends ChangeNotifier {
 
   DisplayManager() {
     channel.setMethodCallHandler((call) async {
-      print(call.arguments);
       switch (call.method) {
         case 'newSurface':
           final server = find(call.arguments['name']);
@@ -208,7 +207,8 @@ class DisplayServerSurface extends ChangeNotifier {
     _active = false,
     _suspended = false,
     _maximized = false,
-    _hasDecorations = false;
+    _hasDecorations = false,
+    _monitor = 0;
 
   final DisplayServer _server;
   final int id;
@@ -255,6 +255,9 @@ class DisplayServerSurface extends ChangeNotifier {
   bool _hasDecorations;
   bool get hasDecorations => _hasDecorations;
 
+  int _monitor;
+  int get monitor => _monitor;
+
   Future<void> close() => sendRequest('close');
 
   Future<void> sendRequest(String name) async {
@@ -283,6 +286,7 @@ class DisplayServerSurface extends ChangeNotifier {
     _suspended = data['suspended'];
     _maximized = data['maximized'];
     _hasDecorations = data['hasDecorations'];
+    _monitor = data['monitor'];
     notifyListeners();
   }
 
@@ -322,6 +326,16 @@ class DisplayServerSurface extends ChangeNotifier {
       'name': _server.name,
       'id': id,
       'maximized': maximized,
+    });
+    await sync();
+  }
+
+  Future<void> setMonitor(int monitor) async {
+    _monitor = monitor;
+    await DisplayManager.channel.invokeMethod('setSurface', <String, dynamic>{
+      'name': _server.name,
+      'id': id,
+      'monitor': monitor,
     });
     await sync();
   }

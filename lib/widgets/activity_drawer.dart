@@ -37,7 +37,7 @@ class ActivityDrawer extends StatelessWidget {
     final wm = context.watch<WindowManager>();
 
     final list = displayServer.surfaces.map((surface) => wm.fromSurface(surface))
-      .where((win) => win.monitor == outputIndex).toList();
+      .where((win) => win.surface.monitor == outputIndex).toList();
     list.sort((a, b) => a.layer.compareTo(b.layer));
     return list;
   }

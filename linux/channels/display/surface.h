@@ -12,6 +12,7 @@ struct _DisplayChannelDisplay;
 typedef struct _DisplayChannelSurface {
   struct _DisplayChannelDisplay* display;
   size_t id;
+  int monitor;
   bool has_decor;
 
   struct wlr_xdg_toplevel* xdg;

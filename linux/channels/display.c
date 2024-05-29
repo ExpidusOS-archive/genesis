@@ -110,6 +110,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     wlr_data_device_manager_create(wl_display);
 
     disp->seat = wlr_seat_create(wl_display, session_name);
+    wlr_seat_set_capabilities(disp->seat, WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD | WL_SEAT_CAPABILITY_TOUCH);
     disp->xdg_shell = wlr_xdg_shell_create(wl_display, 6);
 
     disp->xdg_decor = wlr_xdg_decoration_manager_v1_create(wl_display);
@@ -212,6 +213,7 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     g_autoptr(FlValue) value = fl_value_new_map();
     fl_value_set(value, fl_value_new_string("title"), new_string(surface->xdg->title));
     fl_value_set(value, fl_value_new_string("appId"), new_string(surface->xdg->app_id));
+    fl_value_set(value, fl_value_new_string("monitor"), fl_value_new_int(surface->monitor));
 
     if (surface->xdg->parent != NULL && surface->xdg->parent->base->data != NULL) {
       DisplayChannelSurface* parent = (DisplayChannelSurface*)surface->xdg->parent->base->data;
@@ -280,6 +282,11 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
     g_assert(surface->id == id);
 
     uint32_t i = 0;
+
+    FlValue* value_monitor = fl_value_lookup_string(args, "monitor");
+    if (value_monitor != NULL) {
+      surface->monitor = fl_value_get_int(value_monitor);
+    }
 
     FlValue* value_size = fl_value_lookup_string(args, "size");
     if (value_size != NULL) {
