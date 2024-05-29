@@ -157,6 +157,7 @@ class _DesktopViewState extends State<DesktopView> {
                     output: output,
                     outputIndex: outputIndex,
                     decorHeight: SurfaceDecor.heightFor(context),
+                    mode: Breakpoints.large.isActive(_key.currentContext!) ? WindowManagerMode.floating : WindowManagerMode.stacking,
                   ),
                 ),
               ) : null,

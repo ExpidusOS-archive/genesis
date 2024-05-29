@@ -56,10 +56,10 @@ class WindowView extends StatelessWidget {
                       if (win.surface.maximized) win.restore();
 
                       // FIXME: a bug where multiple windows can drag at the same time after being raised.
-                      if (!_win.isOnTop) _win.raiseToTop();
+                      if (!win.isOnTop) win.raiseToTop();
 
-                      _win.x += info.delta.dx;
-                      _win.y += info.delta.dy;
+                      win.x += info.delta.dx;
+                      win.y += info.delta.dy;
                     },
                   ),
                   ClipRRect(
@@ -105,6 +105,7 @@ class WindowManagerView extends StatefulWidget {
     required this.windowManager,
     required this.output,
     required this.outputIndex,
+    this.mode,
     this.decorHeight = kSurfaceDecorHeight,
   });
 
@@ -112,6 +113,7 @@ class WindowManagerView extends StatefulWidget {
   final WindowManager windowManager;
   final Output output;
   final int outputIndex;
+  final WindowManagerMode? mode;
   final double decorHeight;
 
   @override
@@ -130,6 +132,12 @@ class _WindowManagerViewState extends State<WindowManagerView> {
     return list;
   }
 
+  Size _getDesktopSize(BuildContext context) {
+    final renderObject = context.findRenderObject();
+    if (renderObject == null) return Size(1, 1);
+    return (renderObject as RenderBox).size;
+  }
+
   Widget _buildTiling(BuildContext context) =>
     GridView(
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
@@ -138,7 +146,7 @@ class _WindowManagerViewState extends State<WindowManagerView> {
       children: _getWindows(context).map(
         (win) => WindowView(
           win: win,
-          desktopSize: (context.findRenderObject() as RenderBox).size,
+          desktopSize: _getDesktopSize(context),
           decorHeight: widget.decorHeight,
         )
       ).toList(),
@@ -149,7 +157,7 @@ class _WindowManagerViewState extends State<WindowManagerView> {
       children: _getWindows(context).map(
         (win) => WindowView(
           win: win,
-          desktopSize: (context.findRenderObject() as RenderBox).size,
+          desktopSize: _getDesktopSize(context),
           decorHeight: widget.decorHeight,
         ),
       ).toList(),
@@ -161,15 +169,21 @@ class _WindowManagerViewState extends State<WindowManagerView> {
       children: _getWindows(context).map(
         (win) => WindowView(
           win: win,
-          desktopSize: (context.findRenderObject() as RenderBox).size,
+          desktopSize: _getDesktopSize(context),
           decorHeight: widget.decorHeight,
         ),
       ).toList(),
     );
 
   @override
-  Widget build(BuildContext context) =>
-    MultiProvider(
+  Widget build(BuildContext context) {
+    if (widget.mode != null) {
+      if (widget.mode! != widget.windowManager.mode) {
+        widget.windowManager.mode = widget.mode!;
+      }
+    }
+
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider<DisplayServer>.value(value: widget.displayServer),
         ChangeNotifierProvider<WindowManager>.value(value: widget.windowManager),
@@ -182,4 +196,5 @@ class _WindowManagerViewState extends State<WindowManagerView> {
         })[widget.windowManager.mode]!,
       ),
     );
+  }
 }

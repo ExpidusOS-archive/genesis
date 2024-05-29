@@ -62,13 +62,21 @@ class SurfaceDecor extends StatelessWidget {
           ] : actions,
     );
 
+    if (surface.size != null) {
+      if (surface.size!.width != null) {
+        value = Container(
+          width: surface.size!.width!.toDouble(),
+          child: value,
+        );
+      }
+    }
+
     if (onDrag != null) {
       value = GestureDetector(
         onPanUpdate: onDrag!,
         child: value,
       );
     }
-
     return value;
   }
 
