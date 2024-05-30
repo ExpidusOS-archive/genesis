@@ -194,6 +194,8 @@ install(FILES "${FLUTTER_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/data/pam" DESTINATION "${CMAKE_INSTALL_PREFIX}/etc/pam.d"
   RENAME "genesis-shell")
 
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/dbus/" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/dbus-1/system.d")
+
 foreach(bundled_library ${PLUGIN_BUNDLED_LIBRARIES})
   install(FILES "${bundled_library}"
     DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
