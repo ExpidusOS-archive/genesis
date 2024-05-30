@@ -39,7 +39,7 @@ class _LoginPromptState extends State<LoginPrompt> {
     };
 
     if (widget.name != null) {
-      args['name'] = widget.name!;
+      args['username'] = widget.name!;
     }
 
     authChannel.invokeMethod<void>('auth', args).then((_) {
