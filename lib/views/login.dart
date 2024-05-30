@@ -107,6 +107,7 @@ class _LoginViewState extends State<LoginView> {
         const Spacer(),
         LoginPrompt(
           isSession: true,
+          name: _selectedUser!,
           onLogin: () {
             final nav = Navigator.of(context);
             nav.pushNamed(
