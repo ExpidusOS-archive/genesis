@@ -41,18 +41,20 @@ class Keypad extends StatelessWidget {
     super.key,
     this.labelTextTheme = null,
     this.iconSize = null,
+    this.hasNextButton = true,
     required this.onTextPressed,
     required this.onIconPressed,
   });
 
   final TextTheme? labelTextTheme;
   final double? iconSize;
+  final bool hasNextButton;
   final void Function(String text) onTextPressed;
   final void Function(IconData icon) onIconPressed;
 
   @override
   Widget build(BuildContext context) {
-    const keypadKeys = [
+    final keypadKeys = [
       [
         '1',
         '2',
@@ -71,8 +73,8 @@ class Keypad extends StatelessWidget {
       [
         Icons.backspace,
         '0',
-        Icons.arrowRight,
-      ],
+        hasNextButton ? Icons.arrowRight : null,
+      ].where((e) => e != null).toList().cast<dynamic>(),
     ];
 
     final _iconSize = iconSize ?? Theme.of(context).textTheme.displaySmall!.fontSize!;

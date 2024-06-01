@@ -12,6 +12,7 @@ import '../../logic/system.dart';
 import '../../logic/wallpaper.dart';
 
 import '../../widgets/clock.dart';
+import '../../widgets/keypad.dart';
 import '../../widgets/system_layout.dart';
 
 class _WelcomePage extends StatelessWidget {
@@ -263,10 +264,70 @@ class _UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<_UserPage> {
+  TextEditingController passcodeController = TextEditingController();
+
+  String? _displayName;
+  String? _username;
+
   @override
   Widget build(BuildContext context) =>
     Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Name',
+            ),
+            onChanged: (value) =>
+              setState(() {
+                _displayName = value;
+              })
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'User Name',
+            ),
+            onChanged: (value) =>
+              setState(() {
+                _username = value;
+              }),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: TextField(
+            controller: passcodeController,
+            obscureText: true,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Password',
+            ),
+          ),
+        ),
+        Keypad(
+          hasNextButton: false,
+          onTextPressed: (str) {
+            setState(() {
+              passcodeController.text += str;
+            });
+          },
+          onIconPressed: (icon) {
+            if (icon == Icons.backspace) {
+              setState(() {
+                final text = passcodeController.text;
+                if (text.length > 0) {
+                  passcodeController.text = text.substring(0, text.length - 1);
+                }
+              });
+            }
+          },
+        ),
         const Spacer(),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -274,7 +335,7 @@ class _UserPageState extends State<_UserPage> {
           children: [
             IconButton(
               icon: Icon(Icons.chevronRight),
-              onPressed: widget.onProgress,
+              onPressed: _username == null && _displayName == null ? null : widget.onProgress,
             ),
           ],
         ),
