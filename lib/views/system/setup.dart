@@ -250,6 +250,38 @@ class _InternetPage extends StatelessWidget {
     );
 }
 
+class _UserPage extends StatefulWidget {
+  const _UserPage({
+    super.key,
+    required this.onProgress,
+  });
+
+  final VoidCallback onProgress;
+
+  @override
+  State<_UserPage> createState() => _UserPageState();
+}
+
+class _UserPageState extends State<_UserPage> {
+  @override
+  Widget build(BuildContext context) =>
+    Column(
+      children: [
+        const Spacer(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            IconButton(
+              icon: Icon(Icons.chevronRight),
+              onPressed: widget.onProgress,
+            ),
+          ],
+        ),
+      ],
+    );
+}
+
 class SystemSetupView extends StatefulWidget {
   const SystemSetupView({
     super.key,
@@ -352,7 +384,14 @@ class _SystemSetupViewState extends State<SystemSetupView> {
                         Step(
                           title: Text('User Setup'),
                           state: _maxStep < 3 ? StepState.disabled : StepState.indexed,
-                          content: const SizedBox(),
+                          content: SizedBox(
+                            width: constraints.maxWidth,
+                            height: constraints.maxHeight - 116.0,
+                            child: _UserPage(
+                              onProgress: () =>
+                                Navigator.of(context).pushReplacementNamed('/login'),
+                            ),
+                          ),
                         ),
                       ],
                       onStepTapped: (i) =>
