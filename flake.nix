@@ -13,17 +13,19 @@
     expidus.lib.mkFlake {
       overlay = final: prev: {
         expidus = prev.expidus // {
-          genesis-shell = prev.expidus.genesis-shell.overrideAttrs (f: p: {
+          genesis-shell = prev.flutter.buildFlutterApplication {
             version = "0-unstable-git+${self.shortRev or "dirty"}";
             src = prev.lib.cleanSource self;
 
             pubspecLock = prev.lib.importJSON ./pubspec.lock.json;
 
             gitHashes = {
-              libtokyo = "sha256-Zn30UmppXnzhs+t+EQNwAhaTPjCCxoN0a+AbH6bietg=";
-              libtokyo_flutter = "sha256-Zn30UmppXnzhs+t+EQNwAhaTPjCCxoN0a+AbH6bietg=";
+              libtokyo = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
+              libtokyo_flutter = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
             };
-          });
+
+            inherit (prev.expidus.genesis-shell) pname buildInputs postInstall meta;
+          };
         };
       };
 

@@ -9,11 +9,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1717192048,
-        "narHash": "sha256-yehShE4/5fMP/LRyaqNPVUrciOjMuMY3hOlTrqEt+Ek=",
+        "lastModified": 1717199347,
+        "narHash": "sha256-OV9CnQNEnAPo5tutuEoSAK4VN5Dz0EOGm34HrCmXNxQ=",
         "owner": "ExpidusOS",
         "repo": "expidus",
-        "rev": "bc28eebec7270e6437eceb730fe65f4bccdb6a5a",
+        "rev": "def94e2fab209a00cda7fe13e4f3925f89cab65c",
         "type": "github"
       },
       "original": {

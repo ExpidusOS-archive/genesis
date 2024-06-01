@@ -51,6 +51,7 @@ enum PowerDeviceType {
   line,
   mouse,
   keyboard,
+  headphones,
   unknown,
 }
 

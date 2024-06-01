@@ -37,6 +37,7 @@ static void genesis_shell_application_activate(GApplication* application) {
   display_channel_init(&self->display, self->view);
   outputs_channel_init(&self->outputs, self->view);
   session_channel_init(&self->session, self->view);
+  system_channel_init(&self->system, self->view);
 
   gtk_widget_grab_focus(GTK_WIDGET(self->view));
 }
@@ -89,6 +90,7 @@ static void genesis_shell_application_dispose(GObject* object) {
   display_channel_deinit(&self->display);
   outputs_channel_deinit(&self->outputs);
   session_channel_deinit(&self->session);
+  system_channel_deinit(&self->system);
 
   G_OBJECT_CLASS(genesis_shell_application_parent_class)->dispose(object);
 }

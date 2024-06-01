@@ -6,6 +6,7 @@
 #include "channels/display.h"
 #include "channels/outputs.h"
 #include "channels/session.h"
+#include "channels/system.h"
 
 struct _GenesisShellApplication {
   GtkApplication parent_instance;
@@ -20,4 +21,5 @@ struct _GenesisShellApplication {
   DisplayChannel display;
   OutputsChannel outputs;
   SessionChannel session;
+  SystemChannel system;
 };

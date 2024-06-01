@@ -12,12 +12,12 @@ dependencies:
   libtokyo:
     git:
       url: https://github.com/ExpidusOS/libtokyo.git
-      ref: 86e7e0be63f142fdb8d349bb05e34558b2b58646
+      ref: 7c9b4c933a1d36be3923fc8176dadf1f992ccc3e
       path: packages/libtokyo
   libtokyo_flutter:
     git:
       url: https://github.com/ExpidusOS/libtokyo.git
-      ref: 86e7e0be63f142fdb8d349bb05e34558b2b58646
+      ref: 7c9b4c933a1d36be3923fc8176dadf1f992ccc3e
       path: packages/libtokyo_flutter
   flutter_adaptive_scaffold: ^0.1.10+1
   bitsdojo_window: ^0.1.6
@@ -37,7 +37,7 @@ dependency_overrides:
   libtokyo:
     git:
       url: https://github.com/ExpidusOS/libtokyo.git
-      ref: 86e7e0be63f142fdb8d349bb05e34558b2b58646
+      ref: 7c9b4c933a1d36be3923fc8176dadf1f992ccc3e
       path: packages/libtokyo
 
 dev_dependencies:

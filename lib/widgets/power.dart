@@ -252,6 +252,7 @@ class _PowerTileState extends State<PowerTile> {
       case PowerDeviceType.line: return Icon(Icons.plug);
       case PowerDeviceType.mouse: return Icon(Icons.mouse);
       case PowerDeviceType.keyboard: return Icon(Icons.keyboard);
+      case PowerDeviceType.headphones: return Icon(Icons.headphones);
       default: break;
     }
 

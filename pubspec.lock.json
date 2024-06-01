@@ -318,8 +318,8 @@
       "dependency": "direct main",
       "description": {
         "path": "packages/libtokyo",
-        "ref": "86e7e0be63f142fdb8d349bb05e34558b2b58646",
-        "resolved-ref": "86e7e0be63f142fdb8d349bb05e34558b2b58646",
+        "ref": "7c9b4c933a1d36be3923fc8176dadf1f992ccc3e",
+        "resolved-ref": "7c9b4c933a1d36be3923fc8176dadf1f992ccc3e",
         "url": "https://github.com/ExpidusOS/libtokyo.git"
       },
       "source": "git",
@@ -329,8 +329,8 @@
       "dependency": "direct main",
       "description": {
         "path": "packages/libtokyo_flutter",
-        "ref": "86e7e0be63f142fdb8d349bb05e34558b2b58646",
-        "resolved-ref": "86e7e0be63f142fdb8d349bb05e34558b2b58646",
+        "ref": "7c9b4c933a1d36be3923fc8176dadf1f992ccc3e",
+        "resolved-ref": "7c9b4c933a1d36be3923fc8176dadf1f992ccc3e",
         "url": "https://github.com/ExpidusOS/libtokyo.git"
       },
       "source": "git",

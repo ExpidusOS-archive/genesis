@@ -1,6 +1,7 @@
 import 'dart:io' show exit;
 import 'package:args/args.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:provider/provider.dart';
@@ -13,15 +14,19 @@ import 'logic/outputs.dart';
 import 'logic/power.dart';
 import 'logic/route_args.dart';
 import 'logic/sensors.dart';
+import 'logic/system.dart';
 
 import 'views/desktop.dart';
 import 'views/lock.dart';
 import 'views/login.dart';
+import 'views/system/setup.dart';
 
 void main(List<String> argsList) async {
   final argsParser = ArgParser()
     ..addFlag('init-locked', help: 'Adding this option will start Genesis Shell in a locked state')
     ..addFlag('display-manager', help: 'Start as a display manager')
+    ..addFlag('init-setup', help: 'Starts the shell in the "initial setup" mode.')
+    ..addFlag('disable-init-setup-check', help: 'Disables the initial setup check.')
     ..addFlag('help', abbr: 'h', negatable: false);
 
   final args = argsParser.parse(argsList);
@@ -36,10 +41,22 @@ void main(List<String> argsList) async {
     exit(1);
   }
 
+  if (args.flag('init-locked') && args.flag('init-setup')) {
+    print('Cannot run the initial setup and start locked');
+    exit(1);
+  }
+
+  if (args.flag('disable-init-setup-check') && args.flag('init-setup')) {
+    print('Cannot run the initial setup and disable the init setup check');
+    exit(1);
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
 
   runApp(GenesisShellApp(
     initLocked: args.flag('init-locked'),
+    initSetup: args.flag('init-setup'),
+    disableInitSetupCheck: args.flag('disable-init-setup-check'),
     displayManager: args.flag('display-manager'),
   ));
 
@@ -55,10 +72,14 @@ class GenesisShellApp extends StatefulWidget {
   const GenesisShellApp({
     super.key,
     this.initLocked = false,
+    this.initSetup = false,
+    this.disableInitSetupCheck = false,
     this.displayManager = false,
   });
 
   final bool initLocked;
+  final bool initSetup;
+  final bool disableInitSetupCheck;
   final bool displayManager;
 
   @override
@@ -66,6 +87,7 @@ class GenesisShellApp extends StatefulWidget {
 }
 
 class _GenesisShellAppState extends State<GenesisShellApp> {
+  GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
   late AccountManager _accountManager;
   late ApplicationsManager _applicationsManager;
   late DisplayManager _displayManager;
@@ -73,6 +95,7 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
   late OutputManager _outputManager;
   late PowerManager _powerManager;
   late SensorsManager _sensorsManager;
+  late SystemManager _systemManager;
 
   @override
   void initState() {
@@ -92,6 +115,18 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
 
     _sensorsManager = SensorsManager.auto();
     _sensorsManager.connect();
+
+    _systemManager = SystemManager();
+
+    if (!widget.disableInitSetupCheck) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_accountManager.account.isEmpty) {
+            _navKey.currentState!.pushReplacementNamed('/system/setup');
+          }
+        });
+      });
+    }
   }
 
   @override
@@ -114,8 +149,10 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
         ChangeNotifierProvider(create: (_) => _outputManager),
         Provider(create: (_) => _powerManager),
         Provider(create: (_) => _sensorsManager),
+        ChangeNotifierProvider(create: (_) => _systemManager),
       ],
       child: TokyoApp(
+        navigatorKey: _navKey,
         title: 'Genesis Shell',
         themeMode: ThemeMode.dark,
         routes: {
@@ -128,8 +165,9 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
           },
           '/lock': (context) => LockView(userName: AuthedRouteArguments.of(context).userName),
           '/login': (_) => const LoginView(),
+          '/system/setup': (_) => const SystemSetupView(),
         },
-        initialRoute: widget.initLocked ? '/lock' : (widget.displayManager ? '/login' : '/'),
+        initialRoute: widget.initLocked ? '/lock' : (widget.displayManager ? '/login' : (widget.initSetup ? '/system/setup' : '/')),
       ),
     );
 }

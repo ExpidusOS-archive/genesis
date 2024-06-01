@@ -114,6 +114,7 @@ add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}" -DWLR_USE_UNSTABLE)
 # Any new source files that you add to the application should be added here.
 add_executable(${BINARY_NAME}
   "main.cc"
+  "icons.c"
   "application.cc"
   "channels/account.cc"
   "channels/applications.cc"
@@ -127,6 +128,7 @@ add_executable(${BINARY_NAME}
   "channels/display.c"
   "channels/outputs.cc"
   "channels/session.cc"
+  "channels/system.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
   ${proto-client-linux-dmabuf-v1}
   ${proto-server-linux-dmabuf-v1}

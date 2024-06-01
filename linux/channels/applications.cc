@@ -1,4 +1,5 @@
 #include "applications.h"
+#include "../icons.h"
 
 static FlValue* new_string(const gchar* str) {
   if (str == nullptr || g_utf8_strlen(str, -1) == 0) return fl_value_new_null();
@@ -15,23 +16,11 @@ static FlValue* from_app_info(GAppInfo* appinfo) {
   fl_value_set(value, fl_value_new_string("isHidden"), fl_value_new_bool(!g_app_info_should_show(appinfo)));
 
   GIcon* icon = g_app_info_get_icon(appinfo);
-  if (icon == nullptr) {
+  const char* icon_name = icon_get_filename(icon, 48);
+  if (icon_name == nullptr) {
     fl_value_set(value, fl_value_new_string("icon"), fl_value_new_null());
   } else {
-    if (G_IS_FILE_ICON(icon)) {
-      GFile* file = g_file_icon_get_file(G_FILE_ICON(icon));
-      fl_value_set(value, fl_value_new_string("icon"), new_string(g_file_get_path(file)));
-    } else if (G_IS_THEMED_ICON(icon)) {
-      GtkIconTheme* theme = gtk_icon_theme_get_default();
-      GtkIconInfo* icon_info = gtk_icon_theme_lookup_by_gicon(theme, icon, 48, (GtkIconLookupFlags)0);
-      if (icon_info != nullptr) {
-        fl_value_set(value, fl_value_new_string("icon"), new_string(gtk_icon_info_get_filename(icon_info)));
-      } else {
-        fl_value_set(value, fl_value_new_string("icon"), fl_value_new_null());
-      }
-    } else {
-      fl_value_set(value, fl_value_new_string("icon"), fl_value_new_null());
-    }
+    fl_value_set(value, fl_value_new_string("icon"), new_string(icon_name));
   }
   return value;
 }

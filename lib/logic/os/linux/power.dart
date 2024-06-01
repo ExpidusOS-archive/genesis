@@ -121,14 +121,20 @@ class LinuxPowerDevice extends PowerDevice {
 
   @override
   PowerDeviceType get type {
-    switch (_device.type) {
-      case UPowerDeviceType.linePower:
-        if (_device.powerSupply) return PowerDeviceType.line;
-        break;
-      case UPowerDeviceType.battery: return PowerDeviceType.battery;
-      case UPowerDeviceType.mouse: return PowerDeviceType.mouse;
-      case UPowerDeviceType.keyboard: return PowerDeviceType.keyboard;
-      default: break;
+    try {
+      switch (_device.type) {
+        case UPowerDeviceType.linePower:
+          if (_device.powerSupply) return PowerDeviceType.line;
+          break;
+        case UPowerDeviceType.battery: return PowerDeviceType.battery;
+        case UPowerDeviceType.mouse: return PowerDeviceType.mouse;
+        case UPowerDeviceType.keyboard: return PowerDeviceType.keyboard;
+        default: break;
+      }
+    } on RangeError catch (e) {
+      switch (e.invalidValue as int ?? 0) {
+        case 17: return PowerDeviceType.headphones;
+      }
     }
     return PowerDeviceType.unknown;
   }

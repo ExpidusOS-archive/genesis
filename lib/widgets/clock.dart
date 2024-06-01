@@ -42,7 +42,7 @@ class _DigitalClockState extends State<DigitalClock> {
   @override
   Widget build(BuildContext context) =>
     Text(
-      (widget.format ?? DateFormat.jm()).format(currentTime),
+      (widget.format ?? DateFormat.jm(Localizations.localeOf(context).toString())).format(currentTime),
       style: widget.style,
     );
 }
