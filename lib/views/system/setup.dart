@@ -1,5 +1,5 @@
 import 'dart:io' as io;
-import 'dart:io' if (dart.library.html) '../logic/io_none.dart';
+import 'dart:io' if (dart.library.html) '../../logic/io_none.dart';
 
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:flutter_svg/flutter_svg.dart';
