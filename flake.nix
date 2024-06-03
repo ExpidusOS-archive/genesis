@@ -1,13 +1,9 @@
 {
-  inputs = {
-    expidus.url = "github:ExpidusOS/expidus";
-    nixos-apple-silicon.url = "github:tpwrules/nixos-apple-silicon/1b16e4290a5e4a59c75ef53617d597e02078791e";
-  };
+  inputs.expidus.url = "github:ExpidusOS/expidus";
 
   outputs = {
     self,
     expidus,
-    nixos-apple-silicon,
     ...
   }@inputs:
     expidus.lib.mkFlake {
