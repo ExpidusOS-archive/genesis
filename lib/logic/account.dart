@@ -11,14 +11,18 @@ class AccountManager extends ChangeNotifier {
     channel.setMethodCallHandler((call) async {
       switch (call.method) {
         case 'loaded':
-          _sync();
+          sync().catchError((err) {
+            print(err);
+          });
           break;
         default:
           throw MissingPluginException();
       }
     });
 
-    _sync();
+    sync().catchError((err) {
+      print(err);
+    });
   }
 
   final List<Account> _accounts = [];
@@ -48,24 +52,21 @@ class AccountManager extends ChangeNotifier {
     return null;
   }
 
-  void _sync() {
-    channel.invokeListMethod('list').then((list) {
-      _accounts.clear();
-      _accounts.addAll(list!.map(
-        (account) =>
-          Account(
-            name: account['name'],
-            uid: account['uid'],
-            icon: account['icon'],
-            displayName: account['displayName'],
-            home: account['home'],
-            passwordHint: account['passwordHint'],
-          )
-      ));
-      notifyListeners();
-    }).catchError((err) {
-      print(err);
-    });
+  Future<void> sync() async {
+    final list = await channel.invokeListMethod('list');
+    _accounts.clear();
+    _accounts.addAll(list!.map(
+      (account) =>
+        Account(
+          name: account['name'],
+          uid: account['uid'],
+          icon: account['icon'],
+          displayName: account['displayName'],
+          home: account['home'],
+          passwordHint: account['passwordHint'],
+        )
+    ));
+    notifyListeners();
   }
 }
 

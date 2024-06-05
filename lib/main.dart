@@ -119,12 +119,16 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
     _systemManager = SystemManager();
 
     if (!widget.disableInitSetupCheck) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      _accountManager.sync().then((_) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_accountManager.account.isEmpty) {
-            _navKey.currentState!.pushReplacementNamed('/system/setup');
-          }
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_accountManager.account.isEmpty) {
+              _navKey.currentState!.pushReplacementNamed('/system/setup');
+            }
+          });
         });
+      }).catchError((err) {
+        print(err);
       });
     }
   }
