@@ -1,19 +1,66 @@
 {
-  inputs.expidus.url = "github:ExpidusOS/expidus";
+  inputs = {
+    expidus.url = "github:ExpidusOS/expidus";
+    nixpkgs-flutter-engine.url = "github:ExpidusOS/nixpkgs/flutter-engine/init";
+    zig = {
+      url = "github:MidstallSoftware/zig/expidus";
+      inputs = {
+        nixpkgs.follows = "expidus/nixpkgs";
+        flake-utils.follows = "expidus/flake-utils";
+      };
+    };
+    zon2nix = {
+      url = "github:MidstallSoftware/zon2nix/expidus";
+      inputs.nixpkgs.follows = "expidus/nixpkgs";
+    };
+  };
 
   outputs = {
     self,
     expidus,
+    nixpkgs-flutter-engine,
+    zig,
+    zon2nix,
     ...
   }@inputs:
     expidus.lib.mkFlake {
       overlay = final: prev: {
+        zig = prev.zig_0_12.overrideAttrs (f: p: {
+          version = "0.12.0-dev.${zig.shortRev or "dirty"}";
+          src = zig;
+        });
+
+        flutterPackages = prev.recurseIntoAttrs (prev.callPackages "${nixpkgs-flutter-engine}/pkgs/development/compilers/flutter" {});
+        flutter = final.flutterPackages.stable;
+        flutter322 = final.flutterPackages.v3_22;
+
+        zon2nix = prev.stdenv.mkDerivation {
+          pname = "zon2nix";
+          version = "0.1.2";
+
+          src = zon2nix;
+
+          nativeBuildInputs = [
+            final.zig.hook
+          ];
+
+          zigBuildFlags = [
+            "-Dnix=${prev.lib.getExe prev.nix}"
+          ];
+
+          zigCheckFlags = [
+            "-Dnix=${prev.lib.getExe prev.nix}"
+          ];
+        };
+
         expidus = prev.expidus // {
-          genesis-shell = prev.flutter.buildFlutterApplication {
+          genesis-shell = final.flutter.buildFlutterApplication {
             version = "0-unstable-git+${self.shortRev or "dirty"}";
             src = prev.lib.cleanSource self;
 
             pubspecLock = prev.lib.importJSON ./pubspec.lock.json;
+
+            nativeBuildInputs = [ final.zig ];
 
             gitHashes = {
               libtokyo = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
@@ -32,8 +79,8 @@
             inherit (pkg) pname version name;
             inputsFrom = [ pkg ];
             packages = with pkgs; [
-              flutter yq cage
-              wayland-utils
+              flutter pkgs.zig pkgs.zon2nix
+              yq cage wayland-utils
               mesa-demos
             ];
           };

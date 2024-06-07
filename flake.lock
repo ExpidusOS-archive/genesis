@@ -37,6 +37,43 @@
         "type": "github"
       }
     },
+    "flake-compat_2": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1696426674,
+        "narHash": "sha256-kvjfFW7WAETZlt09AgDn1MrtKzP7t90Vf7vypd3OL1U=",
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "rev": "0f9255e01c2351cc7d116c072cb317785dd33b33",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
+    "flake-parts": {
+      "inputs": {
+        "nixpkgs-lib": [
+          "zon2nix",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1715865404,
+        "narHash": "sha256-/GJvTdTpuDjNn84j82cU6bXztE0MSkdnTWClUCRub78=",
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "rev": "8dc45382d5206bd292f9c2768b8058a8fd8311d9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -127,9 +164,28 @@
         "type": "github"
       }
     },
+    "nixpkgs-flutter-engine": {
+      "locked": {
+        "lastModified": 1717810564,
+        "narHash": "sha256-nnKqfSv0usXd19f/Xt2KpLNTGARGJaD4tJBwKNkETqA=",
+        "owner": "ExpidusOS",
+        "repo": "nixpkgs",
+        "rev": "9b4629d4b87a0c3a934bd6de9a05cf31e4218b0f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ExpidusOS",
+        "ref": "flutter-engine/init",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-        "expidus": "expidus"
+        "expidus": "expidus",
+        "nixpkgs-flutter-engine": "nixpkgs-flutter-engine",
+        "zig": "zig",
+        "zon2nix": "zon2nix"
       }
     },
     "rust-overlay": {
@@ -160,6 +216,56 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "zig": {
+      "inputs": {
+        "flake-compat": "flake-compat_2",
+        "flake-utils": [
+          "expidus",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "expidus",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1713550414,
+        "narHash": "sha256-JM5mU1tsEHvogoYfBgVvpMSBePYIC5NUu4n9Wj/V12c=",
+        "owner": "MidstallSoftware",
+        "repo": "zig",
+        "rev": "ad585d4ad071482fc14199e8f3ff3ad72f219706",
+        "type": "github"
+      },
+      "original": {
+        "owner": "MidstallSoftware",
+        "ref": "expidus",
+        "repo": "zig",
+        "type": "github"
+      }
+    },
+    "zon2nix": {
+      "inputs": {
+        "flake-parts": "flake-parts",
+        "nixpkgs": [
+          "expidus",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1716254524,
+        "narHash": "sha256-k/gs3qAURL7cZ2NcBCAq4LNw77bjwp5y6/nDeIjteZg=",
+        "owner": "MidstallSoftware",
+        "repo": "zon2nix",
+        "rev": "b9642f6545908ff1e13748bc134cd1939de5aadd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "MidstallSoftware",
+        "ref": "expidus",
+        "repo": "zon2nix",
         "type": "github"
       }
     }
