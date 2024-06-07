@@ -121,6 +121,7 @@ add_executable(${BINARY_NAME}
   "channels/auth.cc"
   "channels/display/backend/dummy.c"
   "channels/display/backend/wayland.c"
+  "channels/display/input/keyboard.c"
   "channels/display/backend.c"
   "channels/display/pixel-format.c"
   "channels/display/texture.c"

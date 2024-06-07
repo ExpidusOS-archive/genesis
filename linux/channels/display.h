@@ -25,6 +25,7 @@ extern "C" {
 #include <wayland-client.h>
 
 #include "display/backend.h"
+#include "display/input/keyboard.h"
 
 #ifdef __cplusplus
 #undef static
@@ -40,6 +41,7 @@ typedef struct _DisplayChannelDisplay {
   struct wlr_seat* seat;
   struct wlr_xdg_shell* xdg_shell;
   struct wlr_xdg_decoration_manager_v1* xdg_decor;
+  struct wlr_keyboard keyboard;
 
   const gchar* prev_wl_disp;
   const char* socket;

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -259,14 +260,31 @@ class DisplayServerSurface extends ChangeNotifier {
   int get monitor => _monitor;
 
   Future<void> close() => sendRequest('close');
-  Future<void> enter() => sendRequest('enter');
+
+  Future<void> enter(Offset position) => sendRequest('enter', {
+    'position': {
+      'x': position.dx,
+      'y': position.dy,
+    },
+  });
+
   Future<void> leave() => sendRequest('leave');
 
-  Future<void> sendRequest(String name) async {
+  Future<void> key(List<String> state, int logicalKey, int physicalKey, Duration timestamp) => sendRequest('key', {
+    'state': state,
+    'logicalKey': logicalKey,
+    'physicalKey': physicalKey,
+    'timestamp': timestamp.inMilliseconds,
+  });
+
+  Future<void> sendRequest(String name, [
+    Map<String, dynamic> data = const {},
+  ]) async {
     await DisplayManager.channel.invokeMethod('requestSurface', <String, dynamic>{
       'name': _server.name,
       'id': id,
       'reqName': name,
+      ...data,
     });
   }
 

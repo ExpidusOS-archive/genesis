@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:libtokyo_flutter/libtokyo.dart' hide ColorScheme;
 import 'package:libtokyo/libtokyo.dart' hide TokyoApp;
 import 'package:provider/provider.dart';
@@ -106,6 +110,7 @@ class SurfaceView extends StatefulWidget {
 
 class _SurfaceViewState extends State<SurfaceView> {
   GlobalKey key = GlobalKey();
+  FocusNode _node = FocusNode();
 
   void _sendSize() {
     if (key.currentContext != null && widget.surface.texture != null && widget.isSizable) {
@@ -124,6 +129,12 @@ class _SurfaceViewState extends State<SurfaceView> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _node.dispose();
+  }
+
+  @override
   Widget _buildContent(BuildContext context, DisplayServerSurface surface) {
     Widget content = surface.texture == null
       ? SizedBox() : Texture(
@@ -135,11 +146,49 @@ class _SurfaceViewState extends State<SurfaceView> {
         onFocusChange: (isFocused) {
           surface.setActive(isFocused);
           surface.setSuspended(!isFocused);
+
+          if (isFocused) _node.requestFocus();
+          else _node.unfocus();
         },
         child: MouseRegion(
-          onEnter: (_) => surface.enter(),
+          onEnter: (ev) => surface.enter(ev.localPosition),
           onExit: (_) => surface.leave(),
-          child: content,
+          child: KeyboardListener(
+            focusNode: _node,
+            onKeyEvent: (ev) {
+              List<String> state = [];
+
+              if (ev is KeyUpEvent) state.add('up');
+              if (ev is KeyDownEvent) state.add('down');
+              if (ev is KeyRepeatEvent) state.add('repeat');
+
+              final kPlatformToLogicalKey = kIsWeb ? kWebToLogicalKey : switch (Platform.operatingSystem) {
+                "android" => kAndroidToLogicalKey,
+                "fuchsia" => kFuchsiaToLogicalKey,
+                "ios" => kIosToLogicalKey,
+                "linux" => kGtkToLogicalKey,
+                "macos" => kMacOsToLogicalKey,
+                "windows" => kWindowsToLogicalKey,
+                (_) => const {},
+              };
+
+              final kPlatformToPhysicalKey = kIsWeb ? kWebToPhysicalKey : switch (Platform.operatingSystem) {
+                "android" => kAndroidToPhysicalKey,
+                "fuchsia" => kFuchsiaToPhysicalKey,
+                "ios" => kIosToPhysicalKey,
+                "linux" => kLinuxToPhysicalKey,
+                "macos" => kMacOsToPhysicalKey,
+                "windows" => kWindowsToPhysicalKey,
+                (_) => const {},
+              };
+
+              final logicalKey = kPlatformToLogicalKey.map((key, value) => MapEntry(value, key))[ev.logicalKey];
+              final physicalKey = kPlatformToPhysicalKey.map((key, value) => MapEntry(value, key))[ev.physicalKey];
+
+              surface.key(state, logicalKey ?? 0, physicalKey ?? 0, ev.timeStamp);
+            },
+            child: content,
+          ),
         ),
       );
     }

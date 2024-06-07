@@ -111,6 +111,10 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
 
     disp->seat = wlr_seat_create(wl_display, session_name);
     wlr_seat_set_capabilities(disp->seat, WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD | WL_SEAT_CAPABILITY_TOUCH);
+
+    keyboard_init(&disp->keyboard);
+    wlr_seat_set_keyboard(disp->seat, &disp->keyboard);
+
     disp->xdg_shell = wlr_xdg_shell_create(wl_display, 6);
 
     disp->xdg_decor = wlr_xdg_decoration_manager_v1_create(wl_display);
@@ -355,12 +359,17 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       wlr_xdg_toplevel_send_close(surface->xdg);
       response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
     } else if (strcmp(req_name, "enter") == 0) {
+      FlValue* pos = fl_value_lookup_string(args, "position");
+      double sx = fl_value_get_float(fl_value_lookup_string(pos, "x"));
+      double sy = fl_value_get_float(fl_value_lookup_string(pos, "y"));
+
       struct wlr_output* output = g_list_nth_data(disp->outputs, surface->monitor);
       if (output == NULL) {
         fl_method_call_respond_error(method_call, "Linux", "Output does not exist", fl_value_new_int(surface->monitor), NULL);
         return;
       }
 
+      wlr_seat_pointer_notify_enter(disp->seat, surface->xdg->base->surface, sx, sy);
       wlr_surface_send_enter(surface->xdg->base->surface, output);
       response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
     } else if (strcmp(req_name, "leave") == 0) {
@@ -371,6 +380,37 @@ static void method_call_handler(FlMethodChannel* channel, FlMethodCall* method_c
       }
 
       wlr_surface_send_leave(surface->xdg->base->surface, output);
+      wlr_seat_pointer_notify_clear_focus(disp->seat);
+      response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
+    } else if (strcmp(req_name, "key") == 0) {
+      FlValue* state = fl_value_lookup_string(args, "state");
+      int physical = fl_value_get_int(fl_value_lookup_string(args, "physicalKey"));
+      int logical = fl_value_get_int(fl_value_lookup_string(args, "logicalKey"));
+      int timestamp = fl_value_get_int(fl_value_lookup_string(args, "timestamp"));
+
+      uint32_t state_value = 0;
+
+      for (size_t i = 0; i < fl_value_get_length(state); i++) {
+        const char* state_item = fl_value_get_string(fl_value_get_list_value(state, i));
+        if (strcmp(state_item, "up") == 0) {
+          state_value |= WL_KEYBOARD_KEY_STATE_RELEASED;
+        } else if (strcmp(state_item, "down") == 0) {
+          state_value |= WL_KEYBOARD_KEY_STATE_PRESSED;
+        } else {
+          break;
+        }
+      }
+
+      if (state_value > 0) {
+        if (disp->seat->keyboard_state.focused_surface != surface->xdg->base->surface) {
+          wlr_seat_keyboard_enter(disp->seat, surface->xdg->base->surface, NULL, 0, NULL);
+        }
+
+        wlr_seat_keyboard_send_key(disp->seat, timestamp, logical, state_value);
+
+        g_message("%s %d %d %d", fl_value_to_string(state), physical, logical, timestamp);
+      }
+
       response = FL_METHOD_RESPONSE(fl_method_success_response_new(NULL));
     } else {
       response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
