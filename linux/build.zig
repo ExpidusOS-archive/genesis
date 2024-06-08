@@ -35,6 +35,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const optimize = addBuildType(b);
+    const enginePath = b.option([]const u8, "engine-path", "Path to the Flutter Engine build") orelse @panic("engine-path option must be specified");
 
     const exe = b.addExecutable(.{
         .name = "genesis_shell",
@@ -44,5 +45,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .target = target,
     });
+
+    exe.addIncludePath(.{ .path = enginePath });
+    exe.linkLibC();
+
     b.installArtifact(exe);
 }

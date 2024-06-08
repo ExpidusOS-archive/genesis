@@ -67,7 +67,11 @@
               libtokyo_flutter = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
             };
 
-            inherit (prev.expidus.genesis-shell) pname buildInputs postInstall meta;
+            postInstall = prev.expidus.genesis-shell.postInstall + ''
+              patchelf --set-interpreter $(cat $NIX_CC/nix-support/dynamic-linker) $out/app/genesis_shell-zig
+            '';
+
+            inherit (prev.expidus.genesis-shell) pname buildInputs meta;
           };
         };
       };

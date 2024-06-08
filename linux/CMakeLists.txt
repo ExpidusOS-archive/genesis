@@ -140,9 +140,29 @@ add_executable(${BINARY_NAME}
 
 string(REPLACE "linux-" "" FLUTTER_TARGET_ARCH "${FLUTTER_TARGET_PLATFORM}")
 
+set(FLUTTER_ENGINE $ENV{FLUTTER_ENGINE})
+set(LOCAL_ENGINE $ENV{LOCAL_ENGINE})
+set(LOCAL_ENGINE_HOST $ENV{LOCAL_ENGINE_HOST})
+
+if("${LOCAL_ENGINE_HOST}" STREQUAL "")
+  if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    set(LOCAL_ENGINE_HOST "host_debug")
+  elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+    set(LOCAL_ENGINE_HOST "host_release")
+  elseif("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+    set(LOCAL_ENGINE_HOST "host_profile")
+  elseif("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
+    set(LOCAL_ENGINE_HOST "host_jit_release")
+  endif()
+endif()
+
+if("${LOCAL_ENGINE}" STREQUAL "")
+  set(LOCAL_ENGINE ${LOCAL_ENGINE_HOST})
+endif()
+
 add_custom_target("${BINARY_NAME}-new" ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/zig-out/bin/${BINARY_NAME}")
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/zig-out/bin/${BINARY_NAME}"
-  COMMAND ${ZIG} build -Darch=${FLUTTER_TARGET_ARCH} -Dbuild-type=${CMAKE_BUILD_TYPE} --cache-dir "${CMAKE_CURRENT_BINARY_DIR}/zig-cache" -p "${CMAKE_CURRENT_BINARY_DIR}/zig-out"
+  COMMAND ${ZIG} build -Darch=${FLUTTER_TARGET_ARCH} -Dbuild-type=${CMAKE_BUILD_TYPE} -Dengine-path="${FLUTTER_ENGINE}/out/${LOCAL_ENGINE}" --cache-dir "${CMAKE_CURRENT_BINARY_DIR}/zig-cache" -p "${CMAKE_CURRENT_BINARY_DIR}/zig-out"
   DEPENDS flutter_assemble
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -206,6 +226,9 @@ install(FILES "${FLUTTER_ICU_DATA_FILE}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}
   COMPONENT Runtime)
 
 install(FILES "${FLUTTER_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+  COMPONENT Runtime)
+
+install(FILES "${FLUTTER_ENGINE}/out/${LOCAL_ENGINE}/lib.unstripped/libflutter_engine.so" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   COMPONENT Runtime)
 
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/data/pam" DESTINATION "${CMAKE_INSTALL_PREFIX}/etc/pam.d"
