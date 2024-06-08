@@ -57,6 +57,8 @@ find_package(Threads REQUIRED)
 find_program(WAYLAND_SCANNER_EXECUTABLE REQUIRED NAMES wayland-scanner)
 pkg_get_variable(WAYLAND_PROTOS_DIR wayland-protocols pkgdatadir)
 
+find_program(ZIG REQUIRED NAMES zig)
+
 function(WAYLAND_ADD_PROTOCOL_CLIENT _sources _protocol _basename)
   get_filename_component(_infile ${_protocol} ABSOLUTE)
   set(_client_header "${CMAKE_CURRENT_BINARY_DIR}/${_basename}-protocol.h")
@@ -136,6 +138,14 @@ add_executable(${BINARY_NAME}
   ${proto-server-xdg-shell}
 )
 
+string(REPLACE "linux-" "" FLUTTER_TARGET_ARCH "${FLUTTER_TARGET_PLATFORM}")
+
+add_custom_target("${BINARY_NAME}-new" ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/zig-out/bin/${BINARY_NAME}")
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/zig-out/bin/${BINARY_NAME}"
+  COMMAND ${ZIG} build -Darch=${FLUTTER_TARGET_ARCH} -Dbuild-type=${CMAKE_BUILD_TYPE} --cache-dir "${CMAKE_CURRENT_BINARY_DIR}/zig-cache" -p "${CMAKE_CURRENT_BINARY_DIR}/zig-out"
+  DEPENDS flutter_assemble
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})
@@ -184,6 +194,10 @@ install(CODE "
 
 set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
 set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+
+install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/zig-out/bin/${BINARY_NAME}" DESTINATION "${CMAKE_INSTALL_PREFIX}"
+  COMPONENT Runtime
+  RENAME "genesis_shell-zig")
 
 install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}"
   COMPONENT Runtime)
