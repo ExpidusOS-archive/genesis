@@ -1,16 +1,14 @@
 const std = @import("std");
+const fs = std.fs;
+const Allocator = std.mem.Allocator;
 const Self = @This();
 
+pub const Aot = @import("Engine/Aot.zig");
+pub const Dart = @import("Engine/Dart.zig");
 pub const Manager = @import("Engine/Manager.zig");
 
 pub const Impl = opaque {};
 pub const Id = u64;
-
-pub const Aot = struct {
-    pub const Data = extern struct {
-        pub const Source = extern struct {};
-    };
-};
 
 pub const Render = struct {
     pub const Config = extern struct {};
@@ -38,10 +36,20 @@ pub const Task = extern struct {};
 
 pub const Locale = extern struct {};
 
-pub const DartObject = extern struct {};
-
 pub const Display = extern struct {
     pub const UpdateType = enum(u8) {};
+};
+
+pub const PathType = enum {
+    engine,
+    aot,
+
+    pub fn filename(self: PathType) []const u8 {
+        return switch (self) {
+            .engine => "libflutter_engine.so",
+            .aot => "libapp.so",
+        };
+    }
 };
 
 pub const GetProcAddressesFn = *const fn (*ProcTable) callconv(.C) Result;
@@ -51,8 +59,8 @@ pub const NativeThreadCallback = *const fn () callconv(.C) void;
 
 pub const ProcTable = extern struct {
     struct_size: usize = @sizeOf(ProcTable),
-    createAotData: ?*const fn (*const Aot.Data.Source, *Aot.Data) callconv(.C) Result = null,
-    collectAotData: ?*const fn (Aot.Data) callconv(.C) Result = null,
+    createAotData: ?*const fn (*const Aot.Data.Source.Extern, *Aot.Data.Extern) callconv(.C) Result = null,
+    collectAotData: ?*const fn (Aot.Data.Extern) callconv(.C) Result = null,
     run: ?*const fn (usize, *const Render.Config, *const ProjectArgs, ?*anyopaque, *Impl) callconv(.C) Result = null,
     shutdown: ?*const fn (*Impl) callconv(.C) Result = null,
     init: ?*const fn (usize, *const Render.Config, *const ProjectArgs, ?*anyopaque, *Impl) callconv(.C) Result = null,
@@ -81,7 +89,7 @@ pub const ProcTable = extern struct {
     runTask: ?*const fn (*Impl, *const Task) callconv(.C) Result = null,
     updateLocales: ?*const fn (*Impl, [*]const Locale, usize) callconv(.C) Result = null,
     runsAotCompiledDartCode: ?*const fn () callconv(.C) bool = null,
-    postDartObject: ?*const fn (*Impl, i64, *const DartObject) callconv(.C) Result = null,
+    postDartObject: ?*const fn (*Impl, i64, *const Dart.Object.Extern) callconv(.C) Result = null,
     notifyLowMemoryWarning: ?*const fn (*Impl) callconv(.C) Result = null,
     postCallbackOnAllNativeThreads: ?*const fn (*Impl, NativeThreadCallback, ?*anyopaque) callconv(.C) Result = null,
     notifyDisplayUpdate: ?*const fn (*Impl, Display.UpdateType, [*]const Display, usize) callconv(.C) Result = null,
@@ -116,3 +124,12 @@ pub const Error = Result.Error || error{InvalidFunction};
 ptr: *Impl,
 id: Id,
 manager: *const Manager,
+
+pub fn getPath(alloc: Allocator, t: PathType) (Allocator.Error || fs.SelfExePathError)![]const u8 {
+    var exe_path = [_]u8{0} ** fs.MAX_PATH_BYTES;
+    return try fs.path.join(alloc, &.{
+        fs.path.dirname(try fs.selfExePath(&exe_path)).?,
+        "lib",
+        t.filename(),
+    });
+}

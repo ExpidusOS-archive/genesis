@@ -12,17 +12,6 @@ next_id: Engine.Id = 1,
 
 pub const LoadError = Allocator.Error || Engine.Result.Error || error{Unexpected};
 
-pub fn getDefaultPath(alloc: Allocator) (Allocator.Error || fs.SelfExePathError)![]const u8 {
-    var exe_path = [_]u8{0} ** fs.MAX_PATH_BYTES;
-    _ = try fs.selfExePath(&exe_path);
-
-    return try fs.path.join(alloc, &.{
-        fs.path.dirname(&exe_path).?,
-        "lib",
-        "libflutter_engine.so",
-    });
-}
-
 pub fn load(alloc: Allocator, path: []const u8) LoadError!*Self {
     const pathZ = try alloc.dupeZ(u8, path);
     defer alloc.free(pathZ);
@@ -50,7 +39,7 @@ pub fn load(alloc: Allocator, path: []const u8) LoadError!*Self {
 }
 
 pub fn loadDefault(alloc: Allocator) (LoadError || fs.SelfExePathError)!*Self {
-    const path = try getDefaultPath(alloc);
+    const path = try Engine.getPath(alloc, .engine);
     defer alloc.free(path);
     return try load(alloc, path);
 }
@@ -64,4 +53,27 @@ pub fn destroy(self: *Self) void {
     self.instances.deinit(self.allocator);
     _ = std.c.dlclose(self.lib);
     self.allocator.destroy(self);
+}
+
+pub fn createAotData(self: *const Self, source: Engine.Aot.Data.Source) (Allocator.Error || Engine.Error)!Engine.Aot.Data {
+    if (self.proc_table.createAotData) |func| {
+        const source_extern = try source.toExtern(self.allocator);
+        defer self.allocator.free(source_extern.value.elf_path[0..std.mem.len(source_extern.value.elf_path)]);
+
+        var value: Engine.Aot.Data.Extern = undefined;
+        try func(&source_extern, &value).err();
+        return .{
+            .manager = self,
+            .value = value,
+        };
+    }
+    return error.InvalidFunction;
+}
+
+pub inline fn getCurrentTime(self: *const Self) error{InvalidFunction}!u64 {
+    return if (self.proc_table.getCurrentTime) |func| func() else error.InvalidFunction;
+}
+
+pub inline fn runsAotCompiledDartCode(self: *const Self) error{InvalidFunction}!bool {
+    return if (self.proc_table.runsAotCompiledDartCode) |func| func() else error.InvalidFunction;
 }
