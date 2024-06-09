@@ -1,0 +1,23 @@
+{
+  "darkBackgroundColor": "E1E1E9",
+  "backgroundColor": "E5D9D9",
+  "highlightBackgroundColor": "D6BDBD",
+  "darkSurfaceColor": "E1E1E9",
+  "surfaceColor": "E5D9D9",
+  "darkForegroundColor": "A44E4E",
+  "gutterForegroundColor": "3b4261",
+  "foregroundColor": "9EA5C4",
+  "blueColors": [
+    "0E56ED",
+    "5E7AC2",
+    "D52121",
+    "28D4F2",
+    "00A8EB",
+    "10C2C0",
+    "8FA1C6"
+  ],
+  "redColors": [
+    "F00E38",
+    "B42424"
+  ]
+}
