@@ -163,7 +163,7 @@ endif()
 add_custom_target("${BINARY_NAME}-new" ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/zig-out/bin/${BINARY_NAME}")
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/zig-out/bin/${BINARY_NAME}"
   COMMAND ${ZIG} build -Darch=${FLUTTER_TARGET_ARCH} -Dbuild-type=${CMAKE_BUILD_TYPE} -Dengine-path="${FLUTTER_ENGINE}/out/${LOCAL_ENGINE}" --cache-dir "${CMAKE_CURRENT_BINARY_DIR}/zig-cache" -p "${CMAKE_CURRENT_BINARY_DIR}/zig-out"
-  DEPENDS flutter_assemble
+  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/build.zig" flutter_assemble
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Apply the standard set of build settings. This can be removed for applications
