@@ -42,7 +42,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-/linux/zig-cache
+/zig-cache
+/zig-out
 
 *.qcow2
 *.img

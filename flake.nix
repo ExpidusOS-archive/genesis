@@ -68,7 +68,7 @@
             };
 
             postInstall = prev.expidus.genesis-shell.postInstall + ''
-              patchelf --set-interpreter $(cat $NIX_CC/nix-support/dynamic-linker) $out/app/genesis_shell-zig
+              patchelf --replace-needed libc.so "${final.stdenv.cc.libc}/lib/libc.so.6" $out/app/genesis_shell-zig
             '';
 
             inherit (prev.expidus.genesis-shell) pname buildInputs meta;
@@ -84,8 +84,11 @@
             inputsFrom = [ pkg ];
             packages = with pkgs; [
               flutter pkgs.zig pkgs.zon2nix
-              yq cage wayland-utils
+              yq gdb wayland-utils
               mesa-demos
+              (pkgs.writeShellScriptBin "fixup-zig" ''
+                patchelf --replace-needed libc.so ${pkgs.stdenv.cc.libc}/lib/libc.so.6 "$1"
+              '')
             ];
           };
         in {

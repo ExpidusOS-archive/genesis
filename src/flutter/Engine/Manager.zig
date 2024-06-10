@@ -5,25 +5,21 @@ const Self = @This();
 const Engine = @import("../Engine.zig");
 
 allocator: Allocator,
-lib: *anyopaque,
+lib: std.DynLib,
 proc_table: Engine.ProcTable,
 instances: std.ArrayListUnmanaged(Engine) = .{},
 next_id: Engine.Id = 1,
 
-pub const LoadError = Allocator.Error || Engine.Result.Error || error{Unexpected};
+pub const LoadError = Allocator.Error || Engine.Error || std.DynLib.Error || error{Unexpected};
 
 pub fn load(alloc: Allocator, path: []const u8) LoadError!*Self {
     const pathZ = try alloc.dupeZ(u8, path);
     defer alloc.free(pathZ);
 
-    const lib = std.c.dlopen(pathZ, std.c.RTLD.NOW) orelse return switch (std.posix.errno(std.c._errno().*)) {
-        else => |e| std.posix.unexpectedErrno(e),
-    };
-    errdefer _ = std.c.dlclose(lib);
+    var lib = try std.DynLib.open(path);
+    errdefer lib.close();
 
-    const getProcAddresses: Engine.GetProcAddressesFn = @ptrCast(@alignCast(std.c.dlsym(lib, "FlutterEngineGetProcAddresses") orelse return switch (std.posix.errno(std.c._errno().*)) {
-        else => |e| std.posix.unexpectedErrno(e),
-    }));
+    const getProcAddresses = lib.lookup(Engine.GetProcAddressesFn, "FlutterEngineGetProcAddresses") orelse return error.InvalidFunction;
 
     const self = try alloc.create(Self);
     errdefer alloc.destroy(self);
@@ -51,7 +47,7 @@ pub fn destroy(self: *Self) void {
     }
 
     self.instances.deinit(self.allocator);
-    _ = std.c.dlclose(self.lib);
+    self.lib.close();
     self.allocator.destroy(self);
 }
 

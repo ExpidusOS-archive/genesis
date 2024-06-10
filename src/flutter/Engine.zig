@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const fs = std.fs;
 const Allocator = std.mem.Allocator;
 const Self = @This();
@@ -46,8 +47,8 @@ pub const PathType = enum {
 
     pub fn filename(self: PathType) []const u8 {
         return switch (self) {
-            .engine => "libflutter_engine.so",
-            .aot => "libapp.so",
+            .engine => std.fmt.comptimePrint("{s}flutter_engine{s}", .{ comptime builtin.target.libPrefix(), comptime builtin.os.tag.dynamicLibSuffix() }),
+            .aot => std.fmt.comptimePrint("{s}app{s}", .{ comptime builtin.target.libPrefix(), comptime builtin.os.tag.dynamicLibSuffix() }),
         };
     }
 };
@@ -128,7 +129,7 @@ manager: *const Manager,
 pub fn getPath(alloc: Allocator, t: PathType) (Allocator.Error || fs.SelfExePathError)![]const u8 {
     var exe_path = [_]u8{0} ** fs.MAX_PATH_BYTES;
     return try fs.path.join(alloc, &.{
-        fs.path.dirname(try fs.selfExePath(&exe_path)).?,
+        fs.path.dirname(fs.path.dirname(try fs.selfExePath(&exe_path)).?).?,
         "lib",
         t.filename(),
     });
