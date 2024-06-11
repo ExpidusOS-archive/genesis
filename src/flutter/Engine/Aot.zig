@@ -35,6 +35,10 @@ pub const Data = struct {
             pub const Value = extern union {
                 elf_path: [*:0]const u8,
             };
+
+            pub fn destroy(self: *const Source.Extern, alloc: Allocator) void {
+                alloc.free(self.value.elf_path[0..(std.mem.len(self.value.elf_path) + 1)]);
+            }
         };
     };
 

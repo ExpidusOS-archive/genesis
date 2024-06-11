@@ -54,7 +54,11 @@ pub fn destroy(self: *Self) void {
 pub fn createAotData(self: *const Self, source: Engine.Aot.Data.Source) (Allocator.Error || Engine.Error)!Engine.Aot.Data {
     if (self.proc_table.createAotData) |func| {
         const source_extern = try source.toExtern(self.allocator);
-        defer self.allocator.free(source_extern.value.elf_path[0..std.mem.len(source_extern.value.elf_path)]);
+        defer source_extern.destroy(self.allocator);
+
+        // FIXME: why does removing this line cause an error:
+        // embedder.cc (1473): 'FlutterEngineCreateAOTData' returned 'kInvalidArguments'. Invalid FlutterEngineAOTDataSourceType type specified.
+        std.debug.print("{any}\n", .{std.mem.asBytes(&source_extern)});
 
         var value: Engine.Aot.Data.Extern = undefined;
         try func(&source_extern, &value).err();

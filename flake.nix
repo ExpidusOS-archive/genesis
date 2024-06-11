@@ -60,8 +60,6 @@
 
             pubspecLock = prev.lib.importJSON ./pubspec.lock.json;
 
-            nativeBuildInputs = [ final.zig ];
-
             gitHashes = {
               libtokyo = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
               libtokyo_flutter = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
@@ -69,6 +67,33 @@
 
             inherit (prev.expidus.genesis-shell) pname buildInputs postInstall meta;
           };
+
+          genesis-shell-zig = (final.flutter.buildFlutterApplication {
+            version = "0-unstable-git+${self.shortRev or "dirty"}";
+            src = prev.lib.cleanSource self;
+
+            pubspecLock = prev.lib.importJSON ./pubspec.lock.json;
+
+            nativeBuildInputs = [ final.zig ];
+
+            gitHashes = {
+              libtokyo = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
+              libtokyo_flutter = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
+            };
+
+            dontInstall = true;
+            buildPhase = ''
+              zig build -Doptimize=ReleaseSmall \
+                -Dcpu=generic \
+                -Dengine-src=${final.flutter.engine} \
+                -Dengine-out=host_${final.flutter.engine.runtimeMode}${final.lib.optionalString (!final.flutter.engine.isOptimized) "_unopt"} \
+                -p $out
+            '';
+
+            inherit (prev.expidus.genesis-shell) pname buildInputs meta;
+          }).overrideAttrs (f: p: {
+            outputs = [ "out" ];
+          });
         };
       };
 
@@ -92,8 +117,10 @@
 
       mkPackages = self: {
         default = self.legacyPackages.expidus.genesis-shell;
+        default-zig = self.legacyPackages.expidus.genesis-shell-zig;
       } // self.legacyPackages.lib.optionalAttrs (self.legacyPackages.isAsahi) {
         asahi = self.legacyPackages.pkgsAsahi.expidus.genesis-shell;
+        asahi-zig = self.legacyPackages.pkgsAsahi.expidus.genesis-shell-zig;
       };
     };
 }
