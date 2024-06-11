@@ -67,11 +67,7 @@
               libtokyo_flutter = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
             };
 
-            postInstall = prev.expidus.genesis-shell.postInstall + ''
-              patchelf --replace-needed libc.so "${final.stdenv.cc.libc}/lib/libc.so.6" $out/app/genesis_shell-zig
-            '';
-
-            inherit (prev.expidus.genesis-shell) pname buildInputs meta;
+            inherit (prev.expidus.genesis-shell) pname buildInputs postInstall meta;
           };
         };
       };
@@ -86,9 +82,6 @@
               flutter pkgs.zig pkgs.zon2nix
               yq gdb wayland-utils
               mesa-demos
-              (pkgs.writeShellScriptBin "fixup-zig" ''
-                patchelf --replace-needed libc.so ${pkgs.stdenv.cc.libc}/lib/libc.so.6 "$1"
-              '')
             ];
           };
         in {

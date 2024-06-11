@@ -166,11 +166,11 @@
     },
     "nixpkgs-flutter-engine": {
       "locked": {
-        "lastModified": 1717822782,
-        "narHash": "sha256-ff7IeKcO/BXqEy4IIM5arGBqudTOwnQIl2oK9NFbuZs=",
+        "lastModified": 1718081280,
+        "narHash": "sha256-GbAdUnE/xFCB2bH1q9nHNYpEOcUuNv8Sy0AXIJ1XTRs=",
         "owner": "ExpidusOS",
         "repo": "nixpkgs",
-        "rev": "333ac207f32af2ab5bd1e508a789e1adde3118c5",
+        "rev": "0d73707989bcb551dd012f019d1b9b68edeea082",
         "type": "github"
       },
       "original": {
