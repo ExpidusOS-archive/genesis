@@ -24,7 +24,7 @@ pub const Data = struct {
             };
         }
 
-        pub const Type = enum(u8) {
+        pub const Type = enum(c_int) {
             elf_path,
         };
 

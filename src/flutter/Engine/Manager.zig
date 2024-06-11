@@ -56,10 +56,6 @@ pub fn createAotData(self: *const Self, source: Engine.Aot.Data.Source) (Allocat
         const source_extern = try source.toExtern(self.allocator);
         defer source_extern.destroy(self.allocator);
 
-        // FIXME: why does removing this line cause an error:
-        // embedder.cc (1473): 'FlutterEngineCreateAOTData' returned 'kInvalidArguments'. Invalid FlutterEngineAOTDataSourceType type specified.
-        std.debug.print("{any}\n", .{std.mem.asBytes(&source_extern)});
-
         var value: Engine.Aot.Data.Extern = undefined;
         try func(&source_extern, &value).err();
         return .{
