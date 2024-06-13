@@ -25,12 +25,24 @@
   }@inputs:
     expidus.lib.mkFlake {
       overlay = final: prev: {
-        zig = prev.zig_0_12.overrideAttrs (f: p: {
-          version = "0.12.0-dev.${zig.shortRev or "dirty"}";
+        zig = (prev.zig_0_12.override {
+          llvmPackages = prev.llvmPackages_18;
+        }).overrideAttrs (f: p: {
+          version = "0.14.0-dev.${zig.shortRev or "dirty"}";
           src = zig;
+
+          postBuild = ''
+            stage3/bin/zig build langref
+          '';
+
+          postInstall = ''
+            install -Dm444 ../zig-out/doc/langref.html -t $doc/share/doc/zig-${f.version}/html
+          '';
         });
 
-        flutterPackages = prev.recurseIntoAttrs (prev.callPackages "${nixpkgs-flutter-engine}/pkgs/development/compilers/flutter" {});
+        flutterPackages = prev.recurseIntoAttrs (prev.callPackages "${nixpkgs-flutter-engine}/pkgs/development/compilers/flutter" {
+          useNixpkgsEngine = true;
+        });
         flutter = final.flutterPackages.stable;
         flutter322 = final.flutterPackages.v3_22;
 

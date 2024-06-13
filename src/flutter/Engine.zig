@@ -1,5 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
+const options = @import("options");
 const fs = std.fs;
 const Allocator = std.mem.Allocator;
 const Self = @This();
@@ -126,11 +127,9 @@ ptr: *Impl,
 id: Id,
 manager: *const Manager,
 
-pub fn getPath(alloc: Allocator, t: PathType) (Allocator.Error || fs.SelfExePathError)![]const u8 {
-    var exe_path = [_]u8{0} ** fs.MAX_PATH_BYTES;
+pub fn getPath(alloc: Allocator, t: PathType) Allocator.Error![]const u8 {
     return try fs.path.join(alloc, &.{
-        fs.path.dirname(fs.path.dirname(try fs.selfExePath(&exe_path)).?).?,
-        "lib",
+        options.libdir,
         t.filename(),
     });
 }

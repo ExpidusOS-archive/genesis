@@ -42,6 +42,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+/.zig-cache
 /zig-cache
 /zig-out
 
