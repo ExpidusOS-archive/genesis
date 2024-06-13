@@ -96,7 +96,7 @@
             dontInstall = true;
             buildPhase = ''
               zig build -Doptimize=ReleaseSmall \
-                -Dcpu=generic \
+                -Dcpu=generic${final.lib.optionalString final.targetPlatform.isx86_64 "+soft_float"} \
                 -Dengine-src=${final.flutter.engine} \
                 -Dengine-out=host_${final.flutter.engine.runtimeMode}${final.lib.optionalString (!final.flutter.engine.isOptimized) "_unopt"} \
                 -p $out
