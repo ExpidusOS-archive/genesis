@@ -14,11 +14,14 @@ pub const Options = struct {
 allocator: Allocator,
 engine_manager: *flutter.Engine.Manager,
 engine: *flutter.Engine,
-mode: Mode,
+mode: *Mode,
 
-pub fn create(alloc: Allocator, _: Options) !*Self {
+pub fn create(alloc: Allocator, options: Options) !*Self {
     const self = try alloc.create(Self);
     errdefer alloc.destroy(self);
+
+    const mode = try Mode.create(alloc, options.mode);
+    errdefer mode.destroy();
 
     const engine_manager = try flutter.Engine.Manager.loadDefault(alloc);
     errdefer engine_manager.destroy();
@@ -67,7 +70,7 @@ pub fn create(alloc: Allocator, _: Options) !*Self {
         .allocator = alloc,
         .engine_manager = engine_manager,
         .engine = engine,
-        .mode = .{},
+        .mode = mode,
     };
 
     try self.engine.run();
@@ -76,5 +79,6 @@ pub fn create(alloc: Allocator, _: Options) !*Self {
 
 pub fn destroy(self: *Self) void {
     self.engine_manager.destroy();
+    self.mode.destroy();
     self.allocator.destroy(self);
 }
