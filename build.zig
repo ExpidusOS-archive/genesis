@@ -83,6 +83,10 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(exe);
 
     const wf = b.addWriteFiles();
+
+    const icudtl = wf.add("icudtl.dat", readFile(b, b.pathJoin(&.{ engineSrc, "out", engineOut, "icudtl.dat" })));
+    b.getInstallStep().dependOn(&b.addInstallLibFile(icudtl, b.pathJoin(&.{ "genesis-shell", "icudtl.dat" })).step);
+
     const libengine = wf.add(libengineName, readFile(b, b.pathJoin(&.{ engineSrc, "out", engineOut, libengineName })));
     b.getInstallStep().dependOn(&b.addInstallLibFile(libengine, b.pathJoin(&.{ "genesis-shell", libengineName })).step);
 
