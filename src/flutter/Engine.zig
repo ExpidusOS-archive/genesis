@@ -15,6 +15,92 @@ pub const Impl = *opaque {};
 pub const Id = u64;
 
 pub const ProjectArgs = struct {
+    assets_path: []const u8,
+    icu_data_path: []const u8,
+    custom_dart_entrypoint: ?[]const u8 = null,
+    cmd_args: ?[]const []const u8 = null,
+    dart_entrypoint_args: ?[]const []const u8 = null,
+    aot_data: ?Aot.Data,
+
+    pub fn toExtern(self: *const ProjectArgs, alloc: Allocator) Allocator.Error!Extern {
+        const assets_path = try alloc.dupeZ(u8, self.assets_path);
+        errdefer alloc.free(assets_path);
+
+        const icu_data_path = try alloc.dupeZ(u8, self.icu_data_path);
+        errdefer alloc.free(icu_data_path);
+
+        const custom_dart_entrypoint = if (self.custom_dart_entrypoint) |v| try alloc.dupeZ(u8, v) else null;
+        errdefer {
+            if (custom_dart_entrypoint) |v| alloc.free(v);
+        }
+
+        const cmd_argv = blk: {
+            if (self.cmd_args) |args| {
+                var list = std.ArrayList([*:0]const u8).init(alloc);
+                errdefer {
+                    for (list.items) |item| alloc.free(item[0..std.mem.len(item)]);
+                }
+                defer list.deinit();
+
+                for (args) |arg| {
+                    const argz = try alloc.dupeZ(u8, arg);
+                    errdefer alloc.free(argz);
+                    try list.append(argz);
+                }
+
+                break :blk try list.toOwnedSlice();
+            }
+            break :blk null;
+        };
+        errdefer {
+            if (cmd_argv) |v| {
+                for (v) |i| alloc.free(i[0..std.mem.len(i)]);
+                alloc.free(v);
+            }
+        }
+
+        const dart_entrypoint_argv = blk: {
+            if (self.dart_entrypoint_args) |args| {
+                var list = std.ArrayList([*:0]const u8).init(alloc);
+                errdefer {
+                    for (list.items) |item| alloc.free(item[0..std.mem.len(item)]);
+                }
+                defer list.deinit();
+
+                for (args) |arg| {
+                    const argz = try alloc.dupeZ(u8, arg);
+                    errdefer alloc.free(argz);
+                    try list.append(argz);
+                }
+
+                break :blk try list.toOwnedSlice();
+            }
+            break :blk null;
+        };
+        errdefer {
+            if (dart_entrypoint_argv) |v| {
+                for (v) |i| alloc.free(i[0..std.mem.len(i)]);
+                alloc.free(v);
+            }
+        }
+
+        const aot_data = if (self.aot_data) |aot_data| aot_data.value else null;
+        errdefer {
+            if (aot_data) |v| v.destroy(alloc);
+        }
+
+        return .{
+            .assets_path = assets_path,
+            .icu_data_path = icu_data_path,
+            .custom_dart_entrypoint = if (custom_dart_entrypoint) |cde| cde.ptr else null,
+            .cmd_argc = if (self.cmd_args) |args| @intCast(args.len) else 0,
+            .cmd_argv = if (cmd_argv) |ca| ca.ptr else null,
+            .dart_entrypoint_argc = if (self.dart_entrypoint_args) |args| @intCast(args.len) else 0,
+            .dart_entrypoint_argv = if (dart_entrypoint_argv) |dea| dea.ptr else null,
+            .aot_data = aot_data,
+        };
+    }
+
     pub const Extern = extern struct {
         struct_size: usize = @sizeOf(Extern),
         assets_path: [*:0]const u8,
@@ -22,7 +108,7 @@ pub const ProjectArgs = struct {
         packages_path__unused__: ?[*:0]const u8 = null,
         icu_data_path: [*:0]const u8,
         cmd_argc: c_int = 0,
-        cmd_argv: ?[*:null]?[*:0]const u8 = null,
+        cmd_argv: ?[*]const [*:0]const u8 = null,
         platform_message_callback: ?*const fn (*const PlatformMessage, ?*anyopaque) callconv(.C) void = null,
         vm_snapshot_data: ?[*]const u8 = null,
         vm_snapshot_data_size: usize = 0,
@@ -46,13 +132,32 @@ pub const ProjectArgs = struct {
         aot_data: ?Aot.Data.Extern,
         compute_platform_resolved_locale_callback: ?*const fn ([*]const *Locale, usize) callconv(.C) *const Locale = null,
         dart_entrypoint_argc: c_int = 0,
-        dart_entrypoint_argv: ?[*:null]?[*:0]const u8 = null,
+        dart_entrypoint_argv: ?[*]const [*:0]const u8 = null,
         log_message_callback: ?*const fn ([*:0]const u8, [*:0]const u8, ?*anyopaque) callconv(.C) void = null,
         log_tag: ?[*:0]const u8 = null,
         on_pre_engine_restart_callback: ?*const fn (?*anyopaque) callconv(.C) void = null,
         update_semantics_callback: ?*const fn (*const SemanticsUpdate, ?*anyopaque) callconv(.C) void = null,
         update_semantics_callback2: ?*const fn (*const SemanticsUpdate2, ?*anyopaque) callconv(.C) void = null,
         channel_update_callback: ?*const fn (*const ChannelUpdate, ?*anyopaque) callconv(.C) void = null,
+
+        pub fn destroy(self: *const Extern, alloc: Allocator) void {
+            alloc.free(self.assets_path[0 .. std.mem.len(self.assets_path) + 1]);
+            alloc.free(self.icu_data_path[0 .. std.mem.len(self.icu_data_path) + 1]);
+
+            if (self.cmd_argv) |argv| {
+                const argc: usize = @intCast(self.cmd_argc);
+                for (argv[0..argc]) |arg| alloc.free(arg[0..std.mem.len(arg)]);
+                alloc.free(argv[0..argc]);
+            }
+
+            if (self.dart_entrypoint_argv) |argv| {
+                const argc: usize = @intCast(self.dart_entrypoint_argc);
+                for (argv[0..argc]) |arg| alloc.free(arg[0..std.mem.len(arg)]);
+                alloc.free(argv[0..argc]);
+            }
+
+            if (self.custom_dart_entrypoint) |custom_dart_entrypoint| alloc.free(custom_dart_entrypoint[0..std.mem.len(custom_dart_entrypoint)]);
+        }
 
         pub const CustomTaskRunners = extern struct {};
         pub const Compositor = extern struct {};

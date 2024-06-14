@@ -2,12 +2,21 @@ const std = @import("std");
 const flutter = @import("flutter.zig");
 const Allocator = std.mem.Allocator;
 const Self = @This();
+const Mode = @import("GenesisShell/Mode.zig");
+
+pub const Options = struct {
+    mode: ModeType,
+
+    pub const default_mode = Mode.default_type;
+    pub const ModeType = Mode.Type;
+};
 
 allocator: Allocator,
 engine_manager: *flutter.Engine.Manager,
 engine: *flutter.Engine,
+mode: Mode,
 
-pub fn create(alloc: Allocator) !*Self {
+pub fn create(alloc: Allocator, _: Options) !*Self {
     const self = try alloc.create(Self);
     errdefer alloc.destroy(self);
 
@@ -17,14 +26,20 @@ pub fn create(alloc: Allocator) !*Self {
     const assets_path = try flutter.Engine.getPath(alloc, .assets);
     defer alloc.free(assets_path);
 
-    const assets_pathZ = try alloc.dupeZ(u8, assets_path);
-    defer alloc.free(assets_pathZ);
-
     const icudata_path = try flutter.Engine.getPath(alloc, .icu_data);
     defer alloc.free(icudata_path);
 
-    const icudata_pathZ = try alloc.dupeZ(u8, icudata_path);
-    defer alloc.free(icudata_pathZ);
+    const aot_data = if (try engine_manager.runsAotCompiledDartCode()) blk: {
+        const elf_path = try flutter.Engine.getPath(alloc, .aot);
+        defer alloc.free(elf_path);
+
+        break :blk try engine_manager.createAotData(.{
+            .elf_path = elf_path,
+        });
+    } else null;
+    defer {
+        if (aot_data) |v| v.destroy();
+    }
 
     const engine = try engine_manager.createEngine(.{
         .render_cfg = .{
@@ -41,16 +56,9 @@ pub fn create(alloc: Allocator) !*Self {
             },
         },
         .project_args = .{
-            .assets_path = assets_pathZ,
-            .icu_data_path = icudata_pathZ,
-            .aot_data = if (try engine_manager.runsAotCompiledDartCode()) blk: {
-                const elf_path = try flutter.Engine.getPath(alloc, .aot);
-                defer alloc.free(elf_path);
-
-                break :blk (try engine_manager.createAotData(.{
-                    .elf_path = elf_path,
-                })).value;
-            } else null,
+            .assets_path = assets_path,
+            .icu_data_path = icudata_path,
+            .aot_data = aot_data,
         },
         .user_data = self,
     });
@@ -59,6 +67,7 @@ pub fn create(alloc: Allocator) !*Self {
         .allocator = alloc,
         .engine_manager = engine_manager,
         .engine = engine,
+        .mode = .{},
     };
 
     try self.engine.run();

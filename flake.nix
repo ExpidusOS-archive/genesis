@@ -93,6 +93,12 @@
               libtokyo_flutter = "sha256-ei3bgEdmmWz0iwMUBzBndYPlvNiCrDBrG33/n8PrBPI=";
             };
 
+            postPatch = ''
+              export ZIG_GLOBAL_CACHE_DIR=$NIX_BUILD_TOP/zig-cache
+              mkdir -p $ZIG_GLOBAL_CACHE_DIR
+              ln -s ${final.callPackage ./deps.nix {}} $ZIG_GLOBAL_CACHE_DIR/p
+            '';
+
             dontInstall = true;
             buildPhase = ''
               zig build -Doptimize=ReleaseSmall \

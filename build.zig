@@ -70,6 +70,11 @@ pub fn build(b: *std.Build) void {
     const options = b.addOptions();
     options.addOption([]const u8, "libdir", b.getInstallPath(.lib, "genesis-shell"));
 
+    const xev = b.dependency("libxev", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
     const exe = b.addExecutable(.{
         .name = "genesis-shell",
         .root_source_file = b.path("src/main.zig"),
@@ -78,6 +83,23 @@ pub fn build(b: *std.Build) void {
         .linkage = .dynamic,
         .link_libc = true,
     });
+
+    exe.root_module.addImport("xev", xev.module("xev"));
+
+    if (target.result.os.tag == .linux) {
+        const wlroots = b.dependency("wlroots", .{});
+        exe.root_module.addImport("wlroots", wlroots.module("wlroots"));
+
+        const Scanner = (b.lazyImport(@This(), "wayland") orelse unreachable).Scanner;
+        const scanner = Scanner.create(b, .{});
+
+        exe.root_module.addAnonymousImport("wayland", .{
+            .root_source_file = scanner.result,
+        });
+
+        exe.linkSystemLibrary("wayland-client");
+        exe.linkSystemLibrary("wlroots");
+    }
 
     exe.root_module.addOptions("options", options);
     b.installArtifact(exe);

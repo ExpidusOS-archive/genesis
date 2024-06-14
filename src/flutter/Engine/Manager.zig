@@ -11,7 +11,7 @@ instances: std.ArrayListUnmanaged(Engine) = .{},
 next_id: Engine.Id = 1,
 
 pub const CreateEngineOptions = struct {
-    project_args: Engine.ProjectArgs.Extern,
+    project_args: Engine.ProjectArgs,
     render_cfg: Engine.Renderer.Config,
     user_data: ?*anyopaque = null,
 };
@@ -90,7 +90,11 @@ pub fn createEngine(self: *Self, options: CreateEngineOptions) (Allocator.Error 
         instance.manager = self;
 
         const render_cfg = options.render_cfg.toExtern();
-        try func(Engine.Version, &render_cfg, &options.project_args, options.user_data, &instance.ptr).err();
+
+        const project_args = try options.project_args.toExtern(self.allocator);
+        defer project_args.destroy(self.allocator);
+
+        try func(Engine.Version, &render_cfg, &project_args, options.user_data, &instance.ptr).err();
         return instance;
     }
     return error.InvalidFunction;
