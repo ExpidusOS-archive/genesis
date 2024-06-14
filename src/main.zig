@@ -29,9 +29,10 @@ pub fn main() !void {
     }
 
     const shell = try GenesisShell.create(alloc, .{
+        .args = nargs.items,
         .mode = mode orelse return error.InvalidMode,
     });
     defer shell.destroy();
 
-    std.debug.print("{}\n", .{shell});
+    try shell.run();
 }

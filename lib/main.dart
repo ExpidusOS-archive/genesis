@@ -21,6 +21,12 @@ import 'views/lock.dart';
 import 'views/login.dart';
 import 'views/system/setup.dart';
 
+@pragma('vm:entry-point')
+void installerMain() async {
+  print('Not implemented');
+  exit(1);
+}
+
 void main(List<String> argsList) async {
   final argsParser = ArgParser()
     ..addFlag('init-locked', help: 'Adding this option will start Genesis Shell in a locked state')

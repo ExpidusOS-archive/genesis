@@ -84,16 +84,23 @@ pub fn createEngine(self: *Self, options: CreateEngineOptions) (Allocator.Error 
         const instance = try self.instances.addOne(self.allocator);
         errdefer _ = self.instances.pop();
 
-        instance.id = self.next_id;
-        self.next_id += 1;
+        instance.* = .{
+            .id = self.next_id,
+            .manager = self,
+            .ptr = undefined,
+        };
 
-        instance.manager = self;
+        self.next_id += 1;
 
         const render_cfg = try options.render_cfg.toExtern(self.allocator);
         defer render_cfg.destroy(self.allocator);
 
-        const project_args = try options.project_args.toExtern(self.allocator);
+        var project_args = try options.project_args.toExtern(self.allocator);
         defer project_args.destroy(self.allocator);
+
+        if (project_args.log_tag == null) {
+            project_args.log_tag = try std.fmt.allocPrintZ(self.allocator, "flutter-#{d}", .{instance.id});
+        }
 
         try func(Engine.Version, &render_cfg, &project_args, options.user_data, &instance.ptr).err();
         return instance;

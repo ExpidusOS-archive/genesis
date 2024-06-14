@@ -21,6 +21,8 @@ pub const ProjectArgs = struct {
     cmd_args: ?[]const []const u8 = null,
     dart_entrypoint_args: ?[]const []const u8 = null,
     aot_data: ?Aot.Data,
+    custom_task_runners: ?*const Extern.CustomTaskRunners = null,
+    log_tag: ?[]const u8 = null,
 
     pub fn toExtern(self: *const ProjectArgs, alloc: Allocator) Allocator.Error!Extern {
         const assets_path = try alloc.dupeZ(u8, self.assets_path);
@@ -28,6 +30,11 @@ pub const ProjectArgs = struct {
 
         const icu_data_path = try alloc.dupeZ(u8, self.icu_data_path);
         errdefer alloc.free(icu_data_path);
+
+        const log_tag = if (self.log_tag) |lt| try alloc.dupeZ(u8, lt) else null;
+        errdefer {
+            if (log_tag) |lt| alloc.free(lt);
+        }
 
         const custom_dart_entrypoint = if (self.custom_dart_entrypoint) |v| try alloc.dupeZ(u8, v) else null;
         errdefer {
@@ -98,8 +105,12 @@ pub const ProjectArgs = struct {
             .dart_entrypoint_argc = if (self.dart_entrypoint_args) |args| @intCast(args.len) else 0,
             .dart_entrypoint_argv = if (dart_entrypoint_argv) |dea| dea.ptr else null,
             .aot_data = aot_data,
+            .custom_task_runners = self.custom_task_runners,
+            .log_tag = if (log_tag) |lt| lt.ptr else null,
         };
     }
+
+    pub const CustomTaskRunners = Extern.CustomTaskRunners;
 
     pub const Extern = extern struct {
         struct_size: usize = @sizeOf(Extern),
@@ -125,7 +136,7 @@ pub const ProjectArgs = struct {
         is_persistent_cache_read_only: bool = false,
         vsync_callback: ?*const fn (?*anyopaque, *i64) callconv(.C) void = null,
         custom_dart_entrypoint: ?[*:0]const u8 = null,
-        custom_task_runners: ?*const CustomTaskRunners = null,
+        custom_task_runners: ?*const Extern.CustomTaskRunners = null,
         shutdown_dart_vm_when_done: bool = false,
         compositor: ?*const Compositor = null,
         dart_old_gen_heap_size: i64 = -1,
@@ -144,23 +155,55 @@ pub const ProjectArgs = struct {
             alloc.free(self.assets_path[0 .. std.mem.len(self.assets_path) + 1]);
             alloc.free(self.icu_data_path[0 .. std.mem.len(self.icu_data_path) + 1]);
 
+            if (self.log_tag) |lt| alloc.free(lt[0 .. std.mem.len(lt) + 1]);
+
             if (self.cmd_argv) |argv| {
                 const argc: usize = @intCast(self.cmd_argc);
-                for (argv[0..argc]) |arg| alloc.free(arg[0..std.mem.len(arg)]);
+                for (argv[0..argc]) |arg| alloc.free(arg[0 .. std.mem.len(arg) + 1]);
                 alloc.free(argv[0..argc]);
             }
 
             if (self.dart_entrypoint_argv) |argv| {
                 const argc: usize = @intCast(self.dart_entrypoint_argc);
-                for (argv[0..argc]) |arg| alloc.free(arg[0..std.mem.len(arg)]);
+                for (argv[0..argc]) |arg| alloc.free(arg[0 .. std.mem.len(arg) + 1]);
                 alloc.free(argv[0..argc]);
             }
 
-            if (self.custom_dart_entrypoint) |custom_dart_entrypoint| alloc.free(custom_dart_entrypoint[0..std.mem.len(custom_dart_entrypoint)]);
+            if (self.custom_dart_entrypoint) |custom_dart_entrypoint| alloc.free(custom_dart_entrypoint[0 .. std.mem.len(custom_dart_entrypoint) + 1]);
         }
 
-        pub const CustomTaskRunners = extern struct {};
-        pub const Compositor = extern struct {};
+        pub const CustomTaskRunners = extern struct {
+            struct_size: usize = @sizeOf(Extern.CustomTaskRunners),
+            platform: ?*const TaskRunnerDescription = null,
+            render: ?*const TaskRunnerDescription = null,
+            thread_priority_setter: ?*const fn (ThreadPriority) callconv(.C) void = null,
+
+            pub const TaskRunner = *opaque {};
+
+            pub const Task = extern struct {
+                runner: TaskRunner,
+                task: u64,
+            };
+
+            pub const TaskRunnerDescription = extern struct {
+                struct_size: usize = @sizeOf(TaskRunnerDescription),
+                user_data: ?*anyopaque,
+                runs_task_on_current_thread_callback: *const fn (?*anyopaque) callconv(.C) bool,
+                post_task_callback: *const fn (Extern.CustomTaskRunners.Task, u64, ?*anyopaque) callconv(.C) void,
+                id: usize,
+            };
+
+            pub const ThreadPriority = enum(c_int) {
+                background,
+                normal,
+                display,
+                raster,
+            };
+        };
+
+        pub const Compositor = extern struct {
+            struct_size: usize = @sizeOf(Compositor),
+        };
     };
 };
 
@@ -171,7 +214,21 @@ pub const SemanticsUpdate2 = extern struct {};
 pub const ChannelUpdate = extern struct {};
 
 pub const Event = struct {
-    pub const WindowMetrics = extern struct {};
+    pub const WindowMetrics = extern struct {
+        struct_size: usize = @sizeOf(WindowMetrics),
+        width: usize,
+        height: usize,
+        pixel_ratio: f32,
+        left: usize,
+        top: usize,
+        physical_view_inset_top: f32,
+        physical_view_inset_right: f32,
+        physical_view_inset_bottom: f32,
+        physical_view_inset_left: f32,
+        display_id: u64,
+        view_id: i64,
+    };
+
     pub const Pointer = extern struct {};
     pub const Key = extern struct {
         pub const Callback = *const fn () callconv(.C) void;
@@ -186,12 +243,20 @@ pub const AccessibilityFeature = extern struct {};
 
 pub const SemanticsAction = extern struct {};
 
-pub const Task = extern struct {};
-
 pub const Locale = extern struct {};
 
 pub const Display = extern struct {
-    pub const UpdateType = enum(u8) {};
+    struct_size: usize = @sizeOf(Display),
+    id: u64,
+    is_single: bool = true,
+    refresh_rate: f32,
+    width: usize,
+    height: usize,
+    pixel_ratio: f32,
+
+    pub const UpdateType = enum(c_int) {
+        startup,
+    };
 };
 
 pub const PathType = enum {
@@ -226,35 +291,35 @@ pub const ProcTable = extern struct {
     init: ?*const fn (usize, *const Renderer.Config.Extern, *const ProjectArgs.Extern, ?*anyopaque, *Impl) callconv(.C) Result = null,
     deinit: ?*const fn (Impl) callconv(.C) Result = null,
     runInit: ?*const fn (Impl) callconv(.C) Result = null,
-    sendWindowMetricsEvent: ?*const fn (*Impl, *const Event.WindowMetrics) callconv(.C) Result = null,
-    sendPointerEvent: ?*const fn (*Impl, [*]const Event.Pointer, usize) callconv(.C) Result = null,
-    sendKeyEvent: ?*const fn (*Impl, *const Event.Key, Event.Key.Callback, ?*anyopaque) callconv(.C) Result = null,
-    sendPlatformMessage: ?*const fn (*Impl, *const PlatformMessage) callconv(.C) Result = null,
-    platformMessageCreateResponseHandle: ?*const fn (*Impl, DataCallback, ?*anyopaque, **PlatformMessage.ResponseHandle) callconv(.C) Result = null,
-    platformMessageReleaseResponseHandle: ?*const fn (*Impl, *PlatformMessage.ResponseHandle) callconv(.C) Result = null,
-    platformMessageSendResponse: ?*const fn (*Impl, *PlatformMessage.ResponseHandle, [*]const u8, usize) callconv(.C) Result = null,
-    registerExternalTexture: ?*const fn (*Impl, i64) callconv(.C) Result = null,
-    unregisterExternalTexture: ?*const fn (*Impl, i64) callconv(.C) Result = null,
-    markExternalTextureFrameAvailable: ?*const fn (*Impl, i64) callconv(.C) Result = null,
-    updateSemanticsEnabled: ?*const fn (*Impl, bool) callconv(.C) Result = null,
-    updateAccessibilityFeatures: ?*const fn (*Impl, AccessibilityFeature) callconv(.C) Result = null,
-    dispatchSemanticsAction: ?*const fn (*Impl, u64, SemanticsAction, [*]const u8, usize) callconv(.C) Result = null,
-    onVSync: ?*const fn (*Impl, isize, u64, u64) callconv(.C) Result = null,
-    reloadSystemFonts: ?*const fn (*Impl) callconv(.C) Result = null,
-    traceEventDurationBegin: ?*const fn (*Impl, [*:0]const u8) callconv(.C) void = null,
-    traceEventDurationEnd: ?*const fn (*Impl, [*:0]const u8) callconv(.C) void = null,
-    traceEventDurationInstant: ?*const fn (*Impl, [*:0]const u8) callconv(.C) void = null,
-    postRenderThreadTask: ?*const fn (*Impl, VoidCallback, ?*anyopaque) callconv(.C) Result = null,
+    sendWindowMetricsEvent: ?*const fn (Impl, *const Event.WindowMetrics) callconv(.C) Result = null,
+    sendPointerEvent: ?*const fn (Impl, [*]const Event.Pointer, usize) callconv(.C) Result = null,
+    sendKeyEvent: ?*const fn (Impl, *const Event.Key, Event.Key.Callback, ?*anyopaque) callconv(.C) Result = null,
+    sendPlatformMessage: ?*const fn (Impl, *const PlatformMessage) callconv(.C) Result = null,
+    platformMessageCreateResponseHandle: ?*const fn (Impl, DataCallback, ?*anyopaque, **PlatformMessage.ResponseHandle) callconv(.C) Result = null,
+    platformMessageReleaseResponseHandle: ?*const fn (Impl, *PlatformMessage.ResponseHandle) callconv(.C) Result = null,
+    platformMessageSendResponse: ?*const fn (Impl, *PlatformMessage.ResponseHandle, [*]const u8, usize) callconv(.C) Result = null,
+    registerExternalTexture: ?*const fn (Impl, i64) callconv(.C) Result = null,
+    unregisterExternalTexture: ?*const fn (Impl, i64) callconv(.C) Result = null,
+    markExternalTextureFrameAvailable: ?*const fn (Impl, i64) callconv(.C) Result = null,
+    updateSemanticsEnabled: ?*const fn (Impl, bool) callconv(.C) Result = null,
+    updateAccessibilityFeatures: ?*const fn (Impl, AccessibilityFeature) callconv(.C) Result = null,
+    dispatchSemanticsAction: ?*const fn (Impl, u64, SemanticsAction, [*]const u8, usize) callconv(.C) Result = null,
+    onVSync: ?*const fn (Impl, isize, u64, u64) callconv(.C) Result = null,
+    reloadSystemFonts: ?*const fn (Impl) callconv(.C) Result = null,
+    traceEventDurationBegin: ?*const fn (Impl, [*:0]const u8) callconv(.C) void = null,
+    traceEventDurationEnd: ?*const fn (Impl, [*:0]const u8) callconv(.C) void = null,
+    traceEventDurationInstant: ?*const fn (Impl, [*:0]const u8) callconv(.C) void = null,
+    postRenderThreadTask: ?*const fn (Impl, VoidCallback, ?*anyopaque) callconv(.C) Result = null,
     getCurrentTime: ?*const fn () callconv(.C) u64 = null,
-    runTask: ?*const fn (*Impl, *const Task) callconv(.C) Result = null,
-    updateLocales: ?*const fn (*Impl, [*]const Locale, usize) callconv(.C) Result = null,
+    runTask: ?*const fn (Impl, *const ProjectArgs.CustomTaskRunners.Task) callconv(.C) Result = null,
+    updateLocales: ?*const fn (Impl, [*]const Locale, usize) callconv(.C) Result = null,
     runsAotCompiledDartCode: ?*const fn () callconv(.C) bool = null,
-    postDartObject: ?*const fn (*Impl, i64, *const Dart.Object.Extern) callconv(.C) Result = null,
-    notifyLowMemoryWarning: ?*const fn (*Impl) callconv(.C) Result = null,
+    postDartObject: ?*const fn (Impl, i64, *const Dart.Object.Extern) callconv(.C) Result = null,
+    notifyLowMemoryWarning: ?*const fn (Impl) callconv(.C) Result = null,
     postCallbackOnAllNativeThreads: ?*const fn (*Impl, NativeThreadCallback, ?*anyopaque) callconv(.C) Result = null,
-    notifyDisplayUpdate: ?*const fn (*Impl, Display.UpdateType, [*]const Display, usize) callconv(.C) Result = null,
-    scheduleFrame: ?*const fn (*Impl) callconv(.C) Result = null,
-    setNextFrameCallback: ?*const fn (*Impl, VoidCallback, ?*anyopaque) callconv(.C) Result = null,
+    notifyDisplayUpdate: ?*const fn (Impl, Display.UpdateType, [*]const Display, usize) callconv(.C) Result = null,
+    scheduleFrame: ?*const fn (Impl) callconv(.C) Result = null,
+    setNextFrameCallback: ?*const fn (Impl, VoidCallback, ?*anyopaque) callconv(.C) Result = null,
 };
 
 pub const Result = enum(u8) {
@@ -284,9 +349,70 @@ pub const Error = Result.Error || error{InvalidFunction};
 ptr: Impl,
 id: Id,
 manager: *Manager,
+displays: std.ArrayListUnmanaged(Display) = .{},
+display_mutex: std.Thread.Mutex = .{},
 
 pub fn run(self: *const Self) Error!void {
     return if (self.manager.proc_table.runInit) |func| try func(self.ptr).err() else error.InvalidFunction;
+}
+
+pub fn runTask(self: *const Self, task: *ProjectArgs.CustomTaskRunners.Task) Error!void {
+    return if (self.manager.proc_table.runTask) |func| try func(self.ptr, task).err() else error.InvalidFunction;
+}
+
+pub fn addDisplay(self: *Self, display: Display) (Allocator.Error || error{AlreadyExists})!void {
+    for (self.displays.items) |item| {
+        if (item.id == display.id) return error.AlreadyExists;
+    }
+
+    self.display_mutex.lock();
+    defer self.display_mutex.unlock();
+
+    try self.displays.append(self.manager.allocator, display);
+    errdefer _ = self.displays.pop();
+}
+
+pub fn updateDisplay(self: *Self, display: Display) error{NoEntry}!void {
+    self.display_mutex.lock();
+    defer self.display_mutex.unlock();
+
+    for (self.displays.items) |*item| {
+        if (item.id == display.id) {
+            item.* = display;
+            return;
+        }
+    }
+    return error.NoEntry;
+}
+
+pub fn removeDisplay(self: *Self, id: u64) bool {
+    self.display_mutex.lock();
+    defer self.display_mutex.unlock();
+
+    for (self.displays.items, 0..) |item, i| {
+        if (item.id == id) {
+            _ = self.displays.orderedRemove(i);
+            return true;
+        }
+    }
+    return false;
+}
+
+pub fn notifyDisplays(self: *Self) Error!void {
+    self.display_mutex.lock();
+    defer self.display_mutex.unlock();
+
+    if (self.manager.proc_table.notifyDisplayUpdate) |func| {
+        return try func(self.ptr, .startup, self.displays.items.ptr, self.displays.items.len).err();
+    }
+    return error.InvalidFunction;
+}
+
+pub fn sendWindowMetricsEvent(self: *Self, event: *const Event.WindowMetrics) Error!void {
+    if (self.manager.proc_table.sendWindowMetricsEvent) |func| {
+        return try func(self.ptr, event).err();
+    }
+    return error.InvalidFunction;
 }
 
 pub fn destroy(self: *Self) void {

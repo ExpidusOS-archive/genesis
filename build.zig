@@ -1,5 +1,7 @@
 const std = @import("std");
 
+const Scanner = @import("wayland").Scanner;
+
 const FlutterAssembleOptions = struct {
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
@@ -61,6 +63,8 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const flutterOptimize = b.option(std.builtin.OptimizeMode, "flutter-optimize", "Prioritize performance, safety, or binary size for Flutter") orelse optimize;
+
     const engineOut = if (b.option([]const u8, "engine-out", "Name of the engine build to use on host")) |v| v else return;
     const engineOutHost = if (b.option([]const u8, "engine-out-host", "Name of the engine build to use")) |v| v else engineOut;
     const engineSrc = if (b.option([]const u8, "engine-src", "Path to the Flutter Engine source")) |v| v else return;
@@ -87,18 +91,26 @@ pub fn build(b: *std.Build) void {
     exe.root_module.addImport("xev", xev.module("xev"));
 
     if (target.result.os.tag == .linux) {
-        const wlroots = b.dependency("wlroots", .{});
-        exe.root_module.addImport("wlroots", wlroots.module("wlroots"));
-
-        const Scanner = (b.lazyImport(@This(), "wayland") orelse unreachable).Scanner;
         const scanner = Scanner.create(b, .{});
 
-        exe.root_module.addAnonymousImport("wayland", .{
+        scanner.generate("wl_output", 4);
+
+        const wayland = b.createModule(.{
             .root_source_file = scanner.result,
         });
 
         exe.linkSystemLibrary("wayland-client");
+        exe.linkSystemLibrary("wayland-server");
         exe.linkSystemLibrary("wlroots");
+
+        const pixman = b.dependency("pixman", .{});
+
+        const wlroots = b.dependency("wlroots", .{}).module("wlroots");
+        wlroots.addImport("wayland", wayland);
+        wlroots.addImport("pixman", pixman.module("pixman"));
+
+        exe.root_module.addImport("wlroots", wlroots);
+        exe.root_module.addImport("wayland", wayland);
     }
 
     exe.root_module.addOptions("options", options);
@@ -114,7 +126,7 @@ pub fn build(b: *std.Build) void {
 
     const assembleOut = flutterAssemble(b, .{
         .target = target,
-        .optimize = optimize,
+        .optimize = flutterOptimize,
         .engineSrc = engineSrc,
         .engineOut = engineOut,
         .engineOutHost = engineOutHost,
@@ -129,7 +141,7 @@ pub fn build(b: *std.Build) void {
         .install_subdir = b.pathJoin(&.{ "genesis-shell", "flutter_assets" }),
     });
 
-    if (optimize == .ReleaseSmall) {
+    if (flutterOptimize == .ReleaseSmall) {
         b.installDirectory(.{
             .source_dir = .{ .generated = .{
                 .file = assembleOut.generated.file,

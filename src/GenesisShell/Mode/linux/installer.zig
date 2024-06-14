@@ -1,11 +1,12 @@
 const std = @import("std");
+const xev = @import("xev");
 const Allocator = std.mem.Allocator;
 const Mode = @import("../../Mode.zig");
 const Self = @This();
 
 mode: Mode,
 
-pub fn create(alloc: Allocator) !*Mode {
+pub fn create(alloc: Allocator, _: *xev.Loop) !*Mode {
     const self = try alloc.create(Self);
     self.* = .{
         .mode = .{
@@ -14,6 +15,7 @@ pub fn create(alloc: Allocator) !*Mode {
                 .destroy = destroy,
             },
             .allocator = alloc,
+            .dart_entrypoint = "installerMain",
         },
     };
     return &self.mode;
