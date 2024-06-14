@@ -1,4 +1,5 @@
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 
 pub const Transformation = extern struct {
     scale_x: f32,
@@ -46,10 +47,11 @@ pub const Config = union(Type) {
     metal: Metal,
     vulkan: Vulkan,
 
-    pub fn toExtern(self: *const Config) Extern {
+    pub fn toExtern(self: *const Config, alloc: Allocator) Allocator.Error!Extern {
         return .{
             .type = std.meta.activeTag(self.*),
             .value = switch (self.*) {
+                .vulkan => .{ .vulkan = try self.vulkan.toExtern(alloc) },
                 inline else => |v, t| @unionInit(Extern.Value, @tagName(t), v.toExtern()),
             },
         };
@@ -77,7 +79,7 @@ pub const Config = union(Type) {
         fbo_reset_after_present: bool,
         surface_transformation: ?*const fn (?*anyopaque) callconv(.C) Transformation,
         gl_proc_resolver: *const fn (?*anyopaque) callconv(.C) ?*anyopaque,
-        gl_external_texture_frame_callback: *const fn (?*anyopaque, i64, usize, usize, *Extern.Value.OpenGL.Texture) callconv(.C) bool,
+        gl_external_texture_frame_callback: ?*const fn (?*anyopaque, i64, usize, usize, *Extern.Value.OpenGL.Texture) callconv(.C) bool = null,
         populate_existing_damage: *const fn (?*anyopaque, *const isize, *Damage) callconv(.C) void,
 
         pub fn toExtern(self: *const OpenGL) Extern.Value.OpenGL {
@@ -109,20 +111,112 @@ pub const Config = union(Type) {
     };
 
     pub const Metal = struct {
-        pub fn toExtern(_: *const Metal) Extern.Value.Metal {
-            return .{};
+        device: *anyopaque,
+        present_command_queue: *anyopaque,
+        get_next_drawable_callback: ?*const fn (?*anyopaque, *const FrameInfo) callconv(.C) Extern.Value.Metal.Texture = null,
+        present_drawable_callback: ?*const fn (?*anyopaque, *const Extern.Value.Metal.Texture) callconv(.C) bool = null,
+        external_texture_frame_callback: ?*const fn (?*anyopaque, i64, usize, usize, *Extern.Value.Metal.ExternalTexture) callconv(.C) void = null,
+
+        pub fn toExtern(self: *const Metal) Extern.Value.Metal {
+            return .{
+                .device = self.device,
+                .present_command_queue = self.present_command_queue,
+                .get_next_drawable_callback = self.get_next_drawable_callback,
+                .present_drawable_callback = self.present_drawable_callback,
+                .external_texture_frame_callback = self.external_texture_frame_callback,
+            };
         }
     };
 
     pub const Vulkan = struct {
-        pub fn toExtern(_: *const Vulkan) Extern.Value.Vulkan {
-            return .{};
+        version: u32,
+        instance: *anyopaque,
+        phys_dev: *anyopaque,
+        dev: *anyopaque,
+        queue_family_index: u32,
+        queue: *anyopaque,
+        enabled_instance_extensions: ?[]const []const u8 = null,
+        enabled_device_extensions: ?[]const []const u8 = null,
+        get_instance_proc_address_callback: *const fn (?*anyopaque, *anyopaque, [*:0]const u8) callconv(.C) ?*anyopaque,
+        get_next_image_callback: ?*const fn (?*anyopaque, *const FrameInfo) callconv(.C) Extern.Value.Vulkan.Image = null,
+        present_image_callback: ?*const fn (?*anyopaque, *const Extern.Value.Vulkan.Image) callconv(.C) bool = null,
+
+        pub fn toExtern(self: *const Vulkan, alloc: Allocator) Allocator.Error!Extern.Value.Vulkan {
+            const enabled_instance_extensions = blk: {
+                if (self.enabled_instance_extensions) |args| {
+                    var list = std.ArrayList([*:0]const u8).init(alloc);
+                    errdefer {
+                        for (list.items) |item| alloc.free(item[0..std.mem.len(item)]);
+                    }
+                    defer list.deinit();
+
+                    for (args) |arg| {
+                        const argz = try alloc.dupeZ(u8, arg);
+                        errdefer alloc.free(argz);
+                        try list.append(argz);
+                    }
+
+                    break :blk try list.toOwnedSlice();
+                }
+                break :blk null;
+            };
+            errdefer {
+                if (enabled_instance_extensions) |v| {
+                    for (v) |i| alloc.free(i[0..std.mem.len(i)]);
+                    alloc.free(v);
+                }
+            }
+
+            const enabled_device_extensions = blk: {
+                if (self.enabled_device_extensions) |args| {
+                    var list = std.ArrayList([*:0]const u8).init(alloc);
+                    errdefer {
+                        for (list.items) |item| alloc.free(item[0..std.mem.len(item)]);
+                    }
+                    defer list.deinit();
+
+                    for (args) |arg| {
+                        const argz = try alloc.dupeZ(u8, arg);
+                        errdefer alloc.free(argz);
+                        try list.append(argz);
+                    }
+
+                    break :blk try list.toOwnedSlice();
+                }
+                break :blk null;
+            };
+            errdefer {
+                if (enabled_device_extensions) |v| {
+                    for (v) |i| alloc.free(i[0..std.mem.len(i)]);
+                    alloc.free(v);
+                }
+            }
+
+            return .{
+                .version = self.version,
+                .instance = self.instance,
+                .phys_dev = self.phys_dev,
+                .dev = self.dev,
+                .queue_family_index = self.queue_family_index,
+                .queue = self.queue,
+                .enabled_instance_extension_count = if (self.enabled_instance_extensions) |eie| eie.len else 0,
+                .enabled_instance_extensions = if (enabled_instance_extensions) |eie| eie.ptr else null,
+                .enabled_device_extension_count = if (self.enabled_device_extensions) |ede| ede.len else 0,
+                .enabled_device_extensions = if (enabled_device_extensions) |ede| ede.ptr else null,
+                .get_instance_proc_address_callback = self.get_instance_proc_address_callback,
+                .get_next_image_callback = self.get_next_image_callback,
+                .present_image_callback = self.present_image_callback,
+            };
         }
     };
 
     pub const Extern = extern struct {
         type: Type,
         value: Value,
+
+        pub fn destroy(self: *const Extern, alloc: Allocator) void {
+            if (self.type == .vulkan) self.value.vulkan.destroy(alloc);
+        }
 
         pub const Value = extern union {
             opengl: Value.OpenGL,
@@ -140,7 +234,7 @@ pub const Config = union(Type) {
                 fbo_reset_after_present: bool,
                 surface_transformation: ?*const fn (?*anyopaque) callconv(.C) Transformation,
                 gl_proc_resolver: *const fn (?*anyopaque) callconv(.C) ?*anyopaque,
-                gl_external_texture_frame_callback: *const fn (?*anyopaque, i64, usize, usize, *Texture) callconv(.C) bool,
+                gl_external_texture_frame_callback: ?*const fn (?*anyopaque, i64, usize, usize, *Texture) callconv(.C) bool = null,
                 fbo_with_info: ?*const fn (?*anyopaque, *const FrameInfo) callconv(.C) u32,
                 present_with_info: ?*const fn (?*anyopaque, *const PresentInfo) callconv(.C) bool,
                 populate_existing_damage: *const fn (?*anyopaque, *const isize, *Damage) callconv(.C) void,
@@ -161,8 +255,79 @@ pub const Config = union(Type) {
                 present: *const fn (?*anyopaque, [*]const u8, usize, usize) callconv(.C) bool,
             };
 
-            pub const Metal = extern struct {};
-            pub const Vulkan = extern struct {};
+            pub const Metal = extern struct {
+                struct_size: usize = @sizeOf(Value.Metal),
+                device: *anyopaque,
+                present_command_queue: *anyopaque,
+                get_next_drawable_callback: ?*const fn (?*anyopaque, *const FrameInfo) callconv(.C) Texture = null,
+                present_drawable_callback: ?*const fn (?*anyopaque, *const Texture) callconv(.C) bool = null,
+                external_texture_frame_callback: ?*const fn (?*anyopaque, i64, usize, usize, *ExternalTexture) callconv(.C) void = null,
+
+                pub const PixelFormat = enum(c_int) {
+                    yuva,
+                    rgba,
+                };
+
+                pub const YuvaColorSpace = enum(c_int) {
+                    bt601_full_range,
+                    bt601_limited_range,
+                };
+
+                pub const Texture = extern struct {
+                    struct_size: usize = @sizeOf(Texture),
+                    id: i64,
+                    handle: ?*anyopaque = null,
+                    user_data: ?*anyopaque = null,
+                    destroy_callback: ?*const fn (?*anyopaque) callconv(.C) void,
+                };
+
+                pub const ExternalTexture = extern struct {
+                    struct_size: usize = @sizeOf(ExternalTexture),
+                    width: usize,
+                    height: usize,
+                    pixel_fmt: PixelFormat,
+                    n_texts: usize,
+                    texts: [*]*anyopaque,
+                    yuv_color_space: YuvaColorSpace,
+                };
+            };
+
+            pub const Vulkan = extern struct {
+                struct_size: usize = @sizeOf(Value.Vulkan),
+                version: u32,
+                instance: *anyopaque,
+                phys_dev: *anyopaque,
+                dev: *anyopaque,
+                queue_family_index: u32,
+                queue: *anyopaque,
+                enabled_instance_extension_count: usize = 0,
+                enabled_instance_extensions: ?[*]const [*:0]const u8 = null,
+                enabled_device_extension_count: usize = 0,
+                enabled_device_extensions: ?[*]const [*:0]const u8 = null,
+                get_instance_proc_address_callback: *const fn (?*anyopaque, *anyopaque, [*:0]const u8) callconv(.C) ?*anyopaque,
+                get_next_image_callback: ?*const fn (?*anyopaque, *const FrameInfo) callconv(.C) Image = null,
+                present_image_callback: ?*const fn (?*anyopaque, *const Image) callconv(.C) bool = null,
+
+                pub fn destroy(self: *const Value.Vulkan, alloc: Allocator) void {
+                    if (self.enabled_instance_extensions) |argv| {
+                        const argc: usize = @intCast(self.enabled_instance_extension_count);
+                        for (argv[0..argc]) |arg| alloc.free(arg[0..std.mem.len(arg)]);
+                        alloc.free(argv[0..argc]);
+                    }
+
+                    if (self.enabled_device_extensions) |argv| {
+                        const argc: usize = @intCast(self.enabled_device_extension_count);
+                        for (argv[0..argc]) |arg| alloc.free(arg[0..std.mem.len(arg)]);
+                        alloc.free(argv[0..argc]);
+                    }
+                }
+
+                pub const Image = extern struct {
+                    struct_size: usize = @sizeOf(Image),
+                    handle: u64,
+                    fmt: u32,
+                };
+            };
         };
     };
 };

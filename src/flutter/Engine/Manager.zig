@@ -89,7 +89,8 @@ pub fn createEngine(self: *Self, options: CreateEngineOptions) (Allocator.Error 
 
         instance.manager = self;
 
-        const render_cfg = options.render_cfg.toExtern();
+        const render_cfg = try options.render_cfg.toExtern(self.allocator);
+        defer render_cfg.destroy(self.allocator);
 
         const project_args = try options.project_args.toExtern(self.allocator);
         defer project_args.destroy(self.allocator);
