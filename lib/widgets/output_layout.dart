@@ -23,8 +23,8 @@ class OutputLayout extends StatelessWidget {
             context,
             Output(
               geometry: OutputGeometry(
-                width: MediaQuery.of(context).size.width.toInt(),
-                height: MediaQuery.of(context).size.height.toInt(),
+                width: 1024,//MediaQuery.of(context).size.width.toInt(),
+                height: 768,//MediaQuery.of(context).size.height.toInt(),
               ), 
               size: OutputSize(),
             ),

@@ -1,4 +1,6 @@
 import 'dart:io' show exit;
+import 'dart:ui';
+
 import 'package:args/args.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/scheduler.dart';
@@ -59,19 +61,12 @@ void main(List<String> argsList) async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(GenesisShellApp(
+  runWidget(GenesisShellApp(
     initLocked: args.flag('init-locked'),
     initSetup: args.flag('init-setup'),
     disableInitSetupCheck: args.flag('disable-init-setup-check'),
     displayManager: args.flag('display-manager'),
   ));
-
-  doWhenWindowReady(() {
-    const initialSize = Size(600, 450);
-    appWindow.size = initialSize;
-    appWindow.alignment = Alignment.center;
-    appWindow.show();
-  });
 }
 
 class GenesisShellApp extends StatefulWidget {
@@ -92,7 +87,8 @@ class GenesisShellApp extends StatefulWidget {
   State<GenesisShellApp> createState() => _GenesisShellAppState();
 }
 
-class _GenesisShellAppState extends State<GenesisShellApp> {
+class _GenesisShellAppState extends State<GenesisShellApp> with WidgetsBindingObserver {
+  Map<Object, Widget> _views = <Object, Widget>{};
   GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
   late AccountManager _accountManager;
   late ApplicationsManager _applicationsManager;
@@ -103,9 +99,49 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
   late SensorsManager _sensorsManager;
   late SystemManager _systemManager;
 
+  void _updateViews() {
+    final Map<Object, Widget> newViews = <Object, Widget>{};
+    for (final FlutterView view in WidgetsBinding.instance.platformDispatcher.views) {
+      final Widget viewWidget = _views[view.viewId] ?? _createViewWidget(view);
+      newViews[view.viewId] = viewWidget;
+    }
+
+    setState(() {
+      _views = newViews;
+    });
+  }
+
+  Widget _createViewWidget(FlutterView view) {
+    print(view);
+    return View(
+      view: view,
+      child: TokyoApp(
+        navigatorKey: _navKey,
+        title: 'Genesis Shell',
+        themeMode: ThemeMode.dark,
+        routes: {
+          '/': (context) {
+            final args = AuthedRouteArguments.of(context);
+            return DesktopView(
+              userName: args.userName,
+              isSession: args.isSession,
+            );
+          },
+          '/lock': (context) => LockView(userName: AuthedRouteArguments.of(context).userName),
+          '/login': (_) => const LoginView(),
+          '/system/setup': (_) => const SystemSetupView(),
+        },
+        initialRoute: widget.initLocked ? '/lock' : (widget.displayManager ? '/login' : (widget.initSetup ? '/system/setup' : '/')),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
+    _updateViews();
 
     _accountManager = AccountManager();
     _applicationsManager = ApplicationsManager();
@@ -140,8 +176,22 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
   }
 
   @override
+  void didUpdateWidget(GenesisShellApp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _views.clear();
+    _updateViews();
+  }
+
+  @override
+  void didChangeMetrics() {
+    _updateViews();
+  }
+
+  @override
   void dispose() {
     super.dispose();
+
+    WidgetsBinding.instance.removeObserver(this);
 
     _networkManager.disconnect();
     _powerManager.disconnect();
@@ -161,23 +211,6 @@ class _GenesisShellAppState extends State<GenesisShellApp> {
         Provider(create: (_) => _sensorsManager),
         ChangeNotifierProvider(create: (_) => _systemManager),
       ],
-      child: TokyoApp(
-        navigatorKey: _navKey,
-        title: 'Genesis Shell',
-        themeMode: ThemeMode.dark,
-        routes: {
-          '/': (context) {
-            final args = AuthedRouteArguments.of(context);
-            return DesktopView(
-              userName: args.userName,
-              isSession: args.isSession,
-            );
-          },
-          '/lock': (context) => LockView(userName: AuthedRouteArguments.of(context).userName),
-          '/login': (_) => const LoginView(),
-          '/system/setup': (_) => const SystemSetupView(),
-        },
-        initialRoute: widget.initLocked ? '/lock' : (widget.displayManager ? '/login' : (widget.initSetup ? '/system/setup' : '/')),
-      ),
+      child: ViewCollection(views: _views.values.toList(growable: false)),
     );
 }

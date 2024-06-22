@@ -403,6 +403,7 @@ pub fn notifyDisplays(self: *Self) Error!void {
     defer self.display_mutex.unlock();
 
     if (self.manager.proc_table.notifyDisplayUpdate) |func| {
+        std.debug.print("{any}\n", .{self.displays.items});
         return try func(self.ptr, .startup, self.displays.items.ptr, self.displays.items.len).err();
     }
     return error.InvalidFunction;
@@ -410,6 +411,7 @@ pub fn notifyDisplays(self: *Self) Error!void {
 
 pub fn sendWindowMetricsEvent(self: *Self, event: *const Event.WindowMetrics) Error!void {
     if (self.manager.proc_table.sendWindowMetricsEvent) |func| {
+        std.debug.print("{}\n", .{event});
         return try func(self.ptr, event).err();
     }
     return error.InvalidFunction;

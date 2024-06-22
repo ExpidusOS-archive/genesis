@@ -1,7 +1,7 @@
 {
   inputs = {
     expidus.url = "github:ExpidusOS/expidus";
-    nixpkgs-flutter-engine.url = "github:ExpidusOS/nixpkgs/flutter-engine/init";
+    nixpkgs-flutter-engine.url = "github:ExpidusOS/nixpkgs/feat/flutter-engine";
     zig = {
       url = "github:MidstallSoftware/zig/expidus";
       inputs = {

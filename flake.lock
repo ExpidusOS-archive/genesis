@@ -166,16 +166,16 @@
     },
     "nixpkgs-flutter-engine": {
       "locked": {
-        "lastModified": 1718159525,
-        "narHash": "sha256-NUBZAIY5zyVhuTsTMLZIpP71XGNarMLYRxFaNDXc8xQ=",
+        "lastModified": 1718784333,
+        "narHash": "sha256-F//25Iu4WeMdp34/ZWqtVCikmeaNUwjemUI9ZkZ4WPs=",
         "owner": "ExpidusOS",
         "repo": "nixpkgs",
-        "rev": "1730fa0412c1f44830021b524be230cf02eecde1",
+        "rev": "a037d6378fe99349605a37f8747b89f37b1f3162",
         "type": "github"
       },
       "original": {
         "owner": "ExpidusOS",
-        "ref": "flutter-engine/init",
+        "ref": "feat/flutter-engine",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -232,11 +232,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1718258949,
-        "narHash": "sha256-VrTUB0cQMrFz8nvdEaZahMAEn9pzbvCPZw8vIV+X9to=",
+        "lastModified": 1718327397,
+        "narHash": "sha256-upsuc9eWV7ryVMRIZBlJKq84oSyYvSsdIo5pmkLvqE8=",
         "owner": "MidstallSoftware",
         "repo": "zig",
-        "rev": "dc6940b04ea9b204e92d51fd794bea2ac64de46b",
+        "rev": "9ea0555e2783dcac73656af21b4303106e1b460d",
         "type": "github"
       },
       "original": {
