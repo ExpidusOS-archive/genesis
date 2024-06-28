@@ -9,15 +9,16 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1717615237,
-        "narHash": "sha256-b2u+nPX1mHOL5DhW+zcW6BcJK7VTB6kC2iz2SoEOlLo=",
+        "lastModified": 1719551658,
+        "narHash": "sha256-GzBFhtrkPISnUc9lA59K3d5+X02SDYmcZrjrFYMBouo=",
         "owner": "ExpidusOS",
         "repo": "expidus",
-        "rev": "1c2c0e32a01426bc4a3b5f04bae3c610a20bfe05",
+        "rev": "cbee51fd66d634b54cf33b84b50b0b758c7ebfc7",
         "type": "github"
       },
       "original": {
         "owner": "ExpidusOS",
+        "ref": "feat/nixpkgs-update",
         "repo": "expidus",
         "type": "github"
       }
@@ -102,27 +103,27 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1716006448,
-        "narHash": "sha256-IjqkCdRLwQtGtxTdgm8oZcUyi71PPCK0QNFVpamth5E=",
+        "lastModified": 1718588737,
+        "narHash": "sha256-06acqoMEYtc+/w5gWiIIuUFfdtdOBKlp1qrC/InRiBY=",
         "owner": "tpwrules",
         "repo": "nixos-apple-silicon",
-        "rev": "1b16e4290a5e4a59c75ef53617d597e02078791e",
+        "rev": "b0a2376f6c164a0af963d47386c064cc6fdcd5ea",
         "type": "github"
       },
       "original": {
         "owner": "tpwrules",
         "repo": "nixos-apple-silicon",
-        "rev": "1b16e4290a5e4a59c75ef53617d597e02078791e",
+        "rev": "b0a2376f6c164a0af963d47386c064cc6fdcd5ea",
         "type": "github"
       }
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1717574423,
-        "narHash": "sha256-cz3P5MZffAHwL2IQaNzsqUBsJS+u0J/AAwArHMAcCa0=",
+        "lastModified": 1719487696,
+        "narHash": "sha256-pCsl9qFCuIuhIfGH03CiBOsy1LNwITC6VMb6/5tz+Qc=",
         "owner": "NixOS",
         "repo": "nixos-hardware",
-        "rev": "d6c6cf6f5fead4057d8fb2d5f30aa8ac1727f177",
+        "rev": "14aadcba1a26c8c142453839f888afd0db8b2041",
         "type": "github"
       },
       "original": {
@@ -150,32 +151,15 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1717196966,
-        "narHash": "sha256-yZKhxVIKd2lsbOqYd5iDoUIwsRZFqE87smE2Vzf6Ck0=",
+        "lastModified": 1719550049,
+        "narHash": "sha256-5qQ5XKvRZXCycA/G8Y/Cy+UWHr6afMXkzXSzjN9Pe6A=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "57610d2f8f0937f39dbd72251e9614b1561942d8",
+        "rev": "ea780bcedbe728b5e7447d3730bcef976b0063cc",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs-flutter-engine": {
-      "locked": {
-        "lastModified": 1718784333,
-        "narHash": "sha256-F//25Iu4WeMdp34/ZWqtVCikmeaNUwjemUI9ZkZ4WPs=",
-        "owner": "ExpidusOS",
-        "repo": "nixpkgs",
-        "rev": "a037d6378fe99349605a37f8747b89f37b1f3162",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ExpidusOS",
-        "ref": "feat/flutter-engine",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -183,7 +167,6 @@
     "root": {
       "inputs": {
         "expidus": "expidus",
-        "nixpkgs-flutter-engine": "nixpkgs-flutter-engine",
         "zig": "zig",
         "zon2nix": "zon2nix"
       }

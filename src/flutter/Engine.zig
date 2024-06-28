@@ -275,6 +275,35 @@ pub const PathType = enum {
     }
 };
 
+pub const ViewInfo = struct {
+    pub const Add = extern struct {
+        struct_size: usize = @sizeOf(Add),
+        id: i64,
+        metrics: *const Event.WindowMetrics,
+        user_data: ?*anyopaque = null,
+        callback: *const fn (*const Add.Result) callconv(.C) void,
+
+        pub const Result = extern struct {
+            struct_size: usize = @sizeOf(Add.Result),
+            added: bool,
+            user_data: ?*anyopaque = null,
+        };
+    };
+
+    pub const Remove = extern struct {
+        struct_size: usize = @sizeOf(Add),
+        id: i64,
+        user_data: ?*anyopaque = null,
+        callback: *const fn (*const Remove.Result) callconv(.C) void,
+
+        pub const Result = extern struct {
+            struct_size: usize = @sizeOf(Add.Result),
+            removed: bool,
+            user_data: ?*anyopaque = null,
+        };
+    };
+};
+
 pub const GetProcAddressesFn = *const fn (*ProcTable) callconv(.C) Result;
 pub const DataCallback = *const fn () callconv(.C) void;
 pub const VoidCallback = *const fn (?*anyopaque) callconv(.C) void;
@@ -320,6 +349,8 @@ pub const ProcTable = extern struct {
     notifyDisplayUpdate: ?*const fn (Impl, Display.UpdateType, [*]const Display, usize) callconv(.C) Result = null,
     scheduleFrame: ?*const fn (Impl) callconv(.C) Result = null,
     setNextFrameCallback: ?*const fn (Impl, VoidCallback, ?*anyopaque) callconv(.C) Result = null,
+    addView: ?*const fn (Impl, *const ViewInfo.Add) callconv(.C) Result = null,
+    removeView: ?*const fn (Impl, *const ViewInfo.Remove) callconv(.C) Result = null,
 };
 
 pub const Result = enum(u8) {
@@ -413,6 +444,31 @@ pub fn sendWindowMetricsEvent(self: *Self, event: *const Event.WindowMetrics) Er
     if (self.manager.proc_table.sendWindowMetricsEvent) |func| {
         std.debug.print("{}\n", .{event});
         return try func(self.ptr, event).err();
+    }
+    return error.InvalidFunction;
+}
+
+pub fn addView(self: *Self, id: i64, metrics: *const Event.WindowMetrics) Error!void {
+    if (self.manager.proc_table.addView) |func| {
+        return try func(self.ptr, &ViewInfo.Add{
+            .id = id,
+            .metrics = metrics,
+            .callback = (struct {
+                fn callback(_: *const ViewInfo.Add.Result) callconv(.C) void {}
+            }).callback,
+        }).err();
+    }
+    return error.InvalidFunction;
+}
+
+pub fn removeView(self: *Self, id: i64) Error!void {
+    if (self.manager.proc_table.removeView) |func| {
+        return try func(self.ptr, &ViewInfo.Remove{
+            .id = id,
+            .callback = (struct {
+                fn callback(_: *const ViewInfo.Remove.Result) callconv(.C) void {}
+            }).callback,
+        }).err();
     }
     return error.InvalidFunction;
 }

@@ -2,6 +2,7 @@ const std = @import("std");
 const xev = @import("xev");
 const flutter = @import("flutter.zig");
 const Allocator = std.mem.Allocator;
+const log = std.log.scoped(.GenesisShell);
 const Self = @This();
 const Mode = @import("GenesisShell/Mode.zig");
 
@@ -25,10 +26,10 @@ const Task = struct {
         const runner: *TaskRunner = @fieldParentPtr("queue", self.queue);
         const shell: *Self = @fieldParentPtr("loop", loop);
 
-        _ = result.timer catch |e| std.log.err("Timer failed for task #{d} on runner #{d}: {s}", .{ self.id, runner.flutter.id, @errorName(e) });
+        _ = result.timer catch |e| log.err("Timer failed for task #{d} on runner #{d}: {s}", .{ self.id, runner.flutter.id, @errorName(e) });
 
-        std.log.debug("Running task #{d} on runner #{d}", .{ self.id, runner.flutter.id });
-        shell.engine.runTask(&self.flutter) catch |e| std.log.err("Failed to run task #{d} on runner #{d}: {s}", .{ self.id, runner.flutter.id, @errorName(e) });
+        log.debug("Running task #{d} on runner #{d}", .{ self.id, runner.flutter.id });
+        shell.engine.runTask(&self.flutter) catch |e| log.err("Failed to run task #{d} on runner #{d}: {s}", .{ self.id, runner.flutter.id, @errorName(e) });
 
         runner.mutex.lock();
         defer runner.mutex.unlock();
@@ -57,7 +58,7 @@ const TaskRunner = struct {
                 .post_task_callback = (struct {
                     fn func(task: flutter.Engine.ProjectArgs.CustomTaskRunners.Task, epoch: u64, user_data: ?*anyopaque) callconv(.C) void {
                         const runner: *TaskRunner = @ptrCast(@alignCast(user_data.?));
-                        runner.postTask(task, epoch) catch |e| std.log.err("Failed to post task for runner #{d}: {s}", .{ id, @errorName(e) });
+                        runner.postTask(task, epoch) catch |e| log.err("Failed to post task for runner #{d}: {s}", .{ id, @errorName(e) });
                     }
                 }).func,
                 .runs_task_on_current_thread_callback = (struct {

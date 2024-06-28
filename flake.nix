@@ -1,7 +1,6 @@
 {
   inputs = {
-    expidus.url = "github:ExpidusOS/expidus";
-    nixpkgs-flutter-engine.url = "github:ExpidusOS/nixpkgs/feat/flutter-engine";
+    expidus.url = "github:ExpidusOS/expidus/feat/nixpkgs-update";
     zig = {
       url = "github:MidstallSoftware/zig/expidus";
       inputs = {
@@ -18,7 +17,6 @@
   outputs = {
     self,
     expidus,
-    nixpkgs-flutter-engine,
     zig,
     zon2nix,
     ...
@@ -40,12 +38,6 @@
           '';
         });
 
-        flutterPackages = prev.recurseIntoAttrs (prev.callPackages "${nixpkgs-flutter-engine}/pkgs/development/compilers/flutter" {
-          useNixpkgsEngine = true;
-        });
-        flutter = final.flutterPackages.stable;
-        flutter322 = final.flutterPackages.v3_22;
-
         zon2nix = prev.stdenv.mkDerivation {
           pname = "zon2nix";
           version = "0.1.2";
@@ -66,7 +58,7 @@
         };
 
         expidus = prev.expidus // {
-          genesis-shell = final.flutter.buildFlutterApplication {
+          genesis-shell = final.flutter323.buildFlutterApplication {
             version = "0-unstable-git+${self.shortRev or "dirty"}";
             src = prev.lib.cleanSource self;
 
@@ -80,7 +72,7 @@
             inherit (prev.expidus.genesis-shell) pname buildInputs postInstall meta;
           };
 
-          genesis-shell-zig = (final.flutter.buildFlutterApplication {
+          genesis-shell-zig = (final.flutter323.buildFlutterApplication {
             version = "0-unstable-git+${self.shortRev or "dirty"}";
             src = prev.lib.cleanSource self;
 
@@ -122,7 +114,7 @@
             inherit (pkg) pname version name;
             inputsFrom = [ pkg ];
             packages = with pkgs; [
-              flutter pkgs.zig pkgs.zon2nix
+              flutter323 pkgs.zig pkgs.zon2nix
               yq gdb wayland-utils
               mesa-demos
             ];

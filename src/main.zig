@@ -2,6 +2,10 @@ const std = @import("std");
 const assert = std.debug.assert;
 const GenesisShell = @import("GenesisShell.zig");
 
+pub const std_options: std.Options = .{
+    .logFn = @import("logger.zig").log,
+};
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer assert(gpa.deinit() == .ok);

@@ -3,6 +3,7 @@ const wl = @import("wayland").server.wl;
 const wlr = @import("wlroots");
 const xev = @import("xev");
 const Allocator = std.mem.Allocator;
+const log = std.log.scoped(.@"GenesisShell.Mode.linux.compositor");
 const Mode = @import("../../Mode.zig");
 const Output = @import("compositor/Output.zig");
 const Self = @This();
@@ -17,9 +18,11 @@ wl_server_poll: xev.Completion,
 output_layout: *wlr.OutputLayout,
 output_new: wl.Listener(*wlr.Output),
 outputs: std.ArrayListUnmanaged(Output),
+next_view_id: i64,
 
 pub fn create(alloc: Allocator, loop: *xev.Loop) !*Mode {
     const self = try alloc.create(Self);
+    errdefer alloc.destroy(self);
 
     self.mode = .{
         .ptr = self,
@@ -30,6 +33,8 @@ pub fn create(alloc: Allocator, loop: *xev.Loop) !*Mode {
         .allocator = alloc,
     };
 
+    self.next_view_id = 0;
+
     self.outputs = .{};
 
     self.wl_server = try wl.Server.create();
@@ -39,7 +44,7 @@ pub fn create(alloc: Allocator, loop: *xev.Loop) !*Mode {
     }
 
     const socket = try self.wl_server.addSocketAuto(&self.socket);
-    std.log.info("Wayland is on {s}", .{socket});
+    log.info("Wayland is on {s}", .{socket});
 
     self.backend = try wlr.Backend.autocreate(self.wl_server, null);
 
@@ -65,12 +70,12 @@ pub fn create(alloc: Allocator, loop: *xev.Loop) !*Mode {
         .userdata = self,
         .callback = (struct {
             fn func(user_data: ?*anyopaque, _: *xev.Loop, _: *xev.Completion, result: xev.Result) xev.CallbackAction {
-                result.poll catch |e| std.log.err("Failed to poll wayland server: {s}", .{@errorName(e)});
+                result.poll catch |e| log.err("Failed to poll wayland server: {s}", .{@errorName(e)});
 
                 const mode: *Self = @ptrCast(@alignCast(user_data.?));
                 const ev_loop = mode.wl_server.getEventLoop();
 
-                ev_loop.dispatch(-1) catch |e| std.log.err("Failed to dispatch wayland events: {s}", .{@errorName(e)});
+                ev_loop.dispatch(-1) catch |e| log.err("Failed to dispatch wayland events: {s}", .{@errorName(e)});
                 mode.wl_server.flushClients();
                 return .rearm;
             }
@@ -101,7 +106,7 @@ fn createOutput(listener: *wl.Listener(*wlr.Output), wlr_output: *wlr.Output) vo
     if (!wlr_output.commitState(&state)) return;
 
     self.addOutput(wlr_output) catch |e| {
-        std.log.err("Failed to add output: {s}", .{@errorName(e)});
+        log.err("Failed to add output: {s}", .{@errorName(e)});
         wlr_output.destroy();
         return;
     };
