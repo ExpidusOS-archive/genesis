@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const options = @import("options");
+const log = std.log.scoped(.@"flutter.Engine");
 const assert = std.debug.assert;
 const fs = std.fs;
 const Allocator = std.mem.Allocator;
@@ -107,6 +108,11 @@ pub const ProjectArgs = struct {
             .aot_data = aot_data,
             .custom_task_runners = self.custom_task_runners,
             .log_tag = if (log_tag) |lt| lt.ptr else null,
+            .log_message_callback = (struct {
+                fn func(tag: [*:0]const u8, message: [*:0]const u8, _: ?*anyopaque) callconv(.C) void {
+                    @import("../logger.zig").tryLog(.info, tag[0..std.mem.len(tag)], "{s}", .{message}) catch return;
+                }
+            }).func,
         };
     }
 
@@ -218,13 +224,13 @@ pub const Event = struct {
         struct_size: usize = @sizeOf(WindowMetrics),
         width: usize,
         height: usize,
-        pixel_ratio: f32,
+        pixel_ratio: f64,
         left: usize,
         top: usize,
-        physical_view_inset_top: f32,
-        physical_view_inset_right: f32,
-        physical_view_inset_bottom: f32,
-        physical_view_inset_left: f32,
+        physical_view_inset_top: f64,
+        physical_view_inset_right: f64,
+        physical_view_inset_bottom: f64,
+        physical_view_inset_left: f64,
         display_id: u64,
         view_id: i64,
     };
@@ -249,10 +255,10 @@ pub const Display = extern struct {
     struct_size: usize = @sizeOf(Display),
     id: u64,
     is_single: bool = true,
-    refresh_rate: f32,
+    refresh_rate: f64,
     width: usize,
     height: usize,
-    pixel_ratio: f32,
+    pixel_ratio: f64,
 
     pub const UpdateType = enum(c_int) {
         startup,
@@ -387,7 +393,7 @@ pub fn run(self: *const Self) Error!void {
     return if (self.manager.proc_table.runInit) |func| try func(self.ptr).err() else error.InvalidFunction;
 }
 
-pub fn runTask(self: *const Self, task: *ProjectArgs.CustomTaskRunners.Task) Error!void {
+pub fn runTask(self: *const Self, task: *const ProjectArgs.CustomTaskRunners.Task) Error!void {
     return if (self.manager.proc_table.runTask) |func| try func(self.ptr, task).err() else error.InvalidFunction;
 }
 
@@ -434,7 +440,10 @@ pub fn notifyDisplays(self: *Self) Error!void {
     defer self.display_mutex.unlock();
 
     if (self.manager.proc_table.notifyDisplayUpdate) |func| {
-        std.debug.print("{any}\n", .{self.displays.items});
+        for (self.displays.items) |*item| {
+            item.is_single = self.displays.items.len == 1;
+        }
+
         return try func(self.ptr, .startup, self.displays.items.ptr, self.displays.items.len).err();
     }
     return error.InvalidFunction;
@@ -442,7 +451,6 @@ pub fn notifyDisplays(self: *Self) Error!void {
 
 pub fn sendWindowMetricsEvent(self: *Self, event: *const Event.WindowMetrics) Error!void {
     if (self.manager.proc_table.sendWindowMetricsEvent) |func| {
-        std.debug.print("{}\n", .{event});
         return try func(self.ptr, event).err();
     }
     return error.InvalidFunction;
@@ -476,6 +484,8 @@ pub fn removeView(self: *Self, id: i64) Error!void {
 pub fn destroy(self: *Self) void {
     assert(self.manager.proc_table.deinit != null);
     assert(self.manager.proc_table.deinit.?(self.ptr) == .success);
+
+    self.displays.deinit(self.manager.allocator);
 
     for (self.manager.instances.items, 0..) |item, i| {
         if (item.id == self.id) {

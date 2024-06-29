@@ -16,31 +16,20 @@ pub const Options = struct {
 
 const Task = struct {
     id: usize,
-    queue: *std.ArrayListUnmanaged(@This()),
+    queue: *std.ArrayListUnmanaged(Task),
+    epoch: u64,
     flutter: flutter.Engine.ProjectArgs.CustomTaskRunners.Task,
-    completion: xev.Completion,
+    completion: ?xev.Completion,
+    completed: bool,
 
-    fn callback(user_data: ?*anyopaque, loop: *xev.Loop, _: *xev.Completion, result: xev.Result) xev.CallbackAction {
-        const self: *Task = @ptrCast(@alignCast(user_data.?));
-
+    pub fn runTask(self: *Task) !void {
         const runner: *TaskRunner = @fieldParentPtr("queue", self.queue);
-        const shell: *Self = @fieldParentPtr("loop", loop);
-
-        _ = result.timer catch |e| log.err("Timer failed for task #{d} on runner #{d}: {s}", .{ self.id, runner.flutter.id, @errorName(e) });
+        const shell = runner.getShell();
 
         log.debug("Running task #{d} on runner #{d}", .{ self.id, runner.flutter.id });
-        shell.engine.runTask(&self.flutter) catch |e| log.err("Failed to run task #{d} on runner #{d}: {s}", .{ self.id, runner.flutter.id, @errorName(e) });
+        try shell.engine.runTask(&self.flutter);
 
-        runner.mutex.lock();
-        defer runner.mutex.unlock();
-
-        for (runner.queue.items, 0..) |item, i| {
-            if (item.id == self.id) {
-                _ = runner.queue.orderedRemove(i);
-                break;
-            }
-        }
-        return .disarm;
+        self.completed = true;
     }
 };
 
@@ -49,6 +38,7 @@ const TaskRunner = struct {
     queue: std.ArrayListUnmanaged(Task) = .{},
     mutex: std.Thread.Mutex = .{},
     next_tid: usize = 1,
+    completion: xev.Completion,
 
     pub fn create(self: *TaskRunner, comptime id: usize) void {
         self.* = .{
@@ -69,7 +59,26 @@ const TaskRunner = struct {
                     }
                 }).func,
             },
+            .completion = .{
+                .op = .{ .timer = .{ .next = .{ .tv_sec = 0, .tv_nsec = 0 } } },
+                .userdata = self,
+                .callback = (struct {
+                    fn func(user_data: ?*anyopaque, _: *xev.Loop, _: *xev.Completion, _: xev.Result) xev.CallbackAction {
+                        const runner: *TaskRunner = @ptrCast(@alignCast(user_data.?));
+                        runner.runTasks() catch |e| log.err("Failed to run tasks for runner #{d}: {s}", .{ id, @errorName(e) });
+                        return .rearm;
+                    }
+                }).func,
+            },
         };
+
+        const shell = self.getShell();
+        shell.loop.add(&self.completion);
+    }
+
+    pub fn destroy(self: *TaskRunner) void {
+        const shell = self.getShell();
+        self.queue.deinit(shell.allocator);
     }
 
     pub inline fn getConstShell(self: *const TaskRunner) *const Self {
@@ -97,19 +106,77 @@ const TaskRunner = struct {
         const item = try self.queue.addOne(shell.allocator);
         errdefer _ = item.queue.pop();
 
+        item.completion = null;
+        item.completed = false;
+        item.queue = &self.queue;
+
         item.id = self.next_tid;
         self.next_tid += 1;
 
-        item.queue = &self.queue;
+        item.epoch = epoch;
         item.flutter = task;
+    }
 
-        const curr = (try shell.engine_manager.getCurrentTime()) / 1000;
-        const delta = epoch - curr;
+    pub fn runTasks(self: *TaskRunner) !void {
+        const shell = self.getShell();
+
+        self.mutex.lock();
+        defer self.mutex.unlock();
 
         shell.loop_mutex.lock();
         defer shell.loop_mutex.unlock();
 
-        shell.loop.timer(&item.completion, delta, item, &Task.callback);
+        var num_completed: usize = 0;
+
+        for (self.queue.items) |item| {
+            if (item.completion != null and item.completed) {
+                num_completed += 1;
+            }
+        }
+
+        if (num_completed == self.queue.items.len) return;
+
+        const epoch = try shell.engine_manager.getCurrentTime();
+
+        while (true) {
+            const init_count = self.queue.items.len;
+
+            for (self.queue.items, 0..) |item, i| {
+                if (item.completion) |completion| {
+                    if (completion.flags.state == .dead and item.completed) {
+                        _ = self.queue.swapRemove(i);
+                        break;
+                    }
+                }
+            }
+
+            const end_count = self.queue.items.len;
+            const delta_count = init_count - end_count;
+            if (delta_count < 1) break;
+        }
+
+        for (self.queue.items) |*item| {
+            if (item.epoch <= epoch and item.completion == null and !item.completed) {
+                item.completion = .{
+                    .op = .{ .timer = .{ .next = .{ .tv_sec = 0, .tv_nsec = 0 } } },
+                    .userdata = item,
+                    .callback = (struct {
+                        fn func(user_data: ?*anyopaque, _: *xev.Loop, _: *xev.Completion, _: xev.Result) xev.CallbackAction {
+                            const task: *Task = @ptrCast(@alignCast(user_data.?));
+                            const runner: *TaskRunner = @fieldParentPtr("queue", task.queue);
+
+                            task.runTask() catch |e| {
+                                log.err("Failed to run task {d} on runner #{d}: {s}", .{ task.id, runner.flutter.id, @errorName(e) });
+                                return .rearm;
+                            };
+                            return .disarm;
+                        }
+                    }).func,
+                };
+
+                shell.loop.add(&item.completion.?);
+            }
+        }
     }
 };
 
@@ -169,23 +236,12 @@ pub fn create(alloc: Allocator, options: Options) !*Self {
     self.task_runner_render.create(2);
 
     self.task_runners = .{
-        //.platform = &self.task_runner_platform.flutter,
+        .platform = &self.task_runner_platform.flutter,
         .render = &self.task_runner_render.flutter,
     };
 
     self.engine = try self.engine_manager.createEngine(.{
-        .render_cfg = .{
-            .software = .{
-                .present = (struct {
-                    fn func(user_data: ?*anyopaque, buff: [*]const u8, w: usize, h: usize) callconv(.C) bool {
-                        _ = user_data;
-                        const pixbuf = std.mem.bytesAsSlice(u32, buff[0..(w * h * 4)]);
-                        std.debug.print("{any}\n", .{pixbuf});
-                        return true;
-                    }
-                }).func,
-            },
-        },
+        .render_cfg = self.mode.render_cfg,
         .project_args = .{
             .assets_path = assets_path,
             .icu_data_path = icudata_path,
@@ -201,6 +257,8 @@ pub fn create(alloc: Allocator, options: Options) !*Self {
 
 pub fn destroy(self: *Self) void {
     self.engine_manager.destroy();
+    self.task_runner_platform.destroy();
+    self.task_runner_render.destroy();
     self.mode.destroy();
     self.loop.deinit();
     self.allocator.destroy(self);
@@ -213,4 +271,8 @@ pub fn run(self: *Self) !void {
     try self.engine.notifyDisplays();
 
     try self.loop.run(.until_done);
+}
+
+pub fn shutdown(self: *Self) void {
+    self.loop.stop();
 }

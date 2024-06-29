@@ -2,13 +2,13 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 pub const Transformation = extern struct {
-    scale_x: f32,
-    skew_x: f32,
-    trans_x: f32,
-    scale_y: f32,
-    skew_y: f32,
-    trans_y: f32,
-    pers: [3]f32,
+    scale_x: f64,
+    skew_x: f64,
+    trans_x: f64,
+    scale_y: f64,
+    skew_y: f64,
+    trans_y: f64,
+    pers: [3]f64,
 };
 
 pub const UintSize = extern struct {
@@ -17,10 +17,10 @@ pub const UintSize = extern struct {
 };
 
 pub const Rect = extern struct {
-    left: f32,
-    top: f32,
-    right: f32,
-    bottom: f32,
+    left: f64,
+    top: f64,
+    right: f64,
+    bottom: f64,
 };
 
 pub const Damage = extern struct {

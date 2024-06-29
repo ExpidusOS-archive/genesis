@@ -32,11 +32,12 @@ pub fn init(self: *Self, mode: *Mode, wlr_output: *wlr.Output) !void {
 
     const shell = mode.mode.getShell();
     try shell.engine.addDisplay(self.flutterDisplay());
-    try shell.engine.sendWindowMetricsEvent(&self.windowMetrics());
 
     if (self.view_id > 0) {
         try shell.engine.addView(self.view_id, &self.windowMetrics());
     }
+
+    try shell.engine.sendWindowMetricsEvent(&self.windowMetrics());
 }
 
 fn id(self: *const Self) u64 {
@@ -46,7 +47,7 @@ fn id(self: *const Self) u64 {
 fn flutterDisplay(self: *Self) flutter.Engine.Display {
     return .{
         .id = self.id(),
-        .refresh_rate = @as(f32, @floatFromInt(self.wlr_output.refresh)) / 1000.0,
+        .refresh_rate = @as(f64, @floatFromInt(self.wlr_output.refresh)) / 1000.0,
         .width = @intCast(self.wlr_output.width),
         .height = @intCast(self.wlr_output.height),
         .pixel_ratio = 1.0,
@@ -65,7 +66,7 @@ fn windowMetrics(self: *Self) flutter.Engine.Event.WindowMetrics {
         .physical_view_inset_bottom = 0.0,
         .physical_view_inset_left = 0.0,
         .display_id = self.id(),
-        .view_id = 0,
+        .view_id = self.view_id,
     };
 }
 
@@ -81,7 +82,17 @@ fn setState(self: *Self, state: *wlr.Output.State) !bool {
 
 fn requestState(listener: *wl.Listener(*wlr.Output.event.RequestState), event: *wlr.Output.event.RequestState) void {
     const self: *Self = @fieldParentPtr("request_state", listener);
-    _ = self.setState(event.state) catch |e| log.err("Failed to set state for output {s}: {s}", .{ self.wlr_output.name, @errorName(e) });
+    _ = self.setState(event.state) catch |e| {
+        @import("../../../../logger.zig").printErrorMessageWithTrace(
+            .stderr,
+            .err,
+            "GenesisShell.Mode.linux.compositor.Output",
+            self.mode.mode.allocator,
+            "Failed to set state for output {s}: {s}",
+            .{ self.wlr_output.name, @errorName(e) },
+            @errorReturnTrace().?.*,
+        ) catch return;
+    };
 }
 
 fn destroy(listener: *wl.Listener(*wlr.Output), wlr_output: *wlr.Output) void {
@@ -100,7 +111,13 @@ fn destroy(listener: *wl.Listener(*wlr.Output), wlr_output: *wlr.Output) void {
 
     for (self.mode.outputs.items, 0..) |output, i| {
         if (output.wlr_output == wlr_output) {
-            _ = self.mode.outputs.orderedRemove(i);
+            const mode = self.mode;
+
+            _ = mode.outputs.orderedRemove(i);
+
+            if (mode.outputs.items.len == 0) {
+                mode.mode.getShell().shutdown();
+            }
             break;
         }
     }

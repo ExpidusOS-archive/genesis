@@ -30,6 +30,21 @@ pub fn create(alloc: Allocator, loop: *xev.Loop) !*Mode {
             .destroy = destroy,
             .run = run,
         },
+        .render_cfg = .{
+            .software = .{
+                .present = (struct {
+                    fn func(user_data: ?*anyopaque, buff: [*]const u8, w: usize, h: usize) callconv(.C) bool {
+                        _ = user_data;
+                        _ = buff;
+                        _ = w;
+                        _ = h;
+                        //const pixbuf = std.mem.bytesAsSlice(u32, buff[0..((w / 2) * (h / 2) * 4)]);
+                        //std.debug.print("{any}\n", .{pixbuf});
+                        return true;
+                    }
+                }).func,
+            },
+        },
         .allocator = alloc,
     };
 
@@ -106,17 +121,26 @@ fn createOutput(listener: *wl.Listener(*wlr.Output), wlr_output: *wlr.Output) vo
     if (!wlr_output.commitState(&state)) return;
 
     self.addOutput(wlr_output) catch |e| {
-        log.err("Failed to add output: {s}", .{@errorName(e)});
+        @import("../../../logger.zig").printErrorMessageWithTrace(
+            .stderr,
+            .err,
+            "GenesisShell.Mode.linux.compositor",
+            self.mode.allocator,
+            "Failed to add output: {s}",
+            .{@errorName(e)},
+            @errorReturnTrace().?.*,
+        ) catch {};
         wlr_output.destroy();
         return;
     };
 }
 
-fn destroy(mode: *const Mode) void {
-    const self: *const Self = @fieldParentPtr("mode", mode);
+fn destroy(mode: *Mode) void {
+    const self: *Self = @fieldParentPtr("mode", mode);
 
     self.wl_server.destroyClients();
     self.wl_server.destroy();
+    self.outputs.deinit(mode.allocator);
     mode.allocator.destroy(self);
 }
 

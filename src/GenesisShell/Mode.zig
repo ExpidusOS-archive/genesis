@@ -1,13 +1,14 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const xev = @import("xev");
+const flutter = @import("../flutter.zig");
 const GenesisShell = @import("../GenesisShell.zig");
 const assert = std.debug.assert;
 const Allocator = std.mem.Allocator;
 const Self = @This();
 
 pub const VTable = struct {
-    destroy: *const fn (*const Self) void,
+    destroy: *const fn (*Self) void,
     run: ?*const fn (*const Self) anyerror!void = null,
 };
 
@@ -15,6 +16,7 @@ ptr: *anyopaque,
 vtable: *const VTable,
 allocator: Allocator,
 dart_entrypoint: ?[]const u8 = null,
+render_cfg: flutter.Engine.Renderer.Config,
 shell: ?*GenesisShell = null,
 
 pub fn create(alloc: Allocator, t: Type, loop: *xev.Loop) !*Self {
@@ -30,7 +32,7 @@ pub inline fn run(self: *const Self) !void {
     if (self.vtable.run) |func| return func(self);
 }
 
-pub inline fn destroy(self: *const Self) void {
+pub inline fn destroy(self: *Self) void {
     self.vtable.destroy(self);
 }
 

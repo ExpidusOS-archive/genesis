@@ -99,7 +99,7 @@ pub fn createEngine(self: *Self, options: CreateEngineOptions) (Allocator.Error 
         defer project_args.destroy(self.allocator);
 
         if (project_args.log_tag == null) {
-            project_args.log_tag = try std.fmt.allocPrintZ(self.allocator, "flutter-#{d}", .{instance.id});
+            project_args.log_tag = try std.fmt.allocPrintZ(self.allocator, "flutter.Engine#{d}", .{instance.id});
         }
 
         try func(Engine.Version, &render_cfg, &project_args, options.user_data, &instance.ptr).err();
