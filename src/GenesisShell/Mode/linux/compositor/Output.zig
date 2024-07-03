@@ -12,6 +12,7 @@ wlr_output: *wlr.Output,
 wlr_output_layout: *wlr.OutputLayout.Output,
 request_state: wl.Listener(*wlr.Output.event.RequestState) = wl.Listener(*wlr.Output.event.RequestState).init(requestState),
 destroy: wl.Listener(*wlr.Output) = wl.Listener(*wlr.Output).init(destroy),
+frame: wl.Listener(*wlr.Output) = wl.Listener(*wlr.Output).init(frame),
 
 pub fn init(self: *Self, mode: *Mode, wlr_output: *wlr.Output) !void {
     const output_layout = try mode.output_layout.addAuto(wlr_output);
@@ -27,8 +28,15 @@ pub fn init(self: *Self, mode: *Mode, wlr_output: *wlr.Output) !void {
 
     self.wlr_output.events.request_state.add(&self.request_state);
     self.wlr_output.events.destroy.add(&self.destroy);
+    self.wlr_output.events.frame.add(&self.frame);
 
+    _ = self.wlr_output.initRender(mode.allocator, mode.renderer);
     self.wlr_output.createGlobal();
+
+    const layout_output = try mode.output_layout.addAuto(wlr_output);
+
+    const scene_output = try mode.scene.createSceneOutput(wlr_output);
+    mode.scene_output_layout.addOutput(layout_output, scene_output);
 
     const shell = mode.mode.getShell();
     try shell.engine.addDisplay(self.flutterDisplay());
@@ -106,6 +114,7 @@ fn destroy(listener: *wl.Listener(*wlr.Output), wlr_output: *wlr.Output) void {
 
     _ = shell.engine.removeDisplay(self.id());
 
+    self.frame.link.remove();
     self.destroy.link.remove();
     self.request_state.link.remove();
 
@@ -121,4 +130,15 @@ fn destroy(listener: *wl.Listener(*wlr.Output), wlr_output: *wlr.Output) void {
             break;
         }
     }
+}
+
+fn frame(listener: *wl.Listener(*wlr.Output), _: *wlr.Output) void {
+    const self: *Self = @fieldParentPtr("frame", listener);
+
+    const scene_output = self.mode.scene.getSceneOutput(self.wlr_output).?;
+    _ = scene_output.commit(null);
+
+    var now: std.posix.timespec = undefined;
+    std.posix.clock_gettime(std.posix.CLOCK.MONOTONIC, &now) catch @panic("CLOCK_MONOTONIC not supported");
+    scene_output.sendFrameDone(&now);
 }
