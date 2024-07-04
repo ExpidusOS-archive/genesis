@@ -103,6 +103,7 @@ pub fn build(b: *std.Build) void {
         exe.linkSystemLibrary("wayland-server");
         exe.linkSystemLibrary("wlroots");
         exe.linkSystemLibrary("cairo");
+        exe.linkSystemLibrary("EGL");
 
         const pixman = b.dependency("pixman", .{});
 
