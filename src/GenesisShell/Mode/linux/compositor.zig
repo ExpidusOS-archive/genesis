@@ -5,17 +5,105 @@ const xev = @import("xev");
 const Allocator = std.mem.Allocator;
 const log = std.log.scoped(.@"GenesisShell.Mode.linux.compositor");
 const GenesisShell = @import("../../../GenesisShell.zig");
+const flutter = @import("../../../flutter.zig");
+const egl = @import("../../../gl/egl.zig");
+const gl = @import("../../../gl/gl3v3.zig");
 const Mode = @import("../../Mode.zig");
 const Output = @import("compositor/Output.zig");
 const WlrCairoBuffer = @import("compositor/WlrCairoBuffer.zig");
+const WlrGles2Buffer = @import("compositor/WlrGles2Buffer.zig");
 const Self = @This();
 
 const c = @cImport({
     @cInclude("cairo.h");
 });
 
+const WlrEgl = opaque {};
+
 extern fn wlr_renderer_is_gles2(renderer: *wlr.Renderer) callconv(.C) bool;
 extern fn wlr_renderer_is_pixman(renderer: *wlr.Renderer) callconv(.C) bool;
+extern fn wlr_gles2_renderer_get_egl(renderer: *wlr.Renderer) callconv(.C) *WlrEgl;
+extern fn wlr_gles2_renderer_check_ext(renderer: *wlr.Renderer, name: [*:0]const u8) callconv(.C) bool;
+extern fn wlr_egl_get_display(wlr_egl: *WlrEgl) callconv(.C) egl.EGLDisplay;
+extern fn wlr_egl_get_context(wlr_egl: *WlrEgl) callconv(.C) egl.EGLContext;
+
+pub const FlutterRenderer = union(enum) {
+    opengl: OpenGL,
+    software: void,
+
+    pub const OpenGL = struct {
+        main: SharedContext,
+        res: SharedContext,
+
+        pub const SharedContext = struct {
+            context: egl.EGLContext,
+            display: egl.EGLDisplay,
+
+            fn create(alloc: Allocator, wlr_egl: *WlrEgl) !SharedContext {
+                var self: SharedContext = .{
+                    .context = wlr_egl_get_context(wlr_egl),
+                    .display = wlr_egl_get_display(wlr_egl),
+                };
+
+                var egl_config: egl.EGLConfig = undefined;
+                var matched: egl.EGLint = undefined;
+
+                if (egl.eglChooseConfig(self.display, &[_]egl.EGLint{
+                    egl.EGL_SURFACE_TYPE, egl.EGL_PBUFFER_BIT,
+                    egl.EGL_RED_SIZE,     8,
+                    egl.EGL_GREEN_SIZE,   8,
+                    egl.EGL_BLUE_SIZE,    8,
+                    egl.EGL_ALPHA_SIZE,   8,
+                    egl.EGL_NONE,
+                }, &egl_config, 1, &matched) == 0) return error.eglChooseConfigFail;
+                if (matched == 0) {
+                    if (egl.eglChooseConfig(self.display, &[_]egl.EGLint{
+                        egl.EGL_SURFACE_TYPE, egl.EGL_WINDOW_BIT,
+                        egl.EGL_RED_SIZE,     8,
+                        egl.EGL_GREEN_SIZE,   8,
+                        egl.EGL_BLUE_SIZE,    8,
+                        egl.EGL_ALPHA_SIZE,   8,
+                        egl.EGL_NONE,
+                    }, &egl_config, 1, &matched) == 0) return error.eglChooseConfigFail;
+                    if (matched == 0) return error.NoEglConfigs;
+                }
+
+                const exts = egl.eglQueryString(self.display, egl.EGL_EXTENSIONS);
+
+                var attribs: std.ArrayListUnmanaged(egl.EGLint) = .{};
+                defer attribs.deinit(alloc);
+
+                try attribs.appendSlice(alloc, &.{
+                    egl.EGL_CONTEXT_CLIENT_VERSION,
+                    2,
+                });
+
+                try attribs.appendSlice(alloc, &.{
+                    egl.EGL_CONTEXT_PRIORITY_LEVEL_IMG,
+                    egl.EGL_CONTEXT_PRIORITY_HIGH_IMG,
+                });
+
+                if (std.mem.indexOf(u8, exts[0..std.mem.len(exts)], "EGL_IMG_context_priority")) |_| {
+                    try attribs.appendSlice(alloc, &.{
+                        egl.EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY,
+                        egl.EGL_LOSE_CONTEXT_ON_RESET,
+                    });
+                }
+
+                {
+                    const value = try attribs.toOwnedSliceSentinel(alloc, egl.EGL_NONE);
+                    defer alloc.free(value);
+
+                    const shared_context = egl.eglCreateContext(self.display, egl_config, self.context, value.ptr);
+                    if (shared_context == egl.EGL_NO_CONTEXT) return error.eglCreateContextFail;
+
+                    self.context = shared_context;
+                }
+                return self;
+            }
+        };
+    };
+};
 
 mode: Mode,
 wl_server: *wl.Server,
@@ -31,6 +119,7 @@ next_view_id: i64,
 scene: *wlr.Scene,
 scene_output_layout: *wlr.SceneOutputLayout,
 scene_buffer: *wlr.SceneBuffer,
+flutter_renderer: FlutterRenderer,
 
 pub fn create(alloc: Allocator, loop: *xev.Loop) !*Mode {
     const self = try alloc.create(Self);
@@ -68,8 +157,126 @@ pub fn create(alloc: Allocator, loop: *xev.Loop) !*Mode {
     try self.renderer.initServer(self.wl_server);
 
     if (wlr_renderer_is_gles2(self.renderer)) {
-        return error.NotImplemented;
+        const wlr_egl = wlr_gles2_renderer_get_egl(self.renderer);
+
+        try gl.load({}, (struct {
+            fn func(_: void, name: [:0]const u8) ?gl.FunctionPointer {
+                return egl.eglGetProcAddress(name);
+            }
+        }).func);
+
+        self.flutter_renderer = .{ .opengl = .{
+            .main = try FlutterRenderer.OpenGL.SharedContext.create(alloc, wlr_egl),
+            .res = try FlutterRenderer.OpenGL.SharedContext.create(alloc, wlr_egl),
+        } };
+
+        self.mode.render_cfg = .{
+            .opengl = .{
+                .make_current = (struct {
+                    fn func(user_data: ?*anyopaque) callconv(.C) bool {
+                        const shell: *GenesisShell = @ptrCast(@alignCast(user_data.?));
+                        const mode: *Self = @fieldParentPtr("mode", shell.mode);
+
+                        return egl.eglMakeCurrent(mode.flutter_renderer.opengl.main.display, egl.EGL_NO_SURFACE, egl.EGL_NO_SURFACE, mode.flutter_renderer.opengl.main.context) == 1;
+                    }
+                }).func,
+                .clear_current = (struct {
+                    fn func(user_data: ?*anyopaque) callconv(.C) bool {
+                        const shell: *GenesisShell = @ptrCast(@alignCast(user_data.?));
+                        const mode: *Self = @fieldParentPtr("mode", shell.mode);
+
+                        return egl.eglMakeCurrent(mode.flutter_renderer.opengl.main.display, egl.EGL_NO_SURFACE, egl.EGL_NO_SURFACE, egl.EGL_NO_CONTEXT) == 1;
+                    }
+                }).func,
+                .make_resource_current = (struct {
+                    fn func(user_data: ?*anyopaque) callconv(.C) bool {
+                        const shell: *GenesisShell = @ptrCast(@alignCast(user_data.?));
+                        const mode: *Self = @fieldParentPtr("mode", shell.mode);
+
+                        return egl.eglMakeCurrent(mode.flutter_renderer.opengl.res.display, egl.EGL_NO_SURFACE, egl.EGL_NO_SURFACE, mode.flutter_renderer.opengl.res.context) == 1;
+                    }
+                }).func,
+                .surface_transformation = (struct {
+                    fn func(user_data: ?*anyopaque) callconv(.C) flutter.Engine.Renderer.Transformation {
+                        const shell: *GenesisShell = @ptrCast(@alignCast(user_data.?));
+                        const mode: *Self = @fieldParentPtr("mode", shell.mode);
+
+                        return .{
+                            .scale_x = 1.0,
+                            .skew_x = 0.0,
+                            .trans_x = 0.0,
+                            .scale_y = 0.0,
+                            .skew_y = -1.0,
+                            .trans_y = if (mode.scene_buffer.buffer) |wlr_buff| @floatFromInt(wlr_buff.height) else 0,
+                            .pers = .{
+                                0.0,
+                                0.0,
+                                1.0,
+                            },
+                        };
+                    }
+                }).func,
+                .present = .{
+                    .with_info = (struct {
+                        fn func(user_data: ?*anyopaque, info: *const flutter.Engine.Renderer.PresentInfo) callconv(.C) bool {
+                            const shell: *GenesisShell = @ptrCast(@alignCast(user_data.?));
+                            const mode: *Self = @fieldParentPtr("mode", shell.mode);
+
+                            _ = mode;
+                            std.debug.print("{}\n", .{info});
+                            return true;
+                        }
+                    }).func,
+                },
+                .fbo_callback = .{
+                    .with_info = (struct {
+                        fn func(user_data: ?*anyopaque, info: *const flutter.Engine.Renderer.FrameInfo) callconv(.C) u32 {
+                            const shell: *GenesisShell = @ptrCast(@alignCast(user_data.?));
+                            const mode: *Self = @fieldParentPtr("mode", shell.mode);
+
+                            if (mode.scene_buffer.buffer) |wlr_buff| {
+                                wlr_buff.drop();
+                                mode.scene_buffer.setBuffer(null);
+                            }
+
+                            const buff = WlrGles2Buffer.create(mode.mode.allocator, mode.allocator, mode.renderer, @intCast(info.size.width), @intCast(info.size.height)) catch |e| {
+                                log.err("Failed to create a buffer: {s}", .{@errorName(e)});
+                                return 0;
+                            };
+
+                            mode.scene_buffer.setBuffer(&buff.buffer);
+
+                            var now: std.posix.timespec = undefined;
+                            std.posix.clock_gettime(std.posix.CLOCK.MONOTONIC, &now) catch @panic("CLOCK_MONOTONIC not supported");
+                            mode.scene_buffer.sendFrameDone(&now);
+                            return buff.fbo;
+                        }
+                    }).func,
+                },
+                .fbo_reset_after_present = true,
+                .populate_existing_damage = (struct {
+                    fn func(user_data: ?*anyopaque, fboid_ptr: *const isize, damage: *flutter.Engine.Renderer.Damage) callconv(.C) void {
+                        const shell: *GenesisShell = @ptrCast(@alignCast(user_data.?));
+                        const mode: *Self = @fieldParentPtr("mode", shell.mode);
+
+                        _ = mode;
+                        _ = fboid_ptr;
+
+                        damage.num_rects = 0;
+                        damage.rects = null;
+
+                        //std.debug.print("{} {}\n", .{ fboid_ptr, damage });
+                    }
+                }).func,
+                .gl_proc_resolver = (struct {
+                    fn func(_: ?*anyopaque, name: [*:0]const u8) callconv(.C) ?*anyopaque {
+                        return @constCast(@ptrCast(@alignCast(egl.eglGetProcAddress(name))));
+                    }
+                }).func,
+            },
+        };
     } else if (wlr_renderer_is_pixman(self.renderer)) {
+        self.flutter_renderer = .software;
         self.mode.render_cfg = .{
             .software = .{
                 .present = (struct {

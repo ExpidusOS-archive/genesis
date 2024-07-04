@@ -12,8 +12,8 @@ pub const Transformation = extern struct {
 };
 
 pub const UintSize = extern struct {
-    width: usize,
-    height: usize,
+    width: u32,
+    height: u32,
 };
 
 pub const Rect = extern struct {
@@ -26,7 +26,7 @@ pub const Rect = extern struct {
 pub const Damage = extern struct {
     struct_size: usize = @sizeOf(Damage),
     num_rects: usize,
-    rects: [*]Rect,
+    rects: ?[*]Rect,
 };
 
 pub const FrameInfo = extern struct {
@@ -77,8 +77,8 @@ pub const Config = union(Type) {
         },
         make_resource_current: ?*const fn (?*anyopaque) callconv(.C) bool,
         fbo_reset_after_present: bool,
-        surface_transformation: ?*const fn (?*anyopaque) callconv(.C) Transformation,
-        gl_proc_resolver: *const fn (?*anyopaque) callconv(.C) ?*anyopaque,
+        surface_transformation: ?*const fn (?*anyopaque) callconv(.C) Transformation = null,
+        gl_proc_resolver: ?*const fn (?*anyopaque, [*:0]const u8) callconv(.C) ?*anyopaque = null,
         gl_external_texture_frame_callback: ?*const fn (?*anyopaque, i64, usize, usize, *Extern.Value.OpenGL.Texture) callconv(.C) bool = null,
         populate_existing_damage: *const fn (?*anyopaque, *const isize, *Damage) callconv(.C) void,
 
@@ -232,8 +232,8 @@ pub const Config = union(Type) {
                 fbo_callback: ?*const fn (?*anyopaque) callconv(.C) u32,
                 make_resource_current: ?*const fn (?*anyopaque) callconv(.C) bool,
                 fbo_reset_after_present: bool,
-                surface_transformation: ?*const fn (?*anyopaque) callconv(.C) Transformation,
-                gl_proc_resolver: *const fn (?*anyopaque) callconv(.C) ?*anyopaque,
+                surface_transformation: ?*const fn (?*anyopaque) callconv(.C) Transformation = null,
+                gl_proc_resolver: ?*const fn (?*anyopaque, [*:0]const u8) callconv(.C) ?*anyopaque = null,
                 gl_external_texture_frame_callback: ?*const fn (?*anyopaque, i64, usize, usize, *Texture) callconv(.C) bool = null,
                 fbo_with_info: ?*const fn (?*anyopaque, *const FrameInfo) callconv(.C) u32,
                 present_with_info: ?*const fn (?*anyopaque, *const PresentInfo) callconv(.C) bool,

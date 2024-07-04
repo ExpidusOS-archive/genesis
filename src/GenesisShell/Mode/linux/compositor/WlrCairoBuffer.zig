@@ -9,11 +9,11 @@ const c = @cImport({
 });
 
 const impl: wlr.Buffer.Impl = .{
-  .destroy = destroy,
-  .get_dmabuf = null,//get_dmabuf,
-  .get_shm = null,//get_shm,
-  .begin_data_ptr_access = begin_data_ptr_access,
-  .end_data_ptr_access = end_data_ptr_access,
+    .destroy = destroy,
+    .get_dmabuf = null,
+    .get_shm = null,
+    .begin_data_ptr_access = begin_data_ptr_access,
+    .end_data_ptr_access = end_data_ptr_access,
 };
 
 buffer: wlr.Buffer,
@@ -40,18 +40,6 @@ fn destroy(buffer: *wlr.Buffer) callconv(.C) void {
     self.allocator.destroy(self);
 }
 
-fn get_dmabuf(buffer: *wlr.Buffer, attribs: *wlr.DmabufAttributes) callconv(.C) bool {
-    _ = buffer;
-    _ = attribs;
-    return false;
-}
-
-fn get_shm(buffer: *wlr.Buffer, attribs: *wlr.ShmAttributes) callconv(.C) bool {
-    _ = buffer;
-    _ = attribs;
-    return false;
-}
-
 fn begin_data_ptr_access(buffer: *wlr.Buffer, _: u32, data: **anyopaque, format: *u32, stride: *usize) callconv(.C) bool {
     const self: *Self = @fieldParentPtr("buffer", buffer);
 
@@ -61,5 +49,4 @@ fn begin_data_ptr_access(buffer: *wlr.Buffer, _: u32, data: **anyopaque, format:
     return true;
 }
 
-fn end_data_ptr_access(_: *wlr.Buffer) callconv(.C) void {
-}
+fn end_data_ptr_access(_: *wlr.Buffer) callconv(.C) void {}
