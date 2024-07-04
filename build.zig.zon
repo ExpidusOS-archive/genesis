@@ -3,8 +3,8 @@
     .version = "1.0.0",
     .dependencies = .{
         .wlroots = .{
-            .url = "https://codeberg.org/ifreund/zig-wlroots/archive/v0.17.1.tar.gz",
-            .hash = "1220c65ab884c236cc950b564c70f6cd04046d86485ee76e0cde886cef7438021b4f",
+            .url = "https://codeberg.org/ifreund/zig-wlroots/archive/87a41e661e37e310f65225e7945a3dfbe7919654.tar.gz",
+            .hash = "1220658712708a8625063fb94faf77e17a7da92af69ee3108413df4e247a195ef3b6",
         },
         .libxev = .{
             .url = "https://github.com/mitchellh/libxev/archive/990ebb3be53f6f10e79504d74d77d2c4f95bbce0.tar.gz",
